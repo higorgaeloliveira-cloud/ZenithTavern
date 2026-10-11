@@ -1,0 +1,26 @@
+{
+  "name": "ZenithTavern",
+  "port": 8000,
+  "listen": false,
+  "openBrowser": true,
+  "upstream": {
+    "repo": "https://github.com/SillyTavern/SillyTavern.git",
+    "ref": "release",
+    "updates": "ask"
+  },
+  "stConfig": {
+    "enableServerPlugins": true,
+    "enableServerPluginsAutoUpdate": false,
+    "extensions.autoUpdate": false
+  },
+  "presets": {
+    "enforce": true,
+    "maxContext": 200000,
+    "maxResponseTokens": 1000,
+    "temperature": 1
+  },
+  "network": {
+    "multiIp": false,
+    "ips": []
+  }
+}

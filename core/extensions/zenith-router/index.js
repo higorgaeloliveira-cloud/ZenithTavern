@@ -1,0 +1,329 @@
+/*
+ * LunaRouter - automatic fallback between models and APIs.
+ *
+ * You pick up to 4 models, say which connection each one uses (up to 2 connections) and in what
+ * order they are tried. When a reply fails, LunaRouter sends the same request to the next model.
+ *
+ * How it works: SillyTavern sends every chat-completion reply to /api/backends/chat-completions/generate.
+ * We wrap fetch(); for that one URL we change the "source" and "model" in the request, look at the
+ * answer, and if it failed we repeat the request with the next model. API keys are never stored here:
+ * each connection uses the key you saved in Settings for that API.
+ */
+const MODULE = 'luna_router';
+const GENERATE_PATH = '/api/backends/chat-completions/generate';
+const MAX_ROUTES = 4;
+const TYPES = {
+    off: { label: 'Not used', source: null },
+    openrouter: { label: 'OpenRouter', source: 'openrouter', secret: 'api_key_openrouter' },
+    custom: { label: 'LM Studio / local server (OpenAI-compatible)', source: 'custom', secret: 'api_key_custom' },
+};
+const OPENROUTER_ONLY_FIELDS = ['use_fallback', 'provider', 'quantizations', 'allow_fallbacks', 'middleout', 'transforms'];
+const ctx = () => SillyTavern.getContext();
+
+// ---------------------------------------------------------------- settings
+function defaults() {
+    return {
+        enabled: false,
+        connections: [
+            { type: 'openrouter', url: '' },
+            { type: 'off', url: 'http://127.0.0.1:1234/v1' },
+        ],
+        routes: [],           // in the order they are tried: { conn: 0|1, model: '' }
+        retryEmpty: true,     // an empty reply counts as a failure
+        timeoutSec: 0,        // give up on a model after this long without an answer (0 = never)
+    };
+}
+function settings() {
+    const { extensionSettings } = ctx();
+    const base = defaults();
+    const s = (extensionSettings[MODULE] ??= {});
+    for (const [k, v] of Object.entries(base)) s[k] ??= v;
+    return s;
+}
+const connLabel = (s, i) => `${TYPES[s.connections[i]?.type]?.label ?? '?'}`.replace(/ \(.*\)$/, '');
+const routeLabel = (s, r) => `${connLabel(s, r.conn)}: ${r.model}`;
+function activeRoutes(s) {
+    return s.routes.filter((r) => r.model.trim() && s.connections[r.conn] && s.connections[r.conn].type !== 'off'
+        && (s.connections[r.conn].type !== 'custom' || /^https?:\/\//i.test(s.connections[r.conn].url || '')));
+}
+
+// ---------------------------------------------------------------- the request / retry engine
+let lastUsed = '';
+
+/** Builds the request for one route. Pure function, so it is easy to test. */
+function patchBody(body, route, conn) {
+    const source = TYPES[conn.type].source;
+    const b = { ...body };
+    if (b.chat_completion_source !== source) {
+        for (const k of OPENROUTER_ONLY_FIELDS) delete b[k];
+        for (const k of Object.keys(b)) if (k.startsWith('custom_') && k !== 'custom_prompt_post_processing') delete b[k];
+    }
+    b.chat_completion_source = source;
+    b.model = route.model.trim();
+    if (source === 'custom') b.custom_url = conn.url.trim();
+    return b;
+}
+
+/** Decides if an answer is good. Returns { ok, error }. Never throws. */
+async function judge(res, isStream, retryEmpty) {
+    if (!res.ok) {
+        let detail = '';
+        try { detail = (await res.clone().text()).slice(0, 160); } catch { /* ignore */ }
+        return { ok: false, error: `HTTP ${res.status}${detail ? ` ${detail}` : ''}` };
+    }
+    const probe = res.clone();
+    try {
+        if (!isStream) {
+            const data = await probe.json().catch(() => null);
+            if (!data) return { ok: true };
+            if (data.error) return { ok: false, error: data.error?.message || 'the API returned an error' };
+            if (retryEmpty && Array.isArray(data.choices)) {
+                const has = data.choices.some((c) => {
+                    const m = c?.message ?? {};
+                    return (typeof m.content === 'string' && m.content.trim()) || (Array.isArray(m.content) && m.content.length)
+                        || m.tool_calls?.length || m.reasoning_content || m.reasoning || c?.text?.trim?.();
+                });
+                if (!has) return { ok: false, error: 'empty reply' };
+            }
+            return { ok: true };
+        }
+        // streaming: wait for the first real "data:" line and look at it
+        const reader = probe.body.getReader();
+        const decoder = new TextDecoder();
+        let text = '';
+        try {
+            for (;;) {
+                const { done, value } = await reader.read();
+                if (value) text += decoder.decode(value, { stream: true });
+                const line = text.split('\n').find((l) => l.startsWith('data:'));
+                if (line) {
+                    const payload = line.slice(5).trim();
+                    if (payload && payload !== '[DONE]') {
+                        try { const j = JSON.parse(payload); if (j?.error) return { ok: false, error: j.error?.message || 'the API returned an error' }; } catch { /* not JSON, fine */ }
+                    } else if (payload === '[DONE]' && retryEmpty) return { ok: false, error: 'empty reply' };
+                    return { ok: true };
+                }
+                if (done) return retryEmpty ? { ok: false, error: 'empty reply' } : { ok: true };
+            }
+        } finally { reader.cancel().catch(() => {}); }
+    } catch (err) {
+        if (err?.name === 'AbortError') throw err;
+        return { ok: true }; // when in doubt, let SillyTavern deal with the answer itself
+    }
+}
+
+async function tryRoute(realFetch, url, init, body, route, conn, s) {
+    const parent = init.signal;
+    const ctrl = new AbortController();
+    const onAbort = () => ctrl.abort();
+    if (parent) { if (parent.aborted) ctrl.abort(); else parent.addEventListener('abort', onAbort, { once: true }); }
+    let timedOut = false;
+    const timer = s.timeoutSec > 0 ? setTimeout(() => { timedOut = true; ctrl.abort(); }, s.timeoutSec * 1000) : null;
+    try {
+        const res = await realFetch(url, { ...init, body: JSON.stringify(patchBody(body, route, conn)), signal: ctrl.signal });
+        const verdict = await judge(res, !!body.stream, s.retryEmpty);
+        return { ...verdict, res };
+    } catch (err) {
+        if (parent?.aborted) throw err; // the user pressed Stop: never retry
+        return { ok: false, error: timedOut ? `no answer after ${s.timeoutSec}s` : (err?.message || 'network error') };
+    } finally {
+        if (timer) clearTimeout(timer);
+    }
+}
+
+async function routed(realFetch, input, init) {
+    const s = settings();
+    const routes = activeRoutes(s);
+    const url = typeof input === 'string' ? input : input.url;
+    let body;
+    try { body = JSON.parse(init.body); } catch { return realFetch(input, init); }
+
+    let lastFail = null;
+    for (let i = 0; i < routes.length; i++) {
+        const route = routes[i];
+        const result = await tryRoute(realFetch, url, init, body, route, s.connections[route.conn], s);
+        if (result.ok) {
+            lastUsed = routeLabel(s, route);
+            if (i > 0) toastr.success(`Answered by ${routeLabel(s, route)}`, 'LunaRouter');
+            return result.res;
+        }
+        console.warn(`[LunaRouter] ${routeLabel(s, route)} failed: ${result.error}`);
+        lastFail = result;
+        if (i + 1 < routes.length) toastr.warning(`${routeLabel(s, route)} failed (${String(result.error).slice(0, 80)}). Trying ${routeLabel(s, routes[i + 1])}…`, 'LunaRouter');
+    }
+    toastr.error('Every model in LunaRouter failed. The last error is shown by SillyTavern.', 'LunaRouter');
+    if (lastFail?.res) return lastFail.res;      // let SillyTavern show its usual error
+    throw new TypeError(lastFail?.error || 'LunaRouter: no model answered');
+}
+
+const realFetch = window.fetch.bind(window);
+window.fetch = function (input, init = {}) {
+    try {
+        const url = typeof input === 'string' ? input : input?.url || '';
+        const s = settings();
+        if (s.enabled && init.method === 'POST' && typeof init.body === 'string' && url.split('?')[0].endsWith(GENERATE_PATH) && activeRoutes(s).length) {
+            return routed(realFetch, input, init);
+        }
+    } catch (err) { console.warn('[LunaRouter] skipped', err); }
+    return realFetch(input, init);
+};
+window.LunaRouter = { patchBody, defaults };
+
+// ---------------------------------------------------------------- the popup
+function h(tag, props = {}, ...kids) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(props)) {
+        if (k === 'class') el.className = v;
+        else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+        else if (v === true) el.setAttribute(k, '');
+        else if (v !== false && v != null) el.setAttribute(k, v);
+    }
+    for (const kid of kids.flat(Infinity)) if (kid != null && kid !== false) el.append(kid.nodeType ? kid : document.createTextNode(kid));
+    return el;
+}
+
+let secretState = {};
+const modelLists = [[], []];
+const modelStatus = ['', ''];
+
+async function loadSecretState() {
+    try { secretState = await (await fetch('/api/secrets/read', { method: 'POST', headers: ctx().getRequestHeaders() })).json(); } catch { secretState = {}; }
+}
+
+async function loadModels(draft, i, rerender) {
+    const conn = draft.connections[i];
+    const type = TYPES[conn.type];
+    if (!type.source) return;
+    modelStatus[i] = 'Loading…'; rerender();
+    try {
+        const body = { chat_completion_source: type.source };
+        if (type.source === 'custom') body.custom_url = conn.url.trim();
+        const res = await realFetch('/api/backends/chat-completions/status', { method: 'POST', headers: ctx().getRequestHeaders(), body: JSON.stringify(body) });
+        const data = await res.json();
+        const list = (Array.isArray(data) ? data : data.data) || [];
+        modelLists[i] = list.map((m) => m.id || m.name).filter(Boolean);
+        modelStatus[i] = modelLists[i].length ? `${modelLists[i].length} models found` : (data.error ? 'Could not load models. Is it running, and is the key saved in Settings?' : 'No models listed');
+    } catch { modelStatus[i] = 'Could not reach it.'; }
+    rerender();
+}
+
+function buildForm(draft, rerenderOuter) {
+    const root = h('div', { class: 'lr' });
+    const render = () => {
+        const keyNote = (i) => {
+            const t = TYPES[draft.connections[i].type];
+            if (!t.secret) return null;
+            const saved = !!secretState[t.secret];
+            return h('small', { class: saved ? 'lr-ok' : 'lr-warn' }, saved ? '✓ Key saved in Settings' : (draft.connections[i].type === 'custom' ? 'No key saved (fine for LM Studio)' : '⚠ No key saved yet. Add it in Settings (Advanced Options → Chat Completion Source → OpenRouter).'));
+        };
+        root.replaceChildren(...[
+            h('p', { class: 'lr-note' }, 'When a reply fails, LunaRouter tries your next model automatically. While it is ON, it chooses the model: the one picked in Settings is ignored. It works with Chat Completion (OpenRouter, LM Studio, other OpenAI-compatible servers).'),
+            h('label', { class: 'lr-row lr-main' }, h('b', {}, 'Use LunaRouter'),
+                (() => { const c = h('input', { type: 'checkbox', class: 'lr-switch', ...(draft.enabled ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.enabled = c.checked; }); return c; })()),
+
+            h('h4', {}, 'Connections (up to 2)'),
+            draft.connections.map((conn, i) => h('div', { class: 'lr-card' },
+                h('div', { class: 'lr-row' }, h('b', {}, `Connection ${i + 1}`),
+                    (() => {
+                        const sel = h('select', { class: 'text_pole' }, Object.entries(TYPES).map(([k, t]) => h('option', { value: k, ...(conn.type === k ? { selected: true } : {}) }, t.label)));
+                        sel.addEventListener('change', () => { conn.type = sel.value; modelLists[i] = []; modelStatus[i] = ''; render(); });
+                        return sel;
+                    })()),
+                conn.type === 'custom' ? h('div', { class: 'lr-row' }, h('span', {}, 'Address'),
+                    (() => { const u = h('input', { class: 'text_pole', type: 'text', placeholder: 'http://127.0.0.1:1234/v1', value: conn.url }); u.addEventListener('input', () => { conn.url = u.value; }); return u; })()) : null,
+                keyNote(i),
+                conn.type !== 'off' ? h('div', { class: 'lr-row' },
+                    h('button', { type: 'button', class: 'menu_button', onclick: () => loadModels(draft, i, render) }, 'Load models'),
+                    h('small', {}, modelStatus[i])) : null)),
+
+            h('h4', {}, 'Models (up to 4, tried in this order)'),
+            draft.routes.map((route, i) => h('div', { class: 'lr-route' },
+                (() => {
+                    const sel = h('select', { class: 'text_pole lr-order', title: 'Order' }, draft.routes.map((_, k) => h('option', { value: k, ...(k === i ? { selected: true } : {}) }, `${k + 1}${['st', 'nd', 'rd', 'th'][k]}`)));
+                    sel.addEventListener('change', () => { const j = Number(sel.value); [draft.routes[i], draft.routes[j]] = [draft.routes[j], draft.routes[i]]; render(); });
+                    return sel;
+                })(),
+                (() => {
+                    const sel = h('select', { class: 'text_pole', title: 'Connection' }, draft.connections.map((c, k) => h('option', { value: k, ...(route.conn === k ? { selected: true } : {}) }, `Connection ${k + 1}${c.type === 'off' ? ' (not used)' : ` · ${TYPES[c.type].label.replace(/ \(.*\)$/, '')}`}`)));
+                    sel.addEventListener('change', () => { route.conn = Number(sel.value); render(); });
+                    return sel;
+                })(),
+                (() => {
+                    const listId = `lr-models-${i}`;
+                    const wrap = h('div', { class: 'lr-model' },
+                        h('input', { class: 'text_pole', type: 'text', list: listId, placeholder: 'Model name', value: route.model }),
+                        h('datalist', { id: listId }, (modelLists[route.conn] || []).map((m) => h('option', { value: m }))));
+                    wrap.querySelector('input').addEventListener('input', (e) => { route.model = e.target.value; });
+                    return wrap;
+                })(),
+                h('button', { type: 'button', class: 'menu_button lr-x', title: 'Remove', onclick: () => { draft.routes.splice(i, 1); render(); } }, '✕'))),
+            draft.routes.length < MAX_ROUTES ? h('button', { type: 'button', class: 'menu_button lr-add', onclick: () => { draft.routes.push({ conn: 0, model: '' }); render(); } }, '+ Add model') : null,
+            !draft.routes.length ? h('p', { class: 'lr-note' }, 'No models yet. Add one, choose its connection and type or pick the model name.') : null,
+
+            h('h4', {}, 'Options'),
+            h('label', { class: 'lr-row' }, h('span', {}, 'Treat an empty reply as a failure'),
+                (() => { const c = h('input', { type: 'checkbox', ...(draft.retryEmpty ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.retryEmpty = c.checked; }); return c; })()),
+            h('label', { class: 'lr-row' }, h('span', {}, 'Give up on a model after (seconds, 0 = never)'),
+                (() => { const n = h('input', { class: 'text_pole lr-num', type: 'number', min: 0, max: 600, value: draft.timeoutSec }); n.addEventListener('input', () => { draft.timeoutSec = Math.max(0, Number(n.value) || 0); }); return n; })()),
+            lastUsed ? h('p', { class: 'lr-note' }, `Last reply came from: ${lastUsed}`) : null,
+        ].flat(Infinity).filter(Boolean));
+    };
+    render();
+    return root;
+}
+
+async function openRouterPopup() {
+    const { callGenericPopup, POPUP_TYPE, POPUP_RESULT, saveSettingsDebounced } = ctx();
+    await loadSecretState();
+    const current = settings();
+    const draft = structuredClone({ enabled: current.enabled, connections: current.connections, routes: current.routes, retryEmpty: current.retryEmpty, timeoutSec: current.timeoutSec });
+    const content = h('div', { class: 'lr-popup' }, h('h3', {}, '🌙 LunaRouter'), buildForm(draft));
+    const result = await callGenericPopup(content, POPUP_TYPE.CONFIRM, '', { okButton: 'Save', cancelButton: 'Cancel', wide: true, allowVerticalScrolling: true });
+    if (result !== POPUP_RESULT.AFFIRMATIVE) return;
+    Object.assign(current, draft);
+    saveSettingsDebounced();
+    updateBadge();
+    const n = activeRoutes(current).length;
+    toastr.success(current.enabled ? (n ? `LunaRouter is ON with ${n} model${n > 1 ? 's' : ''}.` : 'LunaRouter is ON, but no usable model is set yet.') : 'LunaRouter saved (OFF).', 'LunaRouter');
+}
+
+function updateBadge() {
+    const s = settings();
+    document.querySelectorAll('.luna-router-btn .lr-badge').forEach((b) => {
+        b.textContent = s.enabled ? 'ON' : 'OFF';
+        b.classList.toggle('lr-badge-on', s.enabled);
+    });
+}
+
+/** Adds the LunaRouter button right under the "Connect" button of the API panel. */
+function mountButton() {
+    if (document.querySelector('.luna-router-btn')) return true;
+    const connect = [...document.querySelectorAll('#openai_api .api_button')].find((el) => el.textContent.trim() === 'Connect');
+    if (!connect) return false;
+    const row = connect.parentElement;
+    const wrap = h('div', { class: 'luna-router-btn' },
+        h('div', { class: 'menu_button menu_button_icon lr-open', onclick: openRouterPopup, title: 'Automatic fallback between models and APIs' },
+            h('i', { class: 'fa-solid fa-route' }), h('span', {}, 'LunaRouter'), h('span', { class: 'lr-badge' }, 'OFF')));
+    row.after(wrap);
+    updateBadge();
+    return true;
+}
+
+jQuery(() => {
+    settings();
+    const { SlashCommandParser, SlashCommand, SlashCommandArgument, ARGUMENT_TYPE } = ctx();
+    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
+        name: 'luna-router',
+        helpString: 'Turns LunaRouter on or off, or opens its window: /luna-router on | off | open',
+        unnamedArgumentList: [SlashCommandArgument.fromProps({ description: 'on, off or open', typeList: [ARGUMENT_TYPE.STRING], isRequired: false })],
+        callback: async (_args, value) => {
+            const v = String(value || 'open').trim().toLowerCase();
+            if (v === 'on' || v === 'off') { settings().enabled = v === 'on'; ctx().saveSettingsDebounced(); updateBadge(); return `LunaRouter ${v}`; }
+            openRouterPopup();
+            return '';
+        },
+    }));
+    // The API panel is built early but its buttons may appear a moment later: retry briefly.
+    let tries = 0;
+    const timer = setInterval(() => { if (mountButton() || ++tries > 40) clearInterval(timer); }, 500);
+});

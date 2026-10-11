@@ -1,0 +1,13 @@
+{
+    "display_name": "Zenith UI",
+    "loading_order": 998,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css",
+    "generate_interceptor": "zenithUiInterceptor",
+    "author": "ZenithTavern",
+    "version": "1.0.0",
+    "homePage": "",
+    "auto_update": false
+}

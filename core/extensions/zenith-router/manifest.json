@@ -1,0 +1,12 @@
+{
+    "display_name": "LunaRouter",
+    "loading_order": 5,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "ZenithTavern",
+    "version": "1.0.0",
+    "homePage": "",
+    "auto_update": false
+}

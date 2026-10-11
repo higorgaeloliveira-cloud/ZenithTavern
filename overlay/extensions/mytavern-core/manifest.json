@@ -1,0 +1,13 @@
+{
+    "display_name": "ZenithTavern Core",
+    "loading_order": 100,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css",
+    "generate_interceptor": "myTavernInterceptor",
+    "author": "You",
+    "version": "0.1.0",
+    "homePage": "",
+    "auto_update": false
+}

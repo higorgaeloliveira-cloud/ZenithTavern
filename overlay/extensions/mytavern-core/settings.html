@@ -1,0 +1,21 @@
+<div class="mytavern-settings">
+    <div class="inline-drawer">
+        <div class="inline-drawer-toggle inline-drawer-header">
+            <b>ZenithTavern Core</b>
+            <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+        </div>
+        <div class="inline-drawer-content">
+            <label class="checkbox_label" for="mytavern_enabled">
+                <input id="mytavern_enabled" type="checkbox" />
+                <span>Add my note to every message</span>
+            </label>
+            <label for="mytavern_note">Note sent to the AI (a hidden system message near the end of the chat):</label>
+            <textarea id="mytavern_note" class="text_pole textarea_compact" rows="3"
+                placeholder="Example: Keep replies under 200 words."></textarea>
+            <div class="mytavern-row">
+                <input id="mytavern_ping" class="menu_button" type="button" value="Test server plugin" />
+                <span id="mytavern_ping_result"></span>
+            </div>
+        </div>
+    </div>
+</div>

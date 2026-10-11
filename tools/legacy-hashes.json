@@ -1,0 +1,18 @@
+{
+ ".gitignore": "f88903afae0418b05c508809ac8d3f732d1bfa40",
+ "LICENSE": "a2f9ffbf32eeb6284afa81bc4fb4c27b80d044e9",
+ "README.md": "76ae0ad02e0b8ad08d26cd2c88dfcfb0d8a385d7",
+ "Repair.bat": "f273168e3c63c794ed58689d8f5a272d5c02336b",
+ "Repair.sh": "2b5256cfed2a81534f98c97e74d1dcfd7ac8ab8b",
+ "Start.bat": "0e2cd9851a16316ae95252227b3d67d11616a711",
+ "Start.sh": "f9885fccde244e83d1a22c4d8da09c6e0c03f1ab",
+ "overlay/extensions/mytavern-core/index.js": "9ea170dc89aaf0d4e86785cdb0142abec5721326",
+ "overlay/extensions/mytavern-core/manifest.json": "60f750f0885ec721984505440b86c88c6886ff29",
+ "overlay/extensions/mytavern-core/settings.html": "abe160a86742d1bbc20780fe0ad79c86baabd26c",
+ "overlay/extensions/mytavern-core/style.css": "632df8ee12faa0c37c336bde0f55f9685c9580df",
+ "overlay/extensions/zenith-welcome/index.js": "a864de98e146ea92440e447ac091bae196842621",
+ "overlay/extensions/zenith-welcome/manifest.json": "4cf31b45b2eed5d0df885018eaf0ca417ed71fca",
+ "overlay/extensions/zenith-welcome/style.css": "25295359596294d3f45eeb06070bc07eac2a3acd",
+ "overlay/plugins/mytavern-server/index.mjs": "8dd9ba4ac8cd89228cccf4d6fb292802b617406a",
+ "tavern.config.json": "e195fbe6ac881fa2ad2ab69031378a682573c538"
+}

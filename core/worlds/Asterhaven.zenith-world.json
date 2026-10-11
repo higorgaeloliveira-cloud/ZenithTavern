@@ -1,0 +1,219 @@
+{
+  "schema_version": "1.0",
+  "project": "ZenithTavern",
+  "world": {
+    "id": "asterhaven",
+    "name": "Asterhaven",
+    "university": {
+      "id": "asterhaven_university",
+      "name": "Asterhaven University",
+      "status": "provisional"
+    },
+    "setting": {
+      "era": "contemporary",
+      "genre_tones": [
+        "slice of life",
+        "romance",
+        "comedy",
+        "interpersonal drama",
+        "academic life",
+        "friendship",
+        "career ambitions",
+        "occasional mystery"
+      ],
+      "climate": {
+        "status": "proposed",
+        "description": "Temperate coastal climate with rainy days, mild-to-cool winters, warm summers, and a harbor that remains part of daily life year-round."
+      }
+    }
+  },
+  "world_info_categories": [
+    {
+      "id": "00_core_setting",
+      "name": "Core Setting",
+      "purpose": "Town identity, contemporary era, narrative tone, coexistence of humans and demihumans, and fundamental world rules."
+    },
+    {
+      "id": "10_geography_locations",
+      "name": "Geography and Locations",
+      "purpose": "Districts, campus buildings, dormitories, cafes, workplaces, apartments, shops, harbor, and travel between them."
+    },
+    {
+      "id": "20_university_education",
+      "name": "University and Education",
+      "purpose": "Faculties, majors, courses, enrollment, academic calendars, campus life, and class schedules."
+    },
+    {
+      "id": "30_species_society",
+      "name": "Species and Society",
+      "purpose": "Demihuman biology, common species, rarer lineages, everyday customs, and accommodations for physical differences."
+    },
+    {
+      "id": "40_people_connections",
+      "name": "People and Connections",
+      "purpose": "Relationships, households, shared workplaces, classmates, recurring encounters, and character-specific lore."
+    },
+    {
+      "id": "50_events_seasonal_lore",
+      "name": "Events and Seasonal Lore",
+      "purpose": "Campus festivals, local traditions, examinations, holidays, concerts, markets, and community events."
+    },
+    {
+      "id": "60_dynamic_story_state",
+      "name": "Dynamic Story State",
+      "purpose": "Current date, current location, active events, temporary whereabouts, and developments that can change during roleplay."
+    }
+  ],
+  "entries": [
+    {
+      "id": "world_core",
+      "category": "00_core_setting",
+      "name": "Core Setting",
+      "activation": {
+        "mode": "always"
+      },
+      "keys": [],
+      "content": "Asterhaven is a contemporary coastal college town built around a substantial university and the communities that have grown alongside it. Its identity comes from the interaction of academic life, independent businesses, residential neighborhoods, a working waterfront, local traditions, and the personal lives of its residents.\n\nThe setting supports slice-of-life stories, romance, comedy, interpersonal drama, friendship, academic pressure, career ambitions, and occasional mystery. Everyday life should feel grounded and recognizable, even when individual characters possess unusual biological traits or belong to rare demihuman lineages.\n\nHumans and demihumans live together as ordinary members of society. Demihumans may possess animal ears, tails, horns, unusual eyes, enhanced senses, specialized physiology, or more distinctive anatomical features depending on their lineage. Their presence is an established part of daily life, not an extraordinary event in itself.\n\nAsterhaven is neither a perfect utopia nor a society defined primarily by prejudice. Its residents have varied personalities, circumstances, values, and relationships. Discrimination, social tension, and cultural misunderstandings may occur, but they do not automatically define the lives of demihuman characters.\n\nThe town exists independently of any player character. Residents have their own routines, responsibilities, relationships, and goals. They continue to attend classes, work shifts, visit friends, rest, commute, and participate in community life whether or not the player is present.\n\nCharacter behavior must remain consistent with established personality, knowledge, physical capabilities, commitments, and relationships. Events should follow naturally from the world rather than being introduced solely to force a particular encounter or romantic outcome.\n\nLocations, schedules, relationships, and ongoing events must remain internally consistent. Permanent character facts must not change merely because a scene would be easier if they did."
+    },
+    {
+      "id": "town_asterhaven",
+      "category": "10_geography_locations",
+      "name": "Town Overview",
+      "activation": {
+        "mode": "keyword",
+        "priority": 50
+      },
+      "keys": [
+        "Asterhaven",
+        "the town",
+        "downtown",
+        "coastal town",
+        "around town"
+      ],
+      "content": "Asterhaven is a coastal town of sufficient size to support a diverse university, multiple residential districts, a substantial service economy, healthcare facilities, public transport, independent businesses, and an active social scene. It is large enough that not everyone knows everyone else, but interconnected enough that people can develop overlapping social circles and become familiar faces at recurring locations.\n\nThe university is one of the town's major institutions, influencing its economy, housing, public spaces, nightlife, and seasonal rhythms. Students are prominent in certain districts, but Asterhaven is not exclusively a student town. Long-term residents, university employees, healthcare workers, business owners, families, and visitors also form part of its population.\n\nThe coastline is an important feature of local identity. The waterfront offers opportunities for recreation, dining, walks, local commerce, and community gatherings. The town also contains busy commercial streets, quieter residential areas, student housing, and practical destinations such as grocery stores, pharmacies, clinics, and transit stops.\n\nTravel between locations takes time. Characters should not move instantly between distant districts. Weather, transportation, walking distance, opening hours, and individual commitments can influence whether a particular visit is plausible.\n\nThe town's exact street names, distances, business addresses, transit routes, and district boundaries must be established in dedicated geography entries before being treated as fixed canon."
+    },
+    {
+      "id": "demihuman_society",
+      "category": "30_species_society",
+      "name": "Humans and Demihumans",
+      "activation": {
+        "mode": "keyword",
+        "priority": 50
+      },
+      "keys": [
+        "demihuman",
+        "kemonomimi",
+        "human",
+        "species",
+        "animal ears",
+        "tail",
+        "horns"
+      ],
+      "content": "Humans and demihumans coexist throughout Asterhaven. Demihuman traits are familiar features of the population and do not, by themselves, make a person a celebrity, an outsider, or a subject of public alarm.\n\nMany demihumans have an otherwise human appearance with additional features such as animal ears, tails, horns, specialized eyes, fangs, or altered senses. Other lineages have more substantial anatomical differences. The term demihuman describes a broad range of people, not one uniform species.\n\nDifferent lineages may have different biological needs, abilities, sensory experiences, or practical considerations. Such differences should be described consistently when established for a character or species. A trait should not automatically dictate someone's personality, morality, intelligence, or social role.\n\nRare lineages may attract curiosity or attention, but rarity does not automatically result in exclusion or hostility. Individual experiences depend on circumstances, personalities, local culture, and the behavior of the people involved.\n\nPublic buildings, residences, workplaces, healthcare services, and university facilities operate within a society accustomed to human and demihuman residents. Specific accommodations and biological requirements will be defined in relevant lore entries rather than assumed universally."
+    },
+    {
+      "id": "location_student_district",
+      "category": "10_geography_locations",
+      "name": "Student Residential District",
+      "activation": {
+        "mode": "keyword",
+        "priority": 40
+      },
+      "keys": [
+        "student residential district",
+        "student apartments",
+        "student housing",
+        "dormitories"
+      ],
+      "content": "The student residential district contains university residences, shared apartments, laundromats, inexpensive restaurants, convenience stores, and everyday student hangouts. Individual dormitories and apartment buildings will have their own identities and resident networks. Exact addresses and boundaries remain to be established."
+    },
+    {
+      "id": "location_harbor",
+      "category": "10_geography_locations",
+      "name": "Harborfront",
+      "activation": {
+        "mode": "keyword",
+        "priority": 40
+      },
+      "keys": [
+        "harborfront",
+        "harbor",
+        "waterfront",
+        "promenade",
+        "marina",
+        "coast"
+      ],
+      "content": "The harborfront includes harbor facilities, a public promenade, waterfront dining, viewpoints, and access to the coast. It can serve as a setting for dates, solitary walks, local work, public events, and quieter conversations. Exact businesses, routes, and addresses remain to be established."
+    },
+    {
+      "id": "location_university_quarter",
+      "category": "10_geography_locations",
+      "name": "University Quarter",
+      "activation": {
+        "mode": "keyword",
+        "priority": 40
+      },
+      "keys": [
+        "university quarter",
+        "campus",
+        "lecture hall",
+        "faculty building",
+        "campus cafe",
+        "university library"
+      ],
+      "content": "The university quarter is the academic and student-life center. It includes lecture halls, faculty buildings, laboratories, libraries, student services, study spaces, campus cafes, and university administration. Its busiest periods follow class schedules, examination periods, and campus events. Specific buildings and their locations remain to be established."
+    },
+    {
+      "id": "location_old_town",
+      "category": "10_geography_locations",
+      "name": "Old Town and Commercial Streets",
+      "activation": {
+        "mode": "keyword",
+        "priority": 40
+      },
+      "keys": [
+        "old town",
+        "commercial street",
+        "bookstore",
+        "independent cafe",
+        "local shops",
+        "downtown shops"
+      ],
+      "content": "Old Town and the commercial streets contain independent cafes, restaurants, bookstores, clothing shops, small services, and established local businesses. These places support recurring encounters among students, employees, and permanent residents. Specific business names, addresses, and opening hours remain to be established."
+    },
+    {
+      "id": "location_residential_neighborhoods",
+      "category": "10_geography_locations",
+      "name": "Residential Neighborhoods",
+      "activation": {
+        "mode": "keyword",
+        "priority": 35
+      },
+      "keys": [
+        "residential neighborhood",
+        "local neighborhood",
+        "houses",
+        "residential apartments"
+      ],
+      "content": "Residential neighborhoods contain houses, residential apartments, neighborhood shops, parks, and everyday amenities. They accommodate residents whose lives are not centered on university activities. Exact neighborhood names and boundaries remain to be established."
+    },
+    {
+      "id": "world_continuity_rules",
+      "category": "00_core_setting",
+      "name": "Encounter and Continuity Rules",
+      "activation": {
+        "mode": "always"
+      },
+      "keys": [],
+      "content": "Characters have stable residences, regular obligations, established relationships, and individual schedules. These details constrain where they can plausibly be encountered.\n\nBefore introducing a known character into a scene, consider: current location if known; time of day; work, class, sleep, travel, and other commitments; realistic travel time; access to private or restricted locations; and whether the character could know about the event or information that prompted their arrival.\n\nA character's regular schedule establishes a routine, not an unbreakable guarantee that they are always in the same place. Explicit current story state takes precedence over an ordinary routine when a believable reason for the deviation exists.\n\nCharacters must not spontaneously appear in classrooms they do not attend, workplaces where they have no business, or private residences they have no reason to visit. Coincidental encounters are possible, but should be credible and not serve as the default explanation for every meeting.\n\nShared workplaces, courses, residences, social circles, and scheduled events provide natural opportunities for recurring encounters. Characters should also have time away from the player and from one another.\n\nPermanent canon, recurring schedules, and temporary story state are distinct. A temporary location update must not overwrite a character's permanent home or employment. Changes to relationships, employment, enrollment, or residence should persist only when established through the story or an explicit world update."
+    }
+  ],
+  "design_notes": [
+    "Asterhaven is the selected working town name.",
+    "Asterhaven University remains a provisional name.",
+    "The temperate coastal climate is a proposal, not finalized canon.",
+    "District concepts are established at a high level; exact street names, addresses, distances, transit routes, business names, and opening hours are not yet defined.",
+    "The initial cast will contain approximately 10-15 original characters. Individual character files are intentionally not included in this file.",
+    "This is a portable ZenithTavern world-info JSON format, not yet a SillyTavern-native World Info export."
+  ]
+}

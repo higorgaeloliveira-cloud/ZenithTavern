@@ -1,0 +1,135 @@
+/* Fixed things are placed with top: calc(100dvh - ...) instead of bottom: because SillyTavern's narrow layout makes <html> the
+   containing block (height 0), which would push bottom-anchored elements off-screen.
+   Zenith Phone - iPhone 11 layout. Design size: 458 x 940 (screen 414 x 896 + 22 bezel), scaled to fit. */
+.zph-fab { position: fixed; right: 14px; top: calc(100vh - 122px); top: calc(100dvh - 122px); z-index: 4600; width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid var(--SmartThemeBorderColor, #555); background: var(--SmartThemeBlurTintColor, #222);
+  color: var(--SmartThemeBodyColor, #ddd); font-size: 17px; cursor: pointer; opacity: .75; display: flex; align-items: center; justify-content: center; }
+.zph-fab:hover { opacity: 1; }
+.zph-fab.zph-btn-on { border-color: var(--zenith-accent, #f5c451); color: var(--zenith-accent, #f5c451); box-shadow: 0 0 10px color-mix(in srgb, var(--zenith-accent, #f5c451) 53%, transparent); opacity: 1; }
+
+.zph-wrap { position: fixed; right: 20px; top: calc(100vh - 1070px); top: calc(100dvh - 1070px); width: 458px; height: 940px; z-index: 4500; display: none;
+  transform-origin: bottom right; transform: scale(var(--zph-scale, 1)); pointer-events: none; }
+.zph-wrap.zph-open { display: block; }
+.zph-wrap.zph-open .zph-phone { animation: zph-up .45s cubic-bezier(.2, .85, .25, 1); }
+@keyframes zph-up { from { transform: translateY(70%); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.zph-phone { pointer-events: auto; position: relative; width: 458px; height: 940px; border-radius: 68px; background: #08080a;
+  box-shadow: 0 0 0 2px var(--zph-ring, #3a3a40), 0 0 0 4px var(--zph-ring2, #17171a), 0 30px 80px #000a, inset 0 0 0 2px #1d1d22; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, "Segoe UI", sans-serif; color: #fff; user-select: none; }
+
+/* physical buttons */
+.zph-silent, .zph-vol, .zph-side { position: absolute; background: var(--zph-btn, #2b2b30); border-radius: 3px; display: block; border: 0; padding: 0; }
+.zph-silent { left: -6px; top: 150px; width: 4px; height: 34px; }
+.zph-vol { left: -6px; width: 4px; height: 62px; }
+.zph-vol-up { top: 220px; } .zph-vol-dn { top: 296px; }
+.zph-side { right: -6px; top: 250px; width: 4px; height: 100px; cursor: pointer; }
+.zph-side:hover { background: var(--zenith-accent, #f5c451); }
+.zph-wall::after { content: ""; position: absolute; inset: 0; background: #000; opacity: var(--zph-dim, 0); pointer-events: none; }
+
+.zph-screen { position: absolute; inset: 22px; border-radius: 46px; overflow: hidden; background: #000; isolation: isolate; }
+.zph-wall { position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(120% 60% at 15% 12%, #e0a82e88, transparent 60%), radial-gradient(90% 55% at 90% 85%, #9a4f1a77, transparent 65%),
+    linear-gradient(165deg, #1c150a 0%, #33260f 45%, #130e06 100%); }
+
+/* notch (iPhone 11: wide, rounded bottom) */
+.zph-notch { position: absolute; z-index: 30; left: 50%; top: 0; width: 210px; height: 30px; margin-left: -105px; background: #000;
+  border-radius: 0 0 20px 20px; }
+.zph-notch::before, .zph-notch::after { content: ""; position: absolute; top: 0; width: 14px; height: 14px; background: transparent; }
+.zph-notch::before { left: -14px; border-top-right-radius: 14px; box-shadow: 5px -5px 0 5px #000; }
+.zph-notch::after { right: -14px; border-top-left-radius: 14px; box-shadow: -5px -5px 0 5px #000; }
+.zph-speaker { position: absolute; left: 50%; top: 9px; width: 56px; height: 6px; margin-left: -28px; border-radius: 4px; background: #1a1a1d; }
+.zph-cam { position: absolute; left: 50%; top: 7px; width: 10px; height: 10px; margin-left: 46px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #35405a, #0b0d14 70%); }
+
+/* status bar */
+.zph-status { position: absolute; z-index: 25; left: 0; right: 0; top: 0; height: 44px; display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 13px 30px 0 34px; font-size: 16px; font-weight: 600; letter-spacing: -.2px; pointer-events: none; }
+.zph-time-s { width: 70px; text-align: center; margin-left: -4px; }
+.zph-status-r { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+
+/* lock screen */
+.zph-lock { position: absolute; z-index: 10; inset: 0; transition: transform .5s cubic-bezier(.3, .8, .25, 1), opacity .35s ease .1s; }
+.zph-unlocked .zph-lock { transform: translateY(-105%); opacity: 0; pointer-events: none; }
+.zph-lockicon { position: absolute; top: 64px; left: 0; right: 0; display: flex; justify-content: center; opacity: .9; }
+.zph-date { position: absolute; top: 112px; left: 0; right: 0; text-align: center; font-size: 20px; font-weight: 500; opacity: .85; }
+.zph-time-big { position: absolute; top: 132px; left: 0; right: 0; text-align: center; font-size: 96px; font-weight: 300; letter-spacing: -2px; line-height: 1.1;
+  font-variant-numeric: tabular-nums; }
+.zph-hint { position: absolute; bottom: 44px; left: 0; right: 0; text-align: center; font-size: 13px; opacity: .55; animation: zph-pulse 2.4s ease-in-out infinite; }
+@keyframes zph-pulse { 50% { opacity: .25; } }
+.zph-quick-row { position: absolute; bottom: 74px; left: 0; right: 0; padding: 0 46px; display: flex; justify-content: space-between; }
+.zph-quick { width: 50px; height: 50px; border-radius: 50%; background: #ffffff26; backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; cursor: default; }
+
+/* home screen */
+.zph-home { position: absolute; z-index: 5; inset: 0; padding: 70px 22px 0; transform: scale(.94); opacity: 0; pointer-events: none; transition: transform .5s cubic-bezier(.3, .8, .25, 1), opacity .4s ease; }
+.zph-unlocked .zph-home { transform: none; opacity: 1; pointer-events: auto; }
+.zph-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px 0; justify-items: center; }
+.zph-app { background: none; border: 0; color: #fff; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; font: inherit; width: 76px; }
+.zph-app-icon { position: relative; width: 60px; height: 60px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 27px; color: #fff; box-shadow: inset 0 0 0 1px #ffffff1f; }
+.zph-dot { display: none; position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: #34c759; border: 2px solid #1c150a; }
+.zph-dot.zph-on { display: block; }
+.zph-app-name { font-size: 11.5px; line-height: 1.15; text-align: center; }
+.zph-dock { position: absolute; left: 12px; right: 12px; bottom: 28px; height: 90px; border-radius: 34px; background: #ffffff2e; backdrop-filter: blur(20px); }
+
+/* home bar: click it to unlock */
+.zph-homebar { position: absolute; z-index: 40; left: 50%; bottom: 0; width: 220px; height: 30px; margin-left: -110px; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; }
+.zph-homebar i { display: block; width: 144px; height: 5px; border-radius: 3px; background: #fff; transition: transform .15s, opacity .15s; opacity: .9; }
+.zph-homebar:hover i { transform: scaleX(1.08) scaleY(1.3); opacity: 1; }
+.zph-unlocked .zph-homebar { cursor: default; }
+.zph-unlocked .zph-homebar:hover i { transform: none; }
+
+/* apps */
+.zph-appscreen { position: absolute; z-index: 8; inset: 0; background: #0f0f14; display: flex; flex-direction: column; opacity: 0; pointer-events: none;
+  transform: scale(.88); border-radius: 46px; transition: transform .35s cubic-bezier(.3, .8, .25, 1), opacity .25s ease; }
+.zph-in-app .zph-appscreen { opacity: 1; pointer-events: auto; transform: none; }
+.zph-apphead { flex: none; padding: 52px 20px 8px; font-size: 22px; color: #fff; }
+.zph-app-title { font-weight: 700; letter-spacing: -.3px; }
+.zph-appbody { flex: 1; overflow-y: auto; padding: 0 14px 44px; font-size: 14px; scrollbar-width: thin; }
+.zph-appbody .zp-card { background: #1b1b22; border-color: #2c2c36; }
+.zph-appbody .zp-on { background: color-mix(in srgb, var(--zenith-accent, #f5c451) 20%, transparent); border-color: var(--zenith-accent, #f5c451); }
+.zph-soon { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 90px 28px; opacity: .8; }
+.zph-soon i { font-size: 34px; color: var(--zenith-accent, #f5c451); }
+.zph-soon p { margin: 0; font-size: 13px; opacity: .75; }
+.zph-appscreen::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 46px; border-radius: 0 0 46px 46px; pointer-events: none;
+  background: linear-gradient(transparent, #0f0f14 70%); }
+
+/* left-hand side */
+.zph-wrap.zph-left { right: auto; left: 20px; transform-origin: bottom left; }
+.zph-fab.zph-left { right: auto; left: 14px; }
+
+/* no app names */
+.zph-nolabels .zph-app-name { display: none; }
+
+/* dock */
+.zph-dock { display: flex; align-items: center; justify-content: center; gap: 22px; }
+.zph-dock .zph-app { width: auto; }
+
+/* Settings app */
+.zph-settings { padding-bottom: 12px; }
+.zph-set { margin: 14px 0 6px; }
+.zph-set-title { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; opacity: .55; padding: 0 12px 6px; }
+.zph-set-group { background: #1b1b22; border-radius: 12px; overflow: hidden; }
+.zph-set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; border-top: 1px solid #2a2a33; min-height: 28px; }
+.zph-set-row:first-child { border-top: 0; }
+.zph-set-label { display: flex; flex-direction: column; min-width: 0; }
+.zph-set-label small { opacity: .55; font-size: 11.5px; margin-top: 2px; }
+.zph-set-pad { padding: 12px 14px; }
+.zph-swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.zph-swatch { width: 56px; height: 90px; border-radius: 12px; border: 2px solid transparent; padding: 0; cursor: pointer; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px #ffffff1f; }
+.zph-swatch-tool { background: #2a2a33; position: relative; font-size: 18px; }
+.zph-swatch-tool input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+.zph-swatch.zph-sel { border-color: var(--zenith-accent, #f5c451); }
+.zph-seg { display: flex; background: #2a2a33; border-radius: 9px; padding: 2px; flex: none; }
+.zph-seg button { border: 0; background: none; color: #fff; padding: 5px 11px; border-radius: 7px; cursor: pointer; font-size: 13px; opacity: .7; }
+.zph-seg .zph-seg-on { background: var(--zenith-accent, #f5c451); opacity: 1; }
+.zph-switch { position: relative; width: 46px; height: 28px; flex: none; }
+.zph-switch input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 1; }
+.zph-switch span { position: absolute; inset: 0; background: #3a3a44; border-radius: 14px; transition: background .2s; }
+.zph-switch span::after { content: ""; position: absolute; left: 2px; top: 2px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.zph-switch input:checked + span { background: #34c759; }
+.zph-switch input:checked + span::after { transform: translateX(18px); }
+.zph-range-wrap { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; }
+.zph-range { width: 140px; accent-color: var(--zenith-accent, #f5c451); }
+.zph-range-wrap output { width: 40px; text-align: right; font-variant-numeric: tabular-nums; opacity: .7; font-size: 13px; }
+.zph-frames { display: flex; gap: 8px; }
+.zph-frame { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; padding: 0; cursor: pointer; box-shadow: inset 0 0 0 1px #0006; }
+.zph-frame.zph-sel { border-color: var(--zenith-accent, #f5c451); outline: 2px solid #0f0f14; outline-offset: -4px; }
+.zph-reset { width: 100%; padding: 10px; border-radius: 10px; border: 0; background: #2a2a33; color: #ff6b6b; cursor: pointer; font-size: 14px; }
+.zph-about { text-align: center; opacity: .4; font-size: 12px; margin: 14px 0 0; }

@@ -1,0 +1,12 @@
+{
+    "display_name": "Zenith Phone",
+    "loading_order": 999,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "ZenithTavern",
+    "version": "0.1.0",
+    "homePage": "",
+    "auto_update": false
+}

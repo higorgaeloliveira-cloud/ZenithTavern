@@ -1,0 +1,74 @@
+:root { --zenith-accent: #f5c451; --zenith-accent-2: #ffe08a; } /* ZenithTavern gold. The Zenith Gold theme and every Zenith panel read these. */
+/* ---------- top bar: hide what people tend to break ---------- */
+body.zenith-ui #ai-config-button,        /* AI Response Configuration */
+body.zenith-ui #advanced-formatting-button, /* AI Response Formatting */
+body.zenith-ui #user-settings-button,    /* User Settings (merged into Settings) */
+body.zenith-ui #backgrounds-button,      /* Change Background Image (will be automatic) */
+body.zenith-ui #extensions-settings-button { /* Extensions (merged into Settings) */
+    display: none !important;
+}
+
+/* ---------- icons ---------- */
+body.zenith-ui #API-status-top::before { content: "\f013"; }                          /* gear */
+body.zenith-ui #persona-management-button .drawer-icon::before { content: "\f2c2"; }  /* id card */
+body.zenith-ui #rightNavDrawerIcon::before { content: "\f0ca"; }                      /* list */
+#zenith_home { cursor: pointer; }
+#zenith_home .drawer-icon { opacity: .75; }
+#zenith_home:hover .drawer-icon { opacity: 1; }
+
+/* ---------- the merged Settings menu ---------- */
+body.zenith-ui .zenith-merged { position: relative; width: 100%; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--SmartThemeBorderColor, #444); }
+body.zenith-ui #zenith_adv_toggle { position: absolute; right: .6em; top: .6em; z-index: 5; }
+body.zenith-ui #zenith_adv_toggle label { cursor: pointer; display: flex; gap: 6px; align-items: center; }
+
+/* API pickers only show with "Advanced Options" */
+body.zenith-ui #rm_api_block:not(.zenith-adv) #main-API-selector-block,
+body.zenith-ui #rm_api_block:not(.zenith-adv) #title_api,
+body.zenith-ui #rm_api_block:not(.zenith-adv) #openai_api > h4:first-of-type,
+body.zenith-ui #rm_api_block:not(.zenith-adv) #chat_completion_source {
+    display: none !important;
+}
+
+/* Connection profile, post-processing and auto-connect are noise for most people */
+body.zenith-ui #rm_api_block:not(.zenith-adv) div:has(> div > #connection_profile_spinner),
+body.zenith-ui #prompt_post_processing_form,
+body.zenith-ui div:has(> label > #auto-connect-checkbox) {
+    display: none !important;
+}
+
+/* User settings: keep only the useful parts */
+body.zenith-ui #user-settings-block [name="UserSettingsRowTwo"],       /* account buttons + search */
+body.zenith-ui #user-settings-block #version_display,
+body.zenith-ui #user-settings-block a.notes-link,
+body.zenith-ui #UI-Customization,
+body.zenith-ui #power-user-option-checkboxes > :not([name="ChatMessageHandlingToggles"]),
+body.zenith-ui [name="ChatMessageHandlingToggles"] label,
+body.zenith-ui [name="ChatMessageHandlingToggles"] div:not(:has(#chat_truncation)):not(.inline-drawer-header),
+body.zenith-ui [name="ChatMessageHandlingToggles"] .inline-drawer,
+body.zenith-ui #user-settings-block div:has(> #avatar_style),
+body.zenith-ui #user-settings-block div:has(> #toastr_position),
+body.zenith-ui #user-settings-block label:has(> #zoomed_avatar_magnification),
+body.zenith-ui #user-settings-block label:has(> #reduced_motion),
+body.zenith-ui #user-settings-block label:has(> #expandMessageActions),
+body.zenith-ui #user-settings-block label:has(> #enableZenSliders),
+body.zenith-ui #user-settings-block label:has(> #enableLabMode),
+body.zenith-ui #user-settings-block label:has(> #messageTimerEnabled),
+body.zenith-ui #user-settings-block label:has(> #messageTimestampsEnabled),
+body.zenith-ui #user-settings-block label:has(> #messageModelIconEnabled),
+body.zenith-ui #user-settings-block label:has(> #mesIDDisplayEnabled),
+body.zenith-ui #user-settings-block label:has(> #messageTokensEnabled),
+body.zenith-ui #user-settings-block label:has(> #show_swipe_num_all_messages),
+body.zenith-ui #user-settings-block label:has(> #hotswapEnabled),
+body.zenith-ui #user-settings-block label:has(> #bogus_folders),
+body.zenith-ui #user-settings-block label:has(> #click_to_edit) {
+    display: none !important;
+}
+
+/* Extensions: keep "Manage extensions", drop the git installer and update toggle */
+body.zenith-ui #third_party_extension_button,
+body.zenith-ui label[for="extensions_notify_updates"],
+body.zenith-ui #rm_extensions_block hr,
+body.zenith-ui #rm_extensions_block div:has(> div > #extensions_status),  /* deprecated Extras API */
+body.zenith-ui #rm_extensions_block div:has(> #extensions_url) {
+    display: none !important;
+}

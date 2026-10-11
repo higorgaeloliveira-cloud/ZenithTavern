@@ -1,0 +1,8 @@
+/* Your own look goes here. This file is loaded on every page. */
+.mytavern-settings .mytavern-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+#mytavern_ping_result { opacity: 0.8; }
