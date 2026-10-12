@@ -1,0 +1,58 @@
+#zenith_roster_btn { cursor: pointer; }
+#zenith_roster_btn .drawer-icon { opacity: .75; }
+#zenith_roster_btn:hover .drawer-icon, #zenith_roster_btn.zr-active .drawer-icon { opacity: 1; }
+.zr-strict { text-align: center; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.zr-strict h3 { margin: 0; color: var(--zenith-accent, #f5c451); }
+.zr-strict p { margin: 0; line-height: 1.45; }
+.zr-small { opacity: .7; font-size: .88em; }
+.zr-lock { font-size: 2.2em; color: var(--zenith-accent, #f5c451); }
+.zr-overlay { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 9000; background: #0d0d10; display: flex; }
+.zr-window { width: 100%; height: 100%; display: flex; flex-direction: column; box-sizing: border-box;
+  padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
+  background: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--zenith-accent, #f5c451) 14%, #0d0d10) 0%, #0d0d10 60%);
+  color: var(--SmartThemeBodyColor, #ddd); }
+.zr-head { display: flex; justify-content: space-between; align-items: center; padding: 8px 8px 8px 18px; color: var(--zenith-accent, #f5c451); font-size: 1.3em; border-bottom: 1px solid var(--SmartThemeBorderColor, #444); }
+.zr-x { background: none; border: 0; color: inherit; cursor: pointer; font-size: 2em; line-height: 1; width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.zr-x:hover, .zr-x:active { background: #ffffff1a; }
+.zr-lead { margin: 0; padding: 12px 18px 6px; opacity: .8; }
+.zr-body { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 18px 14px; }
+.zr-empty { text-align: center; opacity: .75; padding: 28px 8px; }
+.zr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.zr-card { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 8px; cursor: pointer;
+  border: 1px solid var(--SmartThemeBorderColor, #444); border-radius: 10px; }
+.zr-card:hover { background: #ffffff0d; }
+.zr-card.zr-sel { border-color: var(--zenith-accent, #f5c451); background: color-mix(in srgb, var(--zenith-accent, #f5c451) 12%, transparent); }
+.zr-card.zr-have { opacity: .6; cursor: default; }
+.zr-card input.zr-check { position: absolute !important; opacity: 0 !important; width: 1px !important; height: 1px !important; margin: 0 !important; pointer-events: none; }
+.zr-box { position: absolute; z-index: 3; top: 16px; left: 16px; width: 30px; height: 30px; box-sizing: border-box; border-radius: 9px; pointer-events: none;
+  background: #000b; border: 2px solid #fff9; box-shadow: 0 2px 8px #0008; }
+.zr-card.zr-sel .zr-box { background: var(--zenith-accent, #f5c451); border-color: var(--zenith-accent, #f5c451); }
+.zr-card.zr-sel .zr-box::after { content: ''; position: absolute; left: 9px; top: 3px; width: 7px; height: 14px; border: solid #1a1306; border-width: 0 3px 3px 0; transform: rotate(45deg); }
+.zr-card.zr-have .zr-box { display: none; }
+.zr-card input.zr-check:focus-visible + .zr-box { outline: 2px solid #fff; outline-offset: 2px; }
+.zr-pic { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: #0003; }
+.zr-info { display: flex; flex-direction: column; gap: 2px; }
+.zr-tag { opacity: .75; font-size: .85em; }
+.zr-state { font-size: .8em; color: var(--zenith-accent, #f5c451); }
+.zr-foot { padding: 12px 18px 16px; background: #0d0d10; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--SmartThemeBorderColor, #444); }
+.zr-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.zr-btn { margin: 0; flex: 1 1 140px; min-height: 44px; }
+.zr-primary { background: color-mix(in srgb, var(--zenith-accent, #f5c451) 22%, transparent); border-color: var(--zenith-accent, #f5c451); }
+.zr-btn[disabled] { opacity: .45; pointer-events: none; }
+.zr-status { margin: 0; font-size: .9em; } .zr-good { color: #8fe08f; } .zr-bad { color: #ff8f8f; }
+.zr-bar { position: relative; height: 22px; border-radius: 11px; overflow: hidden; background: #ffffff14; }
+.zr-bar i { position: absolute; inset: 0 auto 0 0; background: var(--zenith-accent, #f5c451); opacity: .6; transition: width .2s; }
+.zr-bar span { position: relative; display: block; text-align: center; line-height: 22px; font-size: .85em; }
+
+/* ---- locked character panel (strict characters): a character can be opened, favorited and chatted with, nothing else.
+        Creator mode (/zenith-dev on) shows everything again. ---- */
+body:not(.zenith-dev) #rm_ch_create_block #form_create > *:not(#avatar-and-name-block) { display: none !important; }
+body:not(.zenith-dev) #rm_ch_create_block #avatar_controls .form_create_bottom_buttons_block > *:not(#rm_button_back):not(#favorite_button) { display: none !important; }
+body:not(.zenith-dev) #rm_ch_create_block #avatar_controls label[for="char-management-dropdown"],
+body:not(.zenith-dev) #rm_ch_create_block #char-management-dropdown,
+body:not(.zenith-dev) #rm_ch_create_block #tags_div { display: none !important; }
+body:not(.zenith-dev) #rm_ch_create_block #avatar_div_div { pointer-events: none; cursor: default; }
+body:not(.zenith-dev) #rm_ch_create_block #character_name_pole { pointer-events: none; background: transparent; border-color: transparent; }
+body:not(.zenith-dev) #bulkEditButton, body:not(.zenith-dev) .bulkEditOptionElement { display: none !important; }
+/* token counts, the stats button and the "hide character panel" eye also sit above the editor */
+body:not(.zenith-dev) #result_info { display: none !important; }

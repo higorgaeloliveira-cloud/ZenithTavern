@@ -11,6 +11,7 @@
  *   GET/POST /network          Multi-IP settings (saved in tavern.config.json, applied by the launcher on restart)
  *   POST /restart             asks the launcher to restart the server (exit code 43)
  *   GET  /logs?from=N         tail of logs/server.log from byte N (used by the Log Terminal)
+ *   GET  /strict, GET /roster, GET /roster/thumb/:id, POST /roster/download   strict characters + Roster-Downloader (see roster.mjs)
  *   POST /decline  the user answered "No" on the first-run notice. Replies, then stops the server
  *                  with exit code 42, which the launcher recognizes as "declined" and closes quietly.
  */
@@ -21,10 +22,11 @@ import os from 'node:os';
 import net from 'node:net';
 import express from 'express';
 import ipMatching from 'ip-matching';
+import { installStrictGuards, setupRoster } from './roster.mjs';
 
 // ROOT/SillyTavern/plugins/zenith-system/index.mjs -> ROOT/tavern.config.json
 const CONFIG_PATH = new URL('../../../tavern.config.json', import.meta.url);
-const DEFAULT_PRESETS = Object.freeze({ enforce: true, maxContext: 200000, maxResponseTokens: 1000, temperature: 1 });
+const DEFAULT_PRESETS = Object.freeze({ enforce: true, adaptive: true, maxContext: 200000, maxResponseTokens: 1000, temperature: 1 });
 
 function readPresets() {
     try {
@@ -110,6 +112,8 @@ export const info = {
 };
 
 export async function init(router) {
+    const guardState = { ok: await installStrictGuards() };
+    setupRoster(router, guardState);
     router.get('/ping', (_request, response) => {
         response.json({ ok: true, message: 'pong' });
     });

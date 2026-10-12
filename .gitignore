@@ -1,0 +1,9 @@
+# Downloaded copy of SillyTavern (re-created by the launcher)
+SillyTavern/
+# Your personal data, settings, logs and backups - never commit these
+userdata/
+config/
+logs/
+backups/
+.state.json
+node_modules/

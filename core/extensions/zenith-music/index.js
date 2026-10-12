@@ -17,6 +17,7 @@ function settings() {
     s.volume ??= 0.8;
     s.shuffle ??= false;
     s.repeat ??= 'all'; // off | all | one
+    s.spectrum ??= true; // live audio spectrum on the right border
     return s;
 }
 const save = () => ctx().saveSettingsDebounced();
@@ -249,6 +250,110 @@ function render() {
     refresh();
 }
 
+// ---------------------------------------------------------------- spectrum (real analysis of what is playing)
+// Horizontal bars grow from the RIGHT edge of the window towards the chat column and stop where the column starts.
+// The canvas sits at the very bottom of the page, so characters, the phone, menus and pop-ups are all drawn on top of it.
+const HONEY = [217, 154, 30]; // a little darker than the gold accent
+const BARS = 56;
+let canvas = null, g2d = null, actx = null, analyser = null, freq = null, raf = 0, level = new Float32Array(BARS), graphFailed = false;
+
+function freeWidth() {
+    const chat = document.getElementById('sheld');
+    if (!chat) return 0;
+    return Math.max(0, Math.floor(window.innerWidth - chat.getBoundingClientRect().right - 10));
+}
+
+function ensureCanvas() {
+    if (canvas) return;
+    canvas = document.createElement('canvas');
+    canvas.id = 'zenith_spectrum';
+    canvas.setAttribute('aria-hidden', 'true');
+    document.body.append(canvas);
+    g2d = canvas.getContext('2d');
+}
+
+function ensureGraph() {
+    if (actx || graphFailed) return !!actx;
+    try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        actx = new AC();
+        const src = actx.createMediaElementSource(audio);
+        analyser = actx.createAnalyser();
+        analyser.fftSize = 2048;
+        analyser.smoothingTimeConstant = 0.6;
+        src.connect(analyser);
+        analyser.connect(actx.destination);
+        freq = new Uint8Array(analyser.frequencyBinCount);
+        return true;
+    } catch (e) {
+        console.warn('[Zenith Music] spectrum unavailable', e);
+        graphFailed = true; actx = null;
+        return false;
+    }
+}
+
+function drawSpectrum() {
+    raf = 0;
+    const playing = !audio.paused && !!audio.src;
+    const room = freeWidth();
+    if (!settings().spectrum || !playing || room < 24 || !analyser) { clearSpectrum(); return; }
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const W = room, H = window.innerHeight;
+    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
+        canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+        canvas.style.width = `${W}px`; canvas.style.height = `${H}px`;
+    }
+    analyser.getByteFrequencyData(freq);
+    const nyq = actx.sampleRate / 2, lo = 40, hi = Math.min(14000, nyq);
+    g2d.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g2d.clearRect(0, 0, W, H);
+    const slot = H / BARS, thick = Math.max(2, slot * 0.62);
+    for (let i = 0; i < BARS; i++) {
+        // lowest sounds at the bottom, highest at the top; log spacing so bass does not take the whole height
+        const t0 = (BARS - 1 - i) / BARS, t1 = (BARS - i) / BARS;
+        const f0 = lo * Math.pow(hi / lo, t0), f1 = lo * Math.pow(hi / lo, t1);
+        const b0 = Math.max(0, Math.floor(f0 / nyq * freq.length)), b1 = Math.max(b0 + 1, Math.ceil(f1 / nyq * freq.length));
+        let m = 0; for (let b = b0; b < b1 && b < freq.length; b++) m = Math.max(m, freq[b]);
+        const tilt = 1 + t0 * 0.9;                       // the top of the spectrum is naturally quiet; lift it a little
+        const v = Math.min(1, Math.pow((m / 255) * tilt, 1.35));
+        level[i] = v > level[i] ? v : level[i] * 0.86 + v * 0.14; // quick attack, soft fall
+        const len = Math.max(0, level[i] * W);
+        if (len < 1.5) continue;
+        const y = i * slot + (slot - thick) / 2;
+        const grad = g2d.createLinearGradient(W, 0, W - len, 0);
+        grad.addColorStop(0, `rgba(${HONEY},0.95)`);
+        grad.addColorStop(1, `rgba(${HONEY},0.35)`);
+        g2d.fillStyle = grad;
+        g2d.beginPath();
+        g2d.roundRect ? g2d.roundRect(W - len, y, len, thick, [thick / 2, 0, 0, thick / 2]) : g2d.rect(W - len, y, len, thick);
+        g2d.fill();
+    }
+    raf = requestAnimationFrame(drawSpectrum);
+}
+
+function clearSpectrum() {
+    if (g2d && canvas) g2d.clearRect(0, 0, canvas.width, canvas.height);
+    level.fill(0);
+}
+
+/** Starts or stops the drawing loop depending on: switch on, something playing, room on the right. */
+function updateSpectrum() {
+    const on = settings().spectrum;
+    document.getElementById('zenith_music_btn')?.classList.toggle('zm-spec', on);
+    const sw = root?.querySelector('.zm-spec-switch'); if (sw) sw.checked = on;
+    if (!on) { if (raf) { cancelAnimationFrame(raf); raf = 0; } clearSpectrum(); return; }
+    ensureCanvas();
+    const playing = !audio.paused && !!audio.src;
+    if (!playing || freeWidth() < 24) { if (!raf) clearSpectrum(); return; } // phones and narrow windows have no free space: nothing is created
+    if (!ensureGraph()) return;
+    if (actx.state === 'suspended') actx.resume().catch(() => {});
+    if (!raf) raf = requestAnimationFrame(drawSpectrum);
+}
+audio.addEventListener('play', updateSpectrum);
+audio.addEventListener('pause', updateSpectrum);
+audio.addEventListener('ended', updateSpectrum);
+window.addEventListener('resize', updateSpectrum);
+
 function setOpen(v) {
     open = v;
     root.classList.toggle('zm-open', v);
@@ -258,16 +363,21 @@ function setOpen(v) {
 
 function mount() {
     root = h('aside', { id: 'zenith_music_panel', class: 'zm-panel' },
-        h('header', { class: 'zm-head' }, h('b', {}, '♪ Music'), h('button', { type: 'button', class: 'zm-x', title: 'Close', onclick: () => setOpen(false) }, '✕')),
+        h('header', { class: 'zm-head' }, h('b', {}, '♪ Music'),
+            h('label', { class: 'zm-spec-row', title: 'Live spectrum on the right border of the window' }, h('span', {}, 'Spectrum'),
+                (() => { const i = h('input', { type: 'checkbox', class: 'zm-spec-switch' }); i.checked = settings().spectrum; i.addEventListener('change', () => { settings().spectrum = i.checked; save(); updateSpectrum(); }); return i; })()),
+            h('button', { type: 'button', class: 'zm-x', title: 'Close', onclick: () => setOpen(false) }, '✕')),
         h('div', { class: 'zm-body' }));
     document.body.append(root);
 
-    const button = h('div', { id: 'zenith_music_btn', class: 'drawer', onclick: () => setOpen(!open) },
+    const button = h('div', { id: 'zenith_music_btn', class: 'drawer', title: 'Music (right-click: spectrum on/off)', onclick: () => setOpen(!open),
+        oncontextmenu: (e) => { e.preventDefault(); settings().spectrum = !settings().spectrum; save(); updateSpectrum(); toastr.info(`Spectrum ${settings().spectrum ? 'on' : 'off'}`); } },
         h('div', { class: 'drawer-toggle' }, h('div', { class: 'drawer-icon fa-solid fa-music fa-fw closedIcon', title: 'Music' })));
     const home = document.getElementById('zenith_home');
     const persona = document.getElementById('persona-management-button');
     if (home) home.after(button); else if (persona) persona.before(button); else document.getElementById('top-settings-holder')?.append(button);
     audio.volume = settings().volume;
+    updateSpectrum();
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open && !document.querySelector('dialog[open]')) setOpen(false); });
 }
 

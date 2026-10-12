@@ -94,9 +94,13 @@ ZenithTavern hides the settings people tend to break. The top bar is now: **Sett
 - **Settings** (the gear) is one merged menu: API connection, a few useful interface settings, and the extension panels with "Manage extensions" at the bottom. "Advanced Options" (top right of that menu) shows the API type pickers.
 - OpenRouter is pre-selected the first time ZenithTavern starts.
 - **Locked response values:** context size, response length and temperature are set from the `presets` block in `tavern.config.json` every time you generate (defaults: 200000 / 1000 / 1). Edit the numbers there, or set `"enforce": false` to stop locking.
-- **Creator mode** shows everything again: type `/zenith-dev on` in the chat box (or open the page with `?dev=1`). Turn it off with `/zenith-dev off` (or `?dev=0`). This is a convenience switch, not a security lock: anyone who knows it can use it.
+- **Creator mode** shows everything again: type `/zenith-dev on` in the chat box. Turn it off with `/zenith-dev off`. This is a convenience switch, not a security lock: anyone who knows it can use it.
 
 Code: `core/extensions/zenith-ui/` (style.css lists everything that is hidden, one selector per line).
+
+## Streaming (Settings)
+
+Streaming is **off by default**: each reply appears whole when it is finished. Turn it on with the *Streaming* switch in Settings (above Network access). The choice is remembered and re-applied before every generation. Creator mode (`/zenith-dev on`) leaves SillyTavern's own streaming checkbox in control.
 
 ## Log Terminal (bottom of Settings)
 
@@ -132,6 +136,10 @@ Only add devices you trust. The list is an IP check, not a password.
 
 ## Music (the ♪ button, next to Home)
 
+**Spectrum.** While a song plays, a live honey-yellow audio spectrum (real analysis of the sound, not a canned animation) is drawn on the right border of the window. It is the lowest layer of the page: characters, the phone, menus and pop-ups sit on top of it, and it never grows past the left edge of the free space beside the chat box. Turn it on or off with the *Spectrum* switch in the Music panel, or by right-clicking the Music button (a small dot on the button shows it is on). Windows too narrow to have free space on the right show no spectrum.
+
+**Phone button.** The phone button sits in a slim bar above the message box (`#zenith_bar`); future quick buttons go in the same bar.
+
 Create playlists, add your own audio files (mp3, wav, ogg, m4a, flac, opus), and press **Listen to Playlist** to play them in order. You can rename or remove playlists, reorder songs, shuffle, repeat, and the music keeps playing while you change chats or close the panel. The button glows while something plays.
 
 Files are saved in your data folder (`userdata/<user>/zenith-music/`), so they are included in Repair's backups. Playlist names and order are saved with your settings. Code: `core/extensions/zenith-music/` and the `/music` routes in `core/plugins/zenith-system/`.
@@ -163,6 +171,30 @@ ZenithTavern's own look: a warm near-black base with gold and amber accents (tex
 - Your own themes: put `.json` theme files in `overlay/themes/`.
 - New phones start with the "Zenith Gold" wallpaper. If you already picked or kept the old purple one, choose it again in the phone's Settings app.
 
+## Strict characters and the Roster-Downloader
+
+**Strict characters.** This fork only accepts the characters it ships. Importing (file, URL, drag and drop), exporting, duplicating and creating cards are refused by the server itself, and the screen shows a popup saying ZenithTavern does not accept other characters and that normal SillyTavern must be used for those. The Character List only shows cards installed from the roster. Switch it off with `"characters": {"strict": false}` in `tavern.config.json`.
+
+**Locked character panel.** Opening a character shows only her picture, name and the favorite star. The description, greeting, creator's notes, tags, token counts, the "More…" menu and the delete / export / duplicate / advanced-definition buttons are hidden, the picture and name cannot be edited, and bulk edit is hidden. This is a screen lock, not a server lock: creator mode (`/zenith-dev on`) shows everything again.
+
+**Roster-Downloader (cloud icon, between Music and the Character List).** Nothing is loaded automatically. Open the cloud, tick characters, press *Download Selected* or *Download All*; after the download they appear in the Character List together with their expression images. `/roster` opens it too.
+
+**Characters in the roster so far:** Mara Venn (001), without expression images yet. Her source files live in `core/roster/source/mara-venn/` (`character.json`, `portrait.png`, `images/greeting.png`; drop expression PNGs in a `sprites/` folder there).
+
+**Adding or updating a character from its portable record (recommended):** `node tools/character-build.cjs core/roster/source/<name>` builds the card (V2 + V3, with the description made from the record) and puts it in the roster. Run it again when sprites or text change: the version goes up and players see *Update available*. Images listed under `images/` are installed to the player's own images folder and can be used inside messages, as Mara's greeting picture is.
+
+Adding characters from a finished card (creator side): `node tools/roster-add.cjs "Name.png" --sprites ./expressions --tagline "..."` (cards are normal SillyTavern PNG cards, put in `core/roster/`). To host the roster online, publish that folder and set `"roster": {"remote": "https://.../roster"}`; every file is then checked against its sha256. **Every roster character must be a clear adult (18+).**
+
+## Model profile, response format and modes (PromptOS app)
+
+**Adaptive context.** The context size and the reply length follow the selected model: the model name decides a comfortable window (for example Gemma 4 31B: large, 200,000+; weaker Gemma or small Qwen models: medium, small or tiny), the API-reported context is used when it is lower, and with LunaRouter on the smallest model of the route list counts. Thinking models get extra room for their reasoning. Tiers: Large (5-6 paragraphs), Medium (4-5), Small (3-4), Tiny (3). Override the tier in PromptOS; `/zenith-model` shows the numbers. `tavern.config.json` `presets.maxContext` is only the ceiling, and `"adaptive": false` there brings the fixed numbers back.
+
+**Format.** Every reply starts with `¦¦ Monday, Aug 24th ~ 2:26 PM ~ Place ~ (SAPH) ¦¦`, then 3 to 5/6 descriptive paragraphs. The previous header is read back so date and time continue. Skipped in OOC.
+
+**Paragraph rule.** Every paragraph is one solid block of at least 5 full descriptive sentences. One-line paragraphs, a line break after every sentence and staccato fragments ("She froze. She looked around.") are forbidden in the prompt. If the last reply was chopped into short pieces anyway, the next prompt carries a correction.
+
+**Modes.** OPAL (story mode: slow, reluctant, in-pieces storytelling), SAPH (everyday romance), ONYX (intense romance), RUBY (graphic adult content). In Auto the AI picks the mode and climbs one step per reply; `/zenith-mode auto|opal|saph|onyx|ruby` locks it. Each mode has its own editable prompt in PromptOS and can be switched off. The prompts are original text. Romance and sex are only written for clearly adult characters; that rule is built in.
+
 ## Zenith Phone (the phone button above the message box)
 A phone (iPhone 11 layout) slides up on the right side of the screen. Click the phone button (bottom right, above the message box), or type `/phone`.
 - It starts **locked**. Click the **home bar** at the bottom to unlock it. Click the home bar again inside an app to go back to the home screen.
@@ -177,7 +209,7 @@ Apps (the old ✦ Zenith Panel now lives in here; `/zenith-panel` still opens th
 | Copycat | Rewrite the AI's last message with your note; the Catnip Jar holds saved notes |
 | OOC | OOC Mode: pause the roleplay and talk to your narrator |
 | Settings (in the dock) | Wallpaper (8 presets, any color, or your own picture) and dimming, 12h/24h clock, app names on/off, real battery level, phone color (6), size, left/right side, keep unlocked, reset |
-| PromptOS, System Prompts | placeholders ("Coming soon") until the characters and expressions exist |
+| System Prompts | placeholder ("Coming soon") until the characters and expressions exist |
 
 To add an app, add an entry to the `APPS` list at the top of `core/extensions/zenith-phone/index.js`.
 

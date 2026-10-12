@@ -29,3 +29,10 @@
 .zm-row.zm-now { background: color-mix(in srgb, var(--zenith-accent, #f5c451) 15%, transparent); }
 .zm-num { width: 1.6em; opacity: .6; text-align: right; }
 .zm-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+
+/* spectrum: bottom-most layer of the page (the background image is at -100, everything else is above) */
+#zenith_spectrum { position: fixed; top: 0; right: 0; z-index: -50; pointer-events: none; }
+.zm-spec-row { display: flex; align-items: center; gap: 6px; margin-left: auto; margin-right: 10px; font-size: .85em; cursor: pointer; color: var(--SmartThemeBodyColor, #ddd); opacity: .85; }
+.zm-spec-row input { accent-color: var(--zenith-accent, #f5c451); cursor: pointer; }
+#zenith_music_btn.zm-spec::after { content: ''; position: absolute; right: 4px; bottom: 4px; width: 5px; height: 5px; border-radius: 50%; background: rgb(217, 154, 30); box-shadow: 0 0 5px rgb(217, 154, 30); }
+#zenith_music_btn { position: relative; }

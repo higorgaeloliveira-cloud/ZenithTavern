@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "characters": [
+    {
+      "id": "mara-venn",
+      "name": "Mara Venn",
+      "file": "Mara Venn.png",
+      "tagline": "Observant, dryly funny environmental science student with a pen behind her ear.",
+      "tags": [
+        "Asterhaven",
+        "ZenithTavern",
+        "university",
+        "slice of life",
+        "coastal town"
+      ],
+      "version": 1,
+      "card": "mara-venn/card.png",
+      "sha256": "ad7e15c0f680309f0d99f527cdf20d3c20617c125888b982ad9767554bfd233b",
+      "sprites": [],
+      "images": [
+        {
+          "path": "mara-venn/images/greeting.png",
+          "as": "greeting.png",
+          "sha256": "fc8b38cfec44e66650dea8cf848642d7af3e92daaf3994a7846d1008f36e6526"
+        }
+      ]
+    }
+  ]
+}

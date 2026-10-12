@@ -75,7 +75,6 @@ function applyLook() {
     phone.style.setProperty('--zph-btn', f.btn);
     phone.classList.toggle('zph-nolabels', !c.labels);
     wrap.classList.toggle('zph-left', c.side === 'left');
-    document.getElementById('zenith_phone_btn')?.classList.toggle('zph-left', c.side === 'left');
     fit();
     tick();
     updateBattery();
@@ -190,7 +189,7 @@ const soon = (text) => h('div', { class: 'zph-soon' }, h('i', { class: 'fa-solid
 
 const APPS = [
     { id: 'promptos', name: 'PromptOS', title: 'PromptOS', icon: 'fa-terminal', color: 'linear-gradient(160deg,#3a3a40,#121214)',
-      render: () => soon('Waiting for the characters and their expressions. The prompt work starts after that.') },
+      render: () => globalThis.ZenithStyle?.screen?.() || soon('Zenith Style is not loaded.'), live: () => !!globalThis.ZenithStyle?.live?.() },
     { id: 'sysprompts', name: 'System Prompts', title: 'System Prompts', icon: 'fa-scroll', color: 'linear-gradient(160deg,#64d2ff,#0a84ff)',
       render: () => soon('Waiting for the characters and their expressions. The prompt work starts after that.') },
     { id: 'course', name: 'Course Modifiers', title: 'Course Modifiers', icon: 'fa-compass', color: 'linear-gradient(160deg,#ffb340,#ff7a00)',
@@ -348,7 +347,14 @@ function mount() {
 
     const btn = h('button', { id: 'zenith_phone_btn', type: 'button', class: 'zph-fab', title: 'Phone', onclick: () => setOpen(!open) });
     btn.innerHTML = '<i class="fa-solid fa-mobile-screen-button"></i>';
-    document.body.append(btn);
+    // A slim bar on top of the message box. Later buttons are added to the same bar (#zenith_bar).
+    let bar = document.getElementById('zenith_bar');
+    if (!bar) {
+        bar = h('div', { id: 'zenith_bar', 'data-keep-brand': '' });
+        const send = document.getElementById('send_form');
+        if (send?.parentElement) send.parentElement.insertBefore(bar, send); else document.body.append(bar);
+    }
+    bar.append(btn);
 
     setInterval(tick, 1000);
     document.addEventListener('zenith-panel-render', () => { renderApp(); refreshDots(); });

@@ -7,7 +7,8 @@
  *  - locks the AI response values (context size, response length, temperature) to the presets in tavern.config.json
  *
  * Hiding is for convenience, not security. Creator mode shows everything again:
- *   type /zenith-dev on  (or open the page with ?dev=1).  Back to normal: /zenith-dev off  (or ?dev=0).
+ *   type /zenith-dev on.  Back to normal: /zenith-dev off.
+ * (A ?dev=1 web address is NOT supported: SillyTavern's Backgrounds tabs would load a second copy of the page when the address has a query.)
  */
 const DEV_KEY = 'zenith_dev';
 const ctx = () => SillyTavern.getContext();
@@ -15,8 +16,6 @@ const $q = (sel) => document.querySelector(sel);
 
 function devMode() {
     try {
-        const q = new URLSearchParams(location.search);
-        if (q.has('dev')) localStorage.setItem(DEV_KEY, q.get('dev') === '0' ? '0' : '1');
         return localStorage.getItem(DEV_KEY) === '1';
     } catch { return false; }
 }
@@ -42,20 +41,58 @@ function setControl(selector, value, events = ['input']) {
 
 function applyPresets() {
     if (!presets || !presets.enforce) return;
+    // ZenithStyle (zenith-style) turns the fixed numbers into ones that fit the selected model
+    if (globalThis.ZenithStyle) globalThis.ZenithStyle._presets = presets;
+    const p = globalThis.ZenithStyle ? globalThis.ZenithStyle.values(presets) : presets;
     const oai = ctx().chatCompletionSettings;
     // Chat completion (OpenRouter, OpenAI, Claude, ...)
     if (!oai.max_context_unlocked) { $('#oai_max_context_unlocked').prop('checked', true).trigger('input'); }
-    if (presets.maxContext) setControl('#openai_max_context', presets.maxContext);
-    if (presets.maxResponseTokens) setControl('#openai_max_tokens', presets.maxResponseTokens);
-    if (presets.temperature != null) setControl('#temp_openai', presets.temperature);
+    if (p.maxContext) setControl('#openai_max_context', p.maxContext);
+    if (p.maxResponseTokens) setControl('#openai_max_tokens', p.maxResponseTokens);
+    if (p.temperature != null) setControl('#temp_openai', p.temperature);
     // Text completion / other APIs
-    if (presets.maxResponseTokens) setControl('#amount_gen', presets.maxResponseTokens);
-    if (presets.maxContext && ctx().powerUserSettings.max_context_unlocked) setControl('#max_context', presets.maxContext);
+    if (p.maxResponseTokens) setControl('#amount_gen', p.maxResponseTokens);
+    if (p.maxContext && ctx().powerUserSettings.max_context_unlocked) setControl('#max_context', p.maxContext);
+}
+
+// ------------------------------------------------------------ streaming (a switch in Settings, OFF by default)
+const streamingOn = () => ctx().extensionSettings.zenith_ui?.streaming === true;
+
+function applyStreaming() {
+    if (devMode()) return;
+    const want = streamingOn();
+    for (const sel of ['#stream_toggle', '#streaming_textgenerationwebui', '#streaming_kobold']) {
+        const el = $(sel);
+        if (el.length && el.prop('checked') !== want) el.prop('checked', want).trigger('input').trigger('change');
+    }
+}
+
+function mountStreamingSwitch() {
+    const api = document.getElementById('rm_api_block');
+    if (!api || document.getElementById('zenith_streaming')) return;
+    const box = document.createElement('div');
+    box.id = 'zenith_streaming';
+    box.style.cssText = 'width:100%;margin-top:14px;padding:10px 0;border-top:1px solid var(--SmartThemeBorderColor,#444);display:flex;flex-direction:column;gap:6px';
+    box.innerHTML = '<label class="zn-row"><span>Streaming</span><span class="zn-state"></span><input type="checkbox" class="zn-switch"></label>'
+        + '<p class="zn-note">Off (default): each reply appears whole, once it is finished. On: text appears word by word while it is written. Streaming is off by default because it can cut replies short or garble them with some models and routes.</p>';
+    const input = box.querySelector('input');
+    const state = box.querySelector('.zn-state');
+    const paint = () => { input.checked = streamingOn(); state.textContent = streamingOn() ? 'ON' : 'OFF'; };
+    input.addEventListener('change', () => {
+        const { extensionSettings, saveSettingsDebounced } = ctx();
+        (extensionSettings.zenith_ui ??= {}).streaming = input.checked;
+        saveSettingsDebounced(); paint(); applyStreaming();
+    });
+    paint();
+    const settings = document.getElementById('user-settings-block');
+    if (settings && api.contains(settings)) settings.before(box); else api.append(box);
 }
 
 // Runs before every generation, so the values are right even after a model switch lowered them.
+document.addEventListener('zenith-style-apply', () => { if (!devMode()) applyPresets(); });
+
 globalThis.zenithUiInterceptor = async function () {
-    if (!devMode()) applyPresets();
+    if (!devMode()) { applyPresets(); applyStreaming(); }
 };
 
 // ------------------------------------------------------------ one-time default: OpenRouter
@@ -190,7 +227,7 @@ jQuery(async () => {
     if (devMode()) return;
 
     await loadPresets();
-    eventSource.on(eventTypes.APP_READY, () => { defaultToOpenRouter(); applyPresets(); setTimeout(activateStarterWorlds, 1500); setTimeout(applyStarterTheme, 1500); });
-    eventSource.on(eventTypes.CHAT_CHANGED, applyPresets);
+    eventSource.on(eventTypes.APP_READY, () => { defaultToOpenRouter(); applyPresets(); mountStreamingSwitch(); applyStreaming(); setTimeout(activateStarterWorlds, 1500); setTimeout(applyStarterTheme, 1500); });
+    eventSource.on(eventTypes.CHAT_CHANGED, () => { applyPresets(); applyStreaming(); });
     eventSource.on(eventTypes.CHATCOMPLETION_MODEL_CHANGED ?? 'chatcompletion_model_changed', applyPresets);
 });

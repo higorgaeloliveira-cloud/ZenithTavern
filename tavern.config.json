@@ -22,5 +22,12 @@
   "network": {
     "multiIp": false,
     "ips": []
+  },
+  "characters": {
+    "strict": true,
+    "allowCreate": false
+  },
+  "roster": {
+    "remote": ""
   }
 }

@@ -1,0 +1,13 @@
+.zs-badge { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: .8em; font-weight: 700; color: #1a1306; background: var(--zenith-accent, #f5c451); }
+.zs-kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: .9em; }
+.zs-kv span:nth-child(odd) { opacity: .65; }
+.zs-mode { display: flex; gap: 10px; align-items: flex-start; }
+.zs-mode .zs-emoji { font-size: 1.4em; line-height: 1.1; }
+.zs-mode > div { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.zs-mode small { opacity: .7; }
+.zs-head { font-family: var(--monoFontFamily, monospace); padding: 6px 8px; border-radius: 8px; background: #ffffff10; font-size: .85em; word-break: break-word; }
+.zs-adult { border-left: 3px solid var(--zenith-accent, #f5c451); padding-left: 10px; opacity: .85; font-size: .88em; margin: 8px 0; }
+details.zs-det > summary { cursor: pointer; opacity: .85; padding: 4px 0; }
+.zp-card .zp-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.zp-card .zp-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.zp-card .zp-seg .zp-btn { flex: 1 1 auto; }

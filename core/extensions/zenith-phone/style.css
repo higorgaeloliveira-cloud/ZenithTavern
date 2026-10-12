@@ -1,9 +1,11 @@
 /* Fixed things are placed with top: calc(100dvh - ...) instead of bottom: because SillyTavern's narrow layout makes <html> the
    containing block (height 0), which would push bottom-anchored elements off-screen.
    Zenith Phone - iPhone 11 layout. Design size: 458 x 940 (screen 414 x 896 + 22 bezel), scaled to fit. */
-.zph-fab { position: fixed; right: 14px; top: calc(100vh - 122px); top: calc(100dvh - 122px); z-index: 4600; width: 38px; height: 38px; border-radius: 50%;
+.zph-fab { position: relative; flex: none; width: 38px; height: 38px; border-radius: 50%;
   border: 1px solid var(--SmartThemeBorderColor, #555); background: var(--SmartThemeBlurTintColor, #222);
   color: var(--SmartThemeBodyColor, #ddd); font-size: 17px; cursor: pointer; opacity: .75; display: flex; align-items: center; justify-content: center; }
+/* the slim bar above the message box; every Zenith quick button lives here */
+#zenith_bar { display: flex; align-items: center; justify-content: flex-start; gap: 8px; width: 100%; box-sizing: border-box; padding: 4px 6px 2px; }
 .zph-fab:hover { opacity: 1; }
 .zph-fab.zph-btn-on { border-color: var(--zenith-accent, #f5c451); color: var(--zenith-accent, #f5c451); box-shadow: 0 0 10px color-mix(in srgb, var(--zenith-accent, #f5c451) 53%, transparent); opacity: 1; }
 
@@ -92,7 +94,6 @@
 
 /* left-hand side */
 .zph-wrap.zph-left { right: auto; left: 20px; transform-origin: bottom left; }
-.zph-fab.zph-left { right: auto; left: 14px; }
 
 /* no app names */
 .zph-nolabels .zph-app-name { display: none; }

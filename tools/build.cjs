@@ -21,10 +21,13 @@ const INCLUDE = ['src', 'core', 'overlay', 'tools', 'tavern.config.json', 'READM
 function collect(rel, out) {
   const abs = path.join(ROOT, rel);
   if (!fs.existsSync(abs)) return;
+  if (rel.split(path.sep).join('/').startsWith('core/roster/source')) return; // creator-side source files (portable JSON, originals) are not shipped
   if (fs.statSync(abs).isDirectory()) {
     for (const name of fs.readdirSync(abs).sort()) collect(path.posix.join(rel.split(path.sep).join('/'), name), out);
   } else {
-    out[rel.split(path.sep).join('/')] = fs.readFileSync(abs, 'utf8');
+    // pictures (roster cards, expressions) are binary: stored as base64 and decoded on install
+    const binary = /\.(png|jpe?g|webp|gif|ico)$/i.test(rel);
+    out[rel.split(path.sep).join('/')] = binary ? 'base64:' + fs.readFileSync(abs).toString('base64') : fs.readFileSync(abs, 'utf8');
   }
 }
 
@@ -63,7 +66,7 @@ for (const [rel, content] of Object.entries(FILES)) {
   const write = managed ? (installed !== VERSION || !fs.existsSync(dest)) : !fs.existsSync(dest);
   if (!write) continue;
   fs.mkdirSync(path.dirname(dest), { recursive: true });
-  fs.writeFileSync(dest, content);
+  fs.writeFileSync(dest, content.startsWith('base64:') && /\\.(png|jpe?g|webp|gif|ico)$/i.test(rel) ? Buffer.from(content.slice(7), 'base64') : content);
   if (rel.endsWith('.sh')) fs.chmodSync(dest, 0o755);
 }
 
