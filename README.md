@@ -20,6 +20,15 @@ the whole folder.
 `src/` and `tools/` are managed by the launcher; `overlay/` and `tavern.config.json` are yours and are never overwritten.
 To make your own one-file launcher after customizing: `node tools/build.cjs` (creates `dist/`).
 
+## Updating ZenithTavern (automatic, from GitHub)
+Every time the single-file launcher starts, it quietly checks the project's GitHub repo for a newer version. If there is one it asks `Update now? [Y/n]`; answer Y and it replaces `ZenithTavern.cjs` with the new one (checked against a checksum first) and keeps going. Your settings, characters, chats and music are never touched. Offline or nothing new: it just starts.
+Settings, in `tavern.config.json`:
+
+    "zenithUpdates": { "repo": "owner/name", "ref": "main", "mode": "ask" }
+
+`mode` is `ask` (default), `auto` (update without asking) or `off`. Add `--no-update` to skip one check, or run `node ZenithTavern.cjs --update-only` to update and exit.
+**Publishing a new version (creator):** run `node tools/build.cjs`, then commit and push the project **including the `dist/` folder** (`dist/ZenithTavern.cjs` and `dist/zenith-version.json`). Players get it the next time they start.
+
 ## Run it
 
 **Two ways to run it.** In the full project folder, double-click `Start-panel.bat` (it runs the code in `src/`). Or use the single-file launcher from the `dist/` folder: `ZenithTavern.cjs` with its Start and Repair files, which work in any folder you put them in.

@@ -34,6 +34,11 @@ function collect(rel, out) {
 const files = {};
 for (const item of INCLUDE) collect(item, files);
 
+const selfUpdatePart = fs.readFileSync(path.join(__dirname, 'selfupdate.part.cjs'), 'utf8');
+const builtAt = new Date().toISOString();
+let defaultUpdate = { repo: 'higorgaeloliveira-cloud/ZenithTavern', ref: 'main', mode: 'ask' };
+try { Object.assign(defaultUpdate, JSON.parse(fs.readFileSync(path.join(ROOT, 'tavern.config.json'), 'utf8')).zenithUpdates || {}); } catch { /* keep defaults */ }
+
 const version = crypto.createHash('sha1').update(JSON.stringify(files)).digest('hex').slice(0, 12);
 
 const bundle = `#!/usr/bin/env node
@@ -50,9 +55,15 @@ const path = require('path');
 
 const VERSION = ${JSON.stringify(version)};
 const FILES = ${JSON.stringify(files)};
+const BUILT = ${JSON.stringify(builtAt)};
+const DEFAULT_UPDATE = ${JSON.stringify(defaultUpdate)};
 
 // The install folder is wherever this file lives - never the "current directory".
 const ROOT = __dirname;
+
+${selfUpdatePart}
+
+function main() {
 
 // src/, core/ and tools/ belong to the launcher and are refreshed when this file is newer.
 // Everything else (overlay/, tavern.config.json, ...) is YOURS: written once, never overwritten.
@@ -86,10 +97,15 @@ if (installed !== VERSION) {
 fs.writeFileSync(stampFile, VERSION);
 
 require(path.join(ROOT, 'src', process.argv.includes('--repair') ? 'repair.cjs' : 'launcher.cjs'));
+}
+
+const updateOnly = process.argv.includes('--update-only');
+selfUpdate().then((done) => { if (!done && !updateOnly) main(); }, () => { if (!updateOnly) main(); });
 `;
 
 fs.mkdirSync(DIST, { recursive: true });
 fs.writeFileSync(path.join(DIST, 'ZenithTavern.cjs'), bundle);
+fs.writeFileSync(path.join(DIST, 'zenith-version.json'), JSON.stringify({ version, built: builtAt, size: Buffer.byteLength(bundle), sha256: crypto.createHash('sha256').update(bundle).digest('hex') }, null, 2) + '\n');
 for (const wrapper of ['Start-panel.bat', 'Start-panel.sh', 'Start-console.bat', 'Start-console.sh', 'Repair.bat', 'Repair.sh']) {
   fs.copyFileSync(path.join(ROOT, wrapper), path.join(DIST, wrapper));
 }
