@@ -45,3 +45,10 @@
 .zm-adv-range { width: 100%; accent-color: rgb(217, 154, 30); }
 .zm-adv-val { text-align: right; opacity: .8; font-variant-numeric: tabular-nums; }
 .zm-adv-reset { align-self: flex-end; margin: 0; }
+
+/* spectrum mode picker */
+.zm-adv-segs { display: flex; gap: 6px; margin: 4px 0 6px; }
+.zm-adv-seg { flex: 1; cursor: pointer; padding: 8px 6px; border-radius: 8px; font-size: 13px; color: inherit; background: transparent; border: 1px solid var(--SmartThemeBorderColor, #555); opacity: .8; }
+.zm-adv-seg.zm-on { border-color: var(--zenith-accent, #f5c451); color: var(--zenith-accent, #f5c451); opacity: 1; font-weight: 700; }
+.zm-adv-info { margin: 0 0 8px; min-height: 2.6em; }
+.zm-adv-sliders[hidden] { display: none; }

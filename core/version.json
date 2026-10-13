@@ -1,5 +1,5 @@
 {
-  "version": "0.3.5",
+  "version": "0.3.6",
   "history": [
     {
       "version": "0.0.1",
@@ -44,6 +44,13 @@
         "internal"
       ],
       "note": "Version numbers: shown in the console, the update question and the interface; core/version.json and tools/bump.cjs added."
+    },
+    {
+      "version": "0.3.6",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Spectrum modes: Normal, Aggressive (bass-focused, more bands) and Custom (sliders)."
     }
   ]
 }
