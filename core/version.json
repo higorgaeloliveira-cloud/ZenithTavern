@@ -1,5 +1,5 @@
 {
-  "version": "0.3.9",
+  "version": "0.3.10",
   "history": [
     {
       "version": "0.0.1",
@@ -72,6 +72,13 @@
         "ui"
       ],
       "note": "Start screen: the ZenithTavern update question now comes after the banner and \"Checking for updates...\"."
+    },
+    {
+      "version": "0.3.10",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Spectrum: Audio Simulation slider (all modes) and Lanes slider (Custom)."
     }
   ]
 }

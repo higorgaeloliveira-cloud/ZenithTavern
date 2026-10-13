@@ -21,6 +21,8 @@ function settings() {
     s.specLength ??= 100; // Advanced: how far the bars may go, 10-100 % of the free space on the right
     s.specBeat ??= 50;    // Advanced: how strongly the bars react, 0-100
     // Advanced: normal | aggressive | custom (only Custom uses the two sliders). Someone who already moved a slider keeps Custom.
+    s.specSim ??= 100;    // Advanced: Audio Simulation, how long the bars look compared with the real level (like a lower volume), 10-100 %
+    s.specLanes ??= 56;   // Advanced (Custom): how many bars, 20-150
     s.specMode ??= (s.specLength !== 100 || s.specBeat !== 50) ? 'custom' : 'normal';
     return s;
 }
@@ -261,7 +263,7 @@ const HONEY = [217, 154, 30]; // a little darker than the gold accent
 let BARS = 56;               // Normal: 56 bars; Aggressive: 88 thinner bars (more of them on the bass)
 let agcMean = 40, bassAvg = 40, modeApplied = '';
 const punchHist = []; // recent bass hits with their time (Aggressive), so the wave can reach each bar a little later
-let canvas = null, g2d = null, actx = null, analyser = null, freq = null, raf = 0, level = new Float32Array(120), graphFailed = false;
+let canvas = null, g2d = null, actx = null, analyser = null, freq = null, raf = 0, level = new Float32Array(200), graphFailed = false;
 
 function freeWidth() {
     const chat = document.getElementById('sheld');
@@ -299,11 +301,13 @@ function ensureGraph() {
     }
 }
 
+const barsFor = (mode) => (mode === 'aggressive' ? 88 : mode === 'custom' ? Math.min(150, Math.max(20, Math.round(Number(settings().specLanes) || 56))) : 56);
+
 /** Normal and Custom use 56 bars; Aggressive uses 88 and a finer analysis so the bass gets many more bands. */
 function applyMode(mode) {
     modeApplied = mode;
     const agg = mode === 'aggressive';
-    BARS = agg ? 88 : 56;
+    BARS = barsFor(mode);
     if (analyser) {
         analyser.fftSize = agg ? 8192 : 2048;          // finer bass: ~5 Hz per slice
         analyser.minDecibels = agg ? -95 : -100;         // headroom: loud bass no longer hits the ceiling (which made it flat)
@@ -326,7 +330,7 @@ function drawSpectrum() {
         canvas.style.width = `${W}px`; canvas.style.height = `${H}px`;
     }
     const mode = ['normal', 'aggressive', 'custom'].includes(settings().specMode) ? settings().specMode : 'normal';
-    if (modeApplied !== mode) applyMode(mode);
+    if (modeApplied !== mode || BARS !== barsFor(mode)) applyMode(mode);
     const agg = mode === 'aggressive';
     analyser.getByteFrequencyData(freq);
     const nyq = actx.sampleRate / 2, lo = 40, hi = Math.min(14000, nyq);
@@ -336,6 +340,7 @@ function drawSpectrum() {
     const st = settings();
     // Normal and Aggressive always use the full length; only Custom takes the sliders.
     const maxLen = W * (mode === 'custom' ? Math.min(1, Math.max(0.1, Number(st.specLength) / 100)) : 1); // "Length": the bars never go past this
+    const sim = Math.min(1, Math.max(0.1, Number(st.specSim) / 100));
     const beat = mode === 'custom' ? Math.min(1, Math.max(0, Number(st.specBeat) / 100)) : 0.5;
     const span = 1.1 + (1 - beat) * 1.4; // "Beat": how far above the song's own average a bar must go to reach the maximum
     const curve = 2.2 - beat * 1.0;      //        and how sharply it jumps on peaks (low = calm, high = lively)
@@ -411,7 +416,7 @@ function drawSpectrum() {
             v = Math.min(1, Math.pow(Math.min(1, (raw[i] / agcMean) * tilt / span), curve));
             level[i] = v > level[i] ? v : level[i] * 0.86 + v * 0.14; // quick attack, soft fall
         }
-        const len = Math.min(maxLen, Math.max(0, level[i] * maxLen));
+        const len = Math.min(maxLen, Math.max(0, level[i] * maxLen * sim)); // Audio Simulation: same movement, shorter, like a lower volume
         if (len < 1.5) continue;
         const y = i * slot + (slot - thick) / 2;
         const grad = g2d.createLinearGradient(W, 0, W - len, 0);
@@ -470,17 +475,18 @@ function mount() {
                     ['aggressive', 'Aggressive', 'Most of the sound moves less; the bass and the beat hit much harder, with more bands on the bass.'],
                     ['custom', 'Custom', 'Set it yourself with the sliders.'],
                 ];
-                const row = (label, key, hint, min) => {
+                const row = (label, key, hint, min, max = 100, unit = '%') => {
                     const out = h('span', { class: 'zm-adv-val' });
-                    const input = h('input', { type: 'range', min, max: 100, step: 1, class: 'zm-adv-range' });
-                    input.value = settings()[key]; out.textContent = `${input.value}%`;
-                    input.addEventListener('input', () => { settings()[key] = Number(input.value); out.textContent = `${input.value}%`; save(); });
+                    const input = h('input', { type: 'range', min, max, step: 1, class: 'zm-adv-range' });
+                    input.value = settings()[key]; out.textContent = `${input.value}${unit}`;
+                    input.addEventListener('input', () => { settings()[key] = Number(input.value); out.textContent = `${input.value}${unit}`; save(); });
                     return h('label', { class: 'zm-adv-row', title: hint }, h('span', { class: 'zm-adv-name' }, label), input, out);
                 };
                 const sliders = h('div', { class: 'zm-adv-sliders' },
                     row('Length', 'specLength', 'How far the bars may reach into the free space on the right. Lower it if they stretch too far.', 10),
                     row('Beat', 'specBeat', 'How much the bars move with the bass and the rest of the sound. Lower it for loud songs, raise it for quiet ones.', 0),
-                    h('button', { type: 'button', class: 'menu_button zm-adv-reset', onclick: (e) => { settings().specLength = 100; settings().specBeat = 50; save(); e.target.closest('.zm-adv').querySelectorAll('.zm-adv-range').forEach((r, k) => { r.value = k ? 50 : 100; r.dispatchEvent(new Event('input')); }); } }, 'Reset'));
+                    row('Lanes', 'specLanes', 'How many bars there are. More lanes = thinner bars.', 20, 150, ''),
+                    h('button', { type: 'button', class: 'menu_button zm-adv-reset', onclick: (e) => { const d = { specLength: 100, specBeat: 50, specLanes: 56 }; Object.assign(settings(), d); save(); e.target.closest('.zm-adv-sliders').querySelectorAll('.zm-adv-range').forEach((r, k) => { r.value = Object.values(d)[k]; r.dispatchEvent(new Event('input')); }); } }, 'Reset'));
                 const info = h('p', { class: 'zm-note zm-adv-info' });
                 const segs = MODES.map(([id, name]) => h('button', { type: 'button', class: 'zm-adv-seg', 'data-mode': id, onclick: () => { settings().specMode = id; save(); paint(); } }, name));
                 const paint = () => {
@@ -490,7 +496,8 @@ function mount() {
                     info.textContent = MODES.find((m) => m[0] === cur)?.[2] || '';
                 };
                 paint();
-                return h('div', { class: 'zm-adv-box' }, h('div', { class: 'zm-adv-segs' }, segs), info, sliders);
+                const sim = row('Audio Simulation', 'specSim', 'Makes every bar shorter by the same proportion, like a lower volume, without touching your real volume. Lower it if the bars hit the limit.', 10);
+                return h('div', { class: 'zm-adv-box' }, sim, h('div', { class: 'zm-adv-segs' }, segs), info, sliders);
             })()),
         h('div', { class: 'zm-body' }));
     document.body.append(root);
