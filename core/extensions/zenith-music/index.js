@@ -260,6 +260,7 @@ function render() {
 const HONEY = [217, 154, 30]; // a little darker than the gold accent
 let BARS = 56;               // Normal: 56 bars; Aggressive: 88 thinner bars (more of them on the bass)
 let agcMean = 40, bassAvg = 40, modeApplied = '';
+const bandAvg = new Float32Array(120); // each bass band's own recent level (Aggressive)
 let canvas = null, g2d = null, actx = null, analyser = null, freq = null, raf = 0, level = new Float32Array(120), graphFailed = false;
 
 function freeWidth() {
@@ -308,7 +309,7 @@ function applyMode(mode) {
         analyser.smoothingTimeConstant = agg ? 0.35 : 0.6;
         freq = new Uint8Array(analyser.frequencyBinCount);
     }
-    level.fill(0);
+    level.fill(0); bandAvg.fill(0);
 }
 
 function drawSpectrum() {
@@ -351,7 +352,7 @@ function drawSpectrum() {
     let sum = 0; for (let i = 0; i < BARS; i++) sum += raw[i];
     agcMean = Math.max(25, agcMean * 0.97 + (sum / BARS) * 0.03);
     // Aggressive: the bass bands (below ~180 Hz) sit low and jump on every beat; everything else moves less and stays shorter.
-    let punch = 0;
+    let punch = 0, bassPeak = 1;
     const isBass = new Uint8Array(BARS);
     if (agg) {
         let bs = 0, bn = 0;
@@ -362,6 +363,7 @@ function drawSpectrum() {
         const bassMean = bn ? bs / bn : 0;
         punch = Math.min(1, Math.max(0, (bassMean - bassAvg - 3) / 22)); // how far the bass is above its own last second (the analyser reports decibels, so a difference, not a ratio)
         bassAvg = bassAvg * 0.96 + bassMean * 0.04;
+        for (let i = 0; i < BARS; i++) if (isBass[i]) bassPeak = Math.max(bassPeak, raw[i]);
     }
     // 3) draw
     for (let i = 0; i < BARS; i++) {
@@ -371,8 +373,16 @@ function drawSpectrum() {
         if (agg) {
             const ratio = (raw[i] / agcMean) * tilt;
             v = isBass[i]
-                ? (() => { const base = Math.min(1, ratio) * 0.18; return Math.min(1, base + punch * Math.min(1, ratio * 1.4) * (1 - base) * 1.0); })()
-                : Math.pow(Math.min(1, ratio / 2.4), 2.2) * 0.5;
+                ? (() => {
+                    // every bass band follows its own level and its own jump, so the bass keeps the real shape of the sound
+                    const own = Math.min(1, Math.max(0, (raw[i] - bandAvg[i] - 3) / 22));
+                    const shape = Math.min(1, raw[i] / bassPeak);
+                    const base = Math.min(1, ratio) * 0.12 * shape;
+                    const hit = (0.45 * punch + 0.55 * own) * (0.25 + 0.75 * shape * shape);
+                    bandAvg[i] = bandAvg[i] * 0.96 + raw[i] * 0.04;
+                    return Math.min(1, base + hit * (1 - base));
+                })()
+                : Math.pow(Math.min(1, ratio / 2.3), 2.2) * 0.55;
             level[i] = v > level[i] ? v : level[i] * (isBass[i] ? 0.78 : 0.9) + v * (isBass[i] ? 0.22 : 0.1);
         } else {
             v = Math.min(1, Math.pow(Math.min(1, (raw[i] / agcMean) * tilt / span), curve));

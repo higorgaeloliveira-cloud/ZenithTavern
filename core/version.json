@@ -1,5 +1,5 @@
 {
-  "version": "0.3.6",
+  "version": "0.3.7",
   "history": [
     {
       "version": "0.0.1",
@@ -51,6 +51,13 @@
         "ui"
       ],
       "note": "Spectrum modes: Normal, Aggressive (bass-focused, more bands) and Custom (sliders)."
+    },
+    {
+      "version": "0.3.7",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Spectrum Aggressive: each bass band follows its own level (no longer flat); the rest moves slightly more."
     }
   ]
 }
