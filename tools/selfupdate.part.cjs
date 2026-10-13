@@ -14,15 +14,15 @@ async function selfUpdate() {
   let meta;
   try {
     const res = await fetch(`${base}zenith-version.json?t=${Date.now()}`, { signal: AbortSignal.timeout(6000) });
-    if (!res.ok) { if (only) console.log(`No update information (HTTP ${res.status}).`); return false; }
+    if (!res.ok) { console.log(`  • ZenithTavern update check: no update information (HTTP ${res.status}).`); return false; }
     meta = await res.json();
-  } catch (e) { if (only) console.log('Could not reach the update server: ' + (e && e.message || e)); return false; }
+  } catch (e) { console.log('  • ZenithTavern update check: could not reach GitHub (' + (e && e.message || e) + '). Continuing.'); return false; }
   if (!meta || typeof meta.version !== 'string' || !/^[a-f0-9]{64}$/.test(String(meta.sha256))) return false;
-  if (meta.version === VERSION || !(Date.parse(meta.built) > Date.parse(BUILT))) { if (only) console.log('ZenithTavern is up to date.'); return false; }
+  if (meta.version === VERSION || !(Date.parse(meta.built) > Date.parse(BUILT))) { console.log('  ✔ ZenithTavern is up to date.'); return false; }
 
   const when = new Date(meta.built).toLocaleString();
   if (u.mode !== 'auto') {
-    if (!process.stdin.isTTY) return false; // nobody to ask (scheduled / piped run): keep what we have
+    if (!process.stdin.isTTY) { console.log('  • A newer ZenithTavern exists but this window cannot ask. Use Start-console to update.'); return false; }
     const answer = await new Promise((resolve) => {
       const rl = require('readline').createInterface({ input: process.stdin, output: process.stdout });
       const timer = setTimeout(() => { rl.close(); resolve('n'); }, 30000);
