@@ -11,6 +11,7 @@
 
 const FROM = /SillyTavern/g;
 const TO = 'ZenithTavern';
+let zenithNumber = ''; // the ZenithTavern version number, shown in the version line (see showNumber)
 const ATTRIBUTES = ['title', 'placeholder', 'alt', 'aria-label'];
 const NEVER_INSIDE = '#chat, textarea, input, code, pre, script, style, [contenteditable="true"], [data-keep-brand]';
 
@@ -23,7 +24,7 @@ function isProtected(element) {
 function rewrite(text, element) {
     // The version line keeps the engine's real name and number, which is useful when asking for help.
     if (element.closest('#version_display, #version_display_welcome')) {
-        return /^SillyTavern\b/.test(text) ? `${TO} (${text})` : text;
+        return /^SillyTavern\b/.test(text) ? `${TO}${zenithNumber ? ' v' + zenithNumber : ''} (${text})` : text;
     }
     return text.replace(FROM, TO);
 }
@@ -77,3 +78,18 @@ function start() {
 }
 
 start();
+
+// The version line reads "ZenithTavern v0.3.5 (SillyTavern 1.19.0)" so you can see at a glance which version you run.
+async function showNumber() {
+    try {
+        const res = await fetch('/api/plugins/zenith-system/version', { headers: SillyTavern.getContext().getRequestHeaders() });
+        zenithNumber = String((await res.json()).version || '');
+    } catch { return; }
+    if (!zenithNumber) return;
+    for (const el of document.querySelectorAll('#version_display, #version_display_welcome')) {
+        for (const node of el.childNodes) {
+            if (node.nodeType === 3 && /^ZenithTavern \(/.test(node.nodeValue)) node.nodeValue = node.nodeValue.replace(/^ZenithTavern /, `ZenithTavern v${zenithNumber} `);
+        }
+    }
+}
+jQuery(showNumber);

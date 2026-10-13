@@ -18,7 +18,7 @@ async function selfUpdate() {
     meta = await res.json();
   } catch (e) { console.log('  • ZenithTavern update check: could not reach GitHub (' + (e && e.message || e) + '). Continuing.'); return false; }
   if (!meta || typeof meta.version !== 'string' || !/^[a-f0-9]{64}$/.test(String(meta.sha256))) return false;
-  if (meta.version === VERSION || !(Date.parse(meta.built) > Date.parse(BUILT))) { console.log('  ✔ ZenithTavern is up to date.'); return false; }
+  if (meta.version === VERSION || !(Date.parse(meta.built) > Date.parse(BUILT))) { console.log(`  ✔ ZenithTavern is up to date (v${NUMBER}).`); return false; }
 
   const when = new Date(meta.built).toLocaleString();
   if (u.mode !== 'auto') {
@@ -26,13 +26,13 @@ async function selfUpdate() {
     const answer = await new Promise((resolve) => {
       const rl = require('readline').createInterface({ input: process.stdin, output: process.stdout });
       const timer = setTimeout(() => { rl.close(); resolve('n'); }, 30000);
-      rl.question(`\nA newer ZenithTavern is available (${when}). Update now? [Y/n] `, (a) => { clearTimeout(timer); rl.close(); resolve(a.trim().toLowerCase()); });
+      rl.question(`\nA newer ZenithTavern is available: v${NUMBER} -> v${meta.number || '?'} (${when}). Update now? [Y/n] `, (a) => { clearTimeout(timer); rl.close(); resolve(a.trim().toLowerCase()); });
     });
     if (answer && !/^y/.test(answer)) { console.log('Okay, staying on the current version.'); return false; }
   }
 
   try {
-    console.log(`Updating ZenithTavern (${when})...`);
+    console.log(`Updating ZenithTavern to v${meta.number || '?'} (${when})...`);
     const res = await fetch(`${base}ZenithTavern.cjs?t=${Date.now()}`, { signal: AbortSignal.timeout(90000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const buf = Buffer.from(await res.arrayBuffer());

@@ -57,7 +57,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // ---------- display modes ----------
 // panel   = clean screen: logo, version, platform, update check, keep-open notice. Nothing else.
 // console = the same steps, plus every command, download, file written and the live server output.
-const VERSION = '0.0.1';
+const VERSION = (() => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'core', 'version.json'), 'utf8')).version; } catch { return '0.0.0'; } })();
 let MODE = process.argv.includes('--console') ? 'console' : 'panel';
 /** Mode used when the user passed neither --panel nor --console. */
 function setDefaultMode(m) {

@@ -39,12 +39,13 @@ const builtAt = new Date().toISOString();
 let defaultUpdate = { repo: 'higorgaeloliveira-cloud/ZenithTavern', ref: 'main', mode: 'ask' };
 try { Object.assign(defaultUpdate, JSON.parse(fs.readFileSync(path.join(ROOT, 'tavern.config.json'), 'utf8')).zenithUpdates || {}); } catch { /* keep defaults */ }
 
+const number = JSON.parse(fs.readFileSync(path.join(ROOT, 'core', 'version.json'), 'utf8')).version;
 const version = crypto.createHash('sha1').update(JSON.stringify(files)).digest('hex').slice(0, 12);
 
 const bundle = `#!/usr/bin/env node
 'use strict';
 /*
- * ZenithTavern - single-file launcher (bundle ${version}).
+ * ZenithTavern - single-file launcher (bundle ${version}, v${number}).
  * Run it from any folder: it installs into the folder THIS FILE is in.
  *   node ZenithTavern.cjs            start
  *   node ZenithTavern.cjs --repair   repair
@@ -54,6 +55,7 @@ const fs = require('fs');
 const path = require('path');
 
 const VERSION = ${JSON.stringify(version)};
+const NUMBER = ${JSON.stringify(number)};
 const FILES = ${JSON.stringify(files)};
 const BUILT = ${JSON.stringify(builtAt)};
 const DEFAULT_UPDATE = ${JSON.stringify(defaultUpdate)};
@@ -105,8 +107,8 @@ selfUpdate().then((done) => { if (!done && !updateOnly) main(); }, () => { if (!
 
 fs.mkdirSync(DIST, { recursive: true });
 fs.writeFileSync(path.join(DIST, 'ZenithTavern.cjs'), bundle);
-fs.writeFileSync(path.join(DIST, 'zenith-version.json'), JSON.stringify({ version, built: builtAt, size: Buffer.byteLength(bundle), sha256: crypto.createHash('sha256').update(bundle).digest('hex') }, null, 2) + '\n');
+fs.writeFileSync(path.join(DIST, 'zenith-version.json'), JSON.stringify({ version, number, built: builtAt, size: Buffer.byteLength(bundle), sha256: crypto.createHash('sha256').update(bundle).digest('hex') }, null, 2) + '\n');
 for (const wrapper of ['Start-panel.bat', 'Start-panel.sh', 'Start-console.bat', 'Start-console.sh', 'Repair.bat', 'Repair.sh']) {
   fs.copyFileSync(path.join(ROOT, wrapper), path.join(DIST, wrapper));
 }
-console.log(`Built dist/ZenithTavern.cjs (${Object.keys(files).length} files, ${(bundle.length / 1024).toFixed(0)} KB, version ${version})`);
+console.log(`Built dist/ZenithTavern.cjs (${Object.keys(files).length} files, ${(bundle.length / 1024).toFixed(0)} KB, version ${number}, bundle ${version})`);

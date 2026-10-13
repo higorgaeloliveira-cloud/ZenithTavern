@@ -270,3 +270,20 @@ Each command can be typed in the message box or clicked as a button in the slim 
 | `!state` | Happy, Sad, Angry, Teasing, Motherly, Drunk, Affectionate, Obsessed. Lasts until *Stop*; saved per chat. |
 
 `!heat`, `!drama`, `!camera` and `!bonk` start the character's reply right away. `!state` applies from your next message.
+
+## Version numbers
+
+The number is `X.Y.Z` and it only counts up. Each kind of change adds to its own place:
+
+| Change | Adds | Example |
+|---|---|---|
+| Interface: something removed, added or changed | `0.0.1` | 0.0.1 -> 0.0.2 |
+| Inside: prompts, characters, configs, phone, server | `0.1.0` | 0.0.1 -> 0.1.1 |
+| Major: a huge change or addition | `1.0.0` | 0.0.1 -> 1.0.1 |
+
+A change of two kinds adds both. Nothing resets to zero, so a higher number is always the newer version.
+
+You can see it in the console banner, in the "newer version is available: v0.3.5 -> v0.3.6" question when you start, and in the version line of the interface (`ZenithTavern v0.3.5 (SillyTavern ...)`).
+
+For the maintainer: `node tools/bump.cjs ui|internal|major "what changed"` raises the number (and keeps a short history in `core/version.json`), then `node tools/build.cjs`.
+

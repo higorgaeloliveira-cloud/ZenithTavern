@@ -1,0 +1,49 @@
+{
+  "version": "0.3.5",
+  "history": [
+    {
+      "version": "0.0.1",
+      "kinds": [
+        "start"
+      ],
+      "note": "Where the numbering started."
+    },
+    {
+      "version": "0.1.2",
+      "kinds": [
+        "internal",
+        "ui"
+      ],
+      "note": "Commands: !heat, !drama, !camera, !bonk, !current, !state (typed and as buttons in the bar)."
+    },
+    {
+      "version": "0.1.3",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Spectrum: Advanced options (Length and Beat sliders)."
+    },
+    {
+      "version": "0.1.4",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Command pop-ups stay on screen on phones."
+    },
+    {
+      "version": "0.2.4",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Launcher: the update check reports its result; the start files fetch the launcher when it is missing."
+    },
+    {
+      "version": "0.3.5",
+      "kinds": [
+        "ui",
+        "internal"
+      ],
+      "note": "Version numbers: shown in the console, the update question and the interface; core/version.json and tools/bump.cjs added."
+    }
+  ]
+}

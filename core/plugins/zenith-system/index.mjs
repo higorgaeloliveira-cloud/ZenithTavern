@@ -4,6 +4,7 @@
  *
  * Routes (all under /api/plugins/zenith-system/):
  *   GET  /ping     health check used by the launcher's --smoke-test
+ *   GET  /version  the ZenithTavern version number (core/version.json)
  *   GET  /presets  the locked "AI response" values from tavern.config.json (key "presets")
  *   POST   /music/upload       raw audio body + X-Filename header -> saved in the user's own data folder
  *   GET    /music/file/:file   streams a saved track (supports seeking)
@@ -26,6 +27,7 @@ import { installStrictGuards, setupRoster } from './roster.mjs';
 
 // ROOT/SillyTavern/plugins/zenith-system/index.mjs -> ROOT/tavern.config.json
 const CONFIG_PATH = new URL('../../../tavern.config.json', import.meta.url);
+const VERSION_PATH = new URL('../../../core/version.json', import.meta.url);
 const DEFAULT_PRESETS = Object.freeze({ enforce: true, adaptive: true, maxContext: 200000, maxResponseTokens: 1000, temperature: 1 });
 
 function readPresets() {
@@ -116,6 +118,11 @@ export async function init(router) {
     setupRoster(router, guardState);
     router.get('/ping', (_request, response) => {
         response.json({ ok: true, message: 'pong' });
+    });
+
+    router.get('/version', (_request, response) => {
+        try { response.json({ version: JSON.parse(fs.readFileSync(VERSION_PATH, 'utf8')).version }); }
+        catch { response.json({ version: '' }); }
     });
 
     router.get('/presets', (_request, response) => {
