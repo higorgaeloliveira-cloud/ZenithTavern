@@ -260,7 +260,7 @@ function render() {
 const HONEY = [217, 154, 30]; // a little darker than the gold accent
 let BARS = 56;               // Normal: 56 bars; Aggressive: 88 thinner bars (more of them on the bass)
 let agcMean = 40, bassAvg = 40, modeApplied = '';
-const bandAvg = new Float32Array(120); // each bass band's own recent level (Aggressive)
+const punchHist = []; // recent bass hits with their time (Aggressive), so the wave can reach each bar a little later
 let canvas = null, g2d = null, actx = null, analyser = null, freq = null, raf = 0, level = new Float32Array(120), graphFailed = false;
 
 function freeWidth() {
@@ -305,11 +305,13 @@ function applyMode(mode) {
     const agg = mode === 'aggressive';
     BARS = agg ? 88 : 56;
     if (analyser) {
-        analyser.fftSize = agg ? 4096 : 2048;
+        analyser.fftSize = agg ? 8192 : 2048;          // finer bass: ~5 Hz per slice
+        analyser.minDecibels = agg ? -95 : -100;         // headroom: loud bass no longer hits the ceiling (which made it flat)
+        analyser.maxDecibels = agg ? -12 : -30;
         analyser.smoothingTimeConstant = agg ? 0.35 : 0.6;
         freq = new Uint8Array(analyser.frequencyBinCount);
     }
-    level.fill(0); bandAvg.fill(0);
+    level.fill(0); punchHist.length = 0;
 }
 
 function drawSpectrum() {
@@ -344,7 +346,11 @@ function drawSpectrum() {
         const t0 = (BARS - 1 - i) / BARS, t1 = (BARS - i) / BARS;
         const f0 = lo * Math.pow(hi / lo, t0), f1 = lo * Math.pow(hi / lo, t1);
         const b0 = Math.max(0, Math.floor(f0 / nyq * freq.length)), b1 = Math.max(b0 + 1, Math.ceil(f1 / nyq * freq.length));
-        let m = 0; for (let b = b0; b < b1 && b < freq.length; b++) m = Math.max(m, freq[b]);
+        let m = 0;
+        if (agg && b1 - b0 <= 1) { // narrower than one analysis slice: blend the two neighbours instead of repeating one value
+            const pos = ((f0 + f1) / 2) / nyq * freq.length, k = Math.min(freq.length - 2, Math.max(0, Math.floor(pos))), fr = pos - k;
+            m = freq[k] * (1 - fr) + freq[k + 1] * fr;
+        } else for (let b = b0; b < b1 && b < freq.length; b++) m = Math.max(m, freq[b]);
         raw[i] = m; if (m > frameMax) frameMax = m;
     }
     // 2) automatic level: bars are measured against the song's own recent average, so a loud, bass-heavy master no longer
@@ -365,25 +371,42 @@ function drawSpectrum() {
         bassAvg = bassAvg * 0.96 + bassMean * 0.04;
         for (let i = 0; i < BARS; i++) if (isBass[i]) bassPeak = Math.max(bassPeak, raw[i]);
     }
+    // Aggressive = Normal for everything (same volume, no bar is held back). When the bass really hits, a wave runs through the
+    // bass bands one after another (each bar a few milliseconds after the one before it), shaped like the bass itself,
+    // and neighbouring bars are blended so the result is a smooth hill and not a block.
+    let target = null;
+    if (agg) {
+        const now = performance.now();
+        punchHist.push([now, punch]);
+        while (punchHist.length > 2 && now - punchHist[0][0] > 500) punchHist.shift();
+        const sample = (t) => { // the bass hit as it was t milliseconds ago
+            for (let k = punchHist.length - 1; k >= 0; k--) {
+                if (punchHist[k][0] <= t) { const n = punchHist[k + 1]; return n ? punchHist[k][1] + (n[1] - punchHist[k][1]) * ((t - punchHist[k][0]) / Math.max(1, n[0] - punchHist[k][0])) : punchHist[k][1]; }
+            }
+            return 0;
+        };
+        let firstBass = 0; while (firstBass < BARS && !isBass[firstBass]) firstBass++;
+        const tv = new Float32Array(BARS);
+        for (let i = 0; i < BARS; i++) {
+            const tilt = 1 + ((BARS - 1 - i) / BARS) * 0.6;
+            const base = Math.min(1, Math.pow(Math.min(1, (raw[i] / agcMean) * tilt / span), curve)); // the Normal look
+            if (isBass[i]) {
+                const shape = Math.min(1, raw[i] / bassPeak);
+                const hit = sample(now - (i - firstBass) * 9) * (0.3 + 0.7 * Math.pow(shape, 1.5)); // top bass bar first, the lowest last
+                tv[i] = Math.min(1, base + hit * (1 - base));
+            } else tv[i] = base;
+        }
+        target = new Float32Array(BARS);
+        for (let i = 0; i < BARS; i++) target[i] = 0.25 * tv[Math.max(0, i - 1)] + 0.5 * tv[i] + 0.25 * tv[Math.min(BARS - 1, i + 1)];
+    }
     // 3) draw
     for (let i = 0; i < BARS; i++) {
         const t0 = (BARS - 1 - i) / BARS;
         const tilt = 1 + t0 * 0.6;                       // the top of the spectrum is naturally quiet; lift it a little
         let v;
         if (agg) {
-            const ratio = (raw[i] / agcMean) * tilt;
-            v = isBass[i]
-                ? (() => {
-                    // every bass band follows its own level and its own jump, so the bass keeps the real shape of the sound
-                    const own = Math.min(1, Math.max(0, (raw[i] - bandAvg[i] - 3) / 22));
-                    const shape = Math.min(1, raw[i] / bassPeak);
-                    const base = Math.min(1, ratio) * 0.12 * shape;
-                    const hit = (0.45 * punch + 0.55 * own) * (0.25 + 0.75 * shape * shape);
-                    bandAvg[i] = bandAvg[i] * 0.96 + raw[i] * 0.04;
-                    return Math.min(1, base + hit * (1 - base));
-                })()
-                : Math.pow(Math.min(1, ratio / 2.3), 2.2) * 0.55;
-            level[i] = v > level[i] ? v : level[i] * (isBass[i] ? 0.78 : 0.9) + v * (isBass[i] ? 0.22 : 0.1);
+            v = target[i];
+            level[i] = v > level[i] ? v : level[i] * 0.84 + v * 0.16;
         } else {
             v = Math.min(1, Math.pow(Math.min(1, (raw[i] / agcMean) * tilt / span), curve));
             level[i] = v > level[i] ? v : level[i] * 0.86 + v * 0.14; // quick attack, soft fall

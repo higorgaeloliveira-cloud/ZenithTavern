@@ -149,7 +149,7 @@ Only add devices you trust. The list is an IP check, not a password.
 
 **Spectrum, Advanced options.** Under the Music header, *Advanced options* has two sliders. *Length* (10-100 %) is how far the bars may reach into the free space; they never go past it. *Beat* (0-100) is how strongly the bars react to the bass and the rest of the sound. Bars are measured against the song's own recent average, so loud, bass-heavy songs no longer sit at the maximum; lower Beat if they still move too much, raise it for quiet songs. *Reset* restores 100 / 50.
 
-*Advanced options* now start with three modes. **Normal** is the original behaviour. **Aggressive** makes most of the sound move less and shorter, while the bass and the beat get many more bands (88 instead of 56, with a finer analysis) and hit much harder on every kick. **Custom** is the only one that uses the Length and Beat sliders; Normal and Aggressive always use the full length.
+*Advanced options* now start with three modes. **Normal** is the original behaviour. **Aggressive** moves like Normal, but when the bass really hits, a smooth wave runs through the bass bars one after another (top to bottom, a few milliseconds apart) and forms a hill shaped like the bass. It uses 88 bars and a finer analysis. **Custom** is the only one that uses the Length and Beat sliders; Normal and Aggressive always use the full length.
 
 **Phone button.** The phone button sits in a slim bar above the message box (`#zenith_bar`); future quick buttons go in the same bar.
 
