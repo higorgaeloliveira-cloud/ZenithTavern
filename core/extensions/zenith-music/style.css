@@ -36,3 +36,12 @@
 .zm-spec-row input { accent-color: var(--zenith-accent, #f5c451); cursor: pointer; }
 #zenith_music_btn.zm-spec::after { content: ''; position: absolute; right: 4px; bottom: 4px; width: 5px; height: 5px; border-radius: 50%; background: rgb(217, 154, 30); box-shadow: 0 0 5px rgb(217, 154, 30); }
 #zenith_music_btn { position: relative; }
+
+/* advanced options (spectrum length / beat) */
+.zm-adv { margin: 0 12px 6px; border: 1px solid var(--SmartThemeBorderColor, #444); border-radius: 10px; padding: 4px 10px; }
+.zm-adv > summary { cursor: pointer; padding: 6px 0; opacity: .9; }
+.zm-adv-box { display: flex; flex-direction: column; gap: 10px; padding: 4px 0 8px; }
+.zm-adv-row { display: grid; grid-template-columns: 64px 1fr 44px; align-items: center; gap: 10px; }
+.zm-adv-range { width: 100%; accent-color: rgb(217, 154, 30); }
+.zm-adv-val { text-align: right; opacity: .8; font-variant-numeric: tabular-nums; }
+.zm-adv-reset { align-self: flex-end; margin: 0; }

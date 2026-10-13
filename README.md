@@ -147,6 +147,8 @@ Only add devices you trust. The list is an IP check, not a password.
 
 **Spectrum.** While a song plays, a live honey-yellow audio spectrum (real analysis of the sound, not a canned animation) is drawn on the right border of the window. It is the lowest layer of the page: characters, the phone, menus and pop-ups sit on top of it, and it never grows past the left edge of the free space beside the chat box. Turn it on or off with the *Spectrum* switch in the Music panel, or by right-clicking the Music button (a small dot on the button shows it is on). Windows too narrow to have free space on the right show no spectrum.
 
+**Spectrum, Advanced options.** Under the Music header, *Advanced options* has two sliders. *Length* (10-100 %) is how far the bars may reach into the free space; they never go past it. *Beat* (0-100) is how strongly the bars react to the bass and the rest of the sound. Bars are measured against the song's own recent average, so loud, bass-heavy songs no longer sit at the maximum; lower Beat if they still move too much, raise it for quiet songs. *Reset* restores 100 / 50.
+
 **Phone button.** The phone button sits in a slim bar above the message box (`#zenith_bar`); future quick buttons go in the same bar.
 
 Create playlists, add your own audio files (mp3, wav, ogg, m4a, flac, opus), and press **Listen to Playlist** to play them in order. You can rename or remove playlists, reorder songs, shuffle, repeat, and the music keeps playing while you change chats or close the panel. The button glows while something plays.

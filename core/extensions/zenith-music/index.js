@@ -18,6 +18,8 @@ function settings() {
     s.shuffle ??= false;
     s.repeat ??= 'all'; // off | all | one
     s.spectrum ??= true; // live audio spectrum on the right border
+    s.specLength ??= 100; // Advanced: how far the bars may go, 10-100 % of the free space on the right
+    s.specBeat ??= 50;    // Advanced: how strongly the bars react, 0-100
     return s;
 }
 const save = () => ctx().saveSettingsDebounced();
@@ -255,6 +257,7 @@ function render() {
 // The canvas sits at the very bottom of the page, so characters, the phone, menus and pop-ups are all drawn on top of it.
 const HONEY = [217, 154, 30]; // a little darker than the gold accent
 const BARS = 56;
+let agcMean = 40;
 let canvas = null, g2d = null, actx = null, analyser = null, freq = null, raf = 0, level = new Float32Array(BARS), graphFailed = false;
 
 function freeWidth() {
@@ -308,16 +311,32 @@ function drawSpectrum() {
     g2d.setTransform(dpr, 0, 0, dpr, 0, 0);
     g2d.clearRect(0, 0, W, H);
     const slot = H / BARS, thick = Math.max(2, slot * 0.62);
+    const st = settings();
+    const maxLen = W * Math.min(1, Math.max(0.1, Number(st.specLength) / 100)); // "Length": the bars never go past this
+    const beat = Math.min(1, Math.max(0, Number(st.specBeat) / 100));
+    const span = 1.1 + (1 - beat) * 1.4; // "Beat": how far above the song's own average a bar must go to reach the maximum
+    const curve = 2.2 - beat * 1.0;      //        and how sharply it jumps on peaks (low = calm, high = lively)
+    // 1) read every bar
+    const raw = new Float32Array(BARS); let frameMax = 0;
     for (let i = 0; i < BARS; i++) {
         // lowest sounds at the bottom, highest at the top; log spacing so bass does not take the whole height
         const t0 = (BARS - 1 - i) / BARS, t1 = (BARS - i) / BARS;
         const f0 = lo * Math.pow(hi / lo, t0), f1 = lo * Math.pow(hi / lo, t1);
         const b0 = Math.max(0, Math.floor(f0 / nyq * freq.length)), b1 = Math.max(b0 + 1, Math.ceil(f1 / nyq * freq.length));
         let m = 0; for (let b = b0; b < b1 && b < freq.length; b++) m = Math.max(m, freq[b]);
-        const tilt = 1 + t0 * 0.9;                       // the top of the spectrum is naturally quiet; lift it a little
-        const v = Math.min(1, Math.pow((m / 255) * tilt, 1.35));
+        raw[i] = m; if (m > frameMax) frameMax = m;
+    }
+    // 2) automatic level: bars are measured against the song's own recent average, so a loud, bass-heavy master no longer
+    //    sits at the maximum; only what rises above the average reaches far. The average follows slowly.
+    let sum = 0; for (let i = 0; i < BARS; i++) sum += raw[i];
+    agcMean = Math.max(25, agcMean * 0.97 + (sum / BARS) * 0.03);
+    // 3) draw
+    for (let i = 0; i < BARS; i++) {
+        const t0 = (BARS - 1 - i) / BARS;
+        const tilt = 1 + t0 * 0.6;                       // the top of the spectrum is naturally quiet; lift it a little
+        const v = Math.min(1, Math.pow(Math.min(1, (raw[i] / agcMean) * tilt / span), curve));
         level[i] = v > level[i] ? v : level[i] * 0.86 + v * 0.14; // quick attack, soft fall
-        const len = Math.max(0, level[i] * W);
+        const len = Math.min(maxLen, Math.max(0, level[i] * maxLen));
         if (len < 1.5) continue;
         const y = i * slot + (slot - thick) / 2;
         const grad = g2d.createLinearGradient(W, 0, W - len, 0);
@@ -367,6 +386,22 @@ function mount() {
             h('label', { class: 'zm-spec-row', title: 'Live spectrum on the right border of the window' }, h('span', {}, 'Spectrum'),
                 (() => { const i = h('input', { type: 'checkbox', class: 'zm-spec-switch' }); i.checked = settings().spectrum; i.addEventListener('change', () => { settings().spectrum = i.checked; save(); updateSpectrum(); }); return i; })()),
             h('button', { type: 'button', class: 'zm-x', title: 'Close', onclick: () => setOpen(false) }, '✕')),
+        h('details', { class: 'zm-adv' },
+            h('summary', {}, 'Advanced options'),
+            h('p', { class: 'zm-note' }, 'Audio spectrum'),
+            (() => {
+                const row = (label, key, hint, min) => {
+                    const out = h('span', { class: 'zm-adv-val' });
+                    const input = h('input', { type: 'range', min, max: 100, step: 1, class: 'zm-adv-range' });
+                    input.value = settings()[key]; out.textContent = `${input.value}%`;
+                    input.addEventListener('input', () => { settings()[key] = Number(input.value); out.textContent = `${input.value}%`; save(); });
+                    return h('label', { class: 'zm-adv-row', title: hint }, h('span', { class: 'zm-adv-name' }, label), input, out);
+                };
+                return h('div', { class: 'zm-adv-box' },
+                    row('Length', 'specLength', 'How far the bars may reach into the free space on the right. Lower it if they stretch too far.', 10),
+                    row('Beat', 'specBeat', 'How much the bars move with the bass and the rest of the sound. Lower it for loud songs, raise it for quiet ones.', 0),
+                    h('button', { type: 'button', class: 'menu_button zm-adv-reset', onclick: (e) => { settings().specLength = 100; settings().specBeat = 50; save(); e.target.closest('.zm-adv').querySelectorAll('.zm-adv-range').forEach((r, k) => { r.value = k ? 50 : 100; r.dispatchEvent(new Event('input')); }); } }, 'Reset'));
+            })()),
         h('div', { class: 'zm-body' }));
     document.body.append(root);
 
