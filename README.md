@@ -255,3 +255,18 @@ that work. Publishing yours under AGPL-3.0 (the included `LICENSE`) is the safe 
 modified version for other people over a network, you must offer them the source.
 This project contains no code or content from WeylandTavern; if you later borrow from another fork,
 check its license first. Its characters, prompts and setting text are not licensed for reuse.
+
+### Commands (`!`)
+
+Each command can be typed in the message box or clicked as a button in the slim bar above it (next to the phone button). A command never becomes a chat message; it asks in a pop-up and steers the character's reply.
+
+| Command | What it does |
+|---|---|
+| `!heat` | Explicit bypass. Needs the "I confirm I am 18 y/o or more" box ticked before *Continue* works. The reply is written in RUBY mode (it is disabled if RUBY is turned off in Prompt OS). |
+| `!drama` | Pick Funny / Good / Bad / Confusing / Unusual or *Choose For Me*; an unexpected development enters the scene. |
+| `!camera` | Type what to inspect (`!camera lake` pre-fills it); the next reply describes it in about twice the detail. |
+| `!bonk` | Only works when the scene is heading NSFW. The character settles into romantic / affectionate for the next 3 replies. |
+| `!current` | Shows what the model understood about your persona (name, age, race, description, UNI year, other fields). *Click to extend* asks the model for a longer description. Nothing goes to the chat. |
+| `!state` | Happy, Sad, Angry, Teasing, Motherly, Drunk, Affectionate, Obsessed. Lasts until *Stop*; saved per chat. |
+
+`!heat`, `!drama`, `!camera` and `!bonk` start the character's reply right away. `!state` applies from your next message.
