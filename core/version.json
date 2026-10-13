@@ -1,5 +1,5 @@
 {
-  "version": "0.3.8",
+  "version": "0.3.9",
   "history": [
     {
       "version": "0.0.1",
@@ -65,6 +65,13 @@
         "ui"
       ],
       "note": "Spectrum Aggressive: same volume as Normal, bass hits travel as a smooth wave through the bass bars."
+    },
+    {
+      "version": "0.3.9",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Start screen: the ZenithTavern update question now comes after the banner and \"Checking for updates...\"."
     }
   ]
 }

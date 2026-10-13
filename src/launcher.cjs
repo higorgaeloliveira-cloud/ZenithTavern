@@ -32,15 +32,23 @@ process.on('SIGINT', () => { L.say(); L.info('Shutting down...'); stop(0); });
 process.on('SIGTERM', () => stop(0));
 
 async function updateStep() {
-  if (process.argv.includes('--no-update') || cfg.upstream.updates === 'never') return;
-  L.info(consoleMode() ? 'Checking for SillyTavern updates...' : 'Checking for updates...');
+  const noUpdate = process.argv.includes('--no-update');
+  let zenith = false;
+  if (!noUpdate) {
+    // ZenithTavern's own update comes right after the "Checking for updates..." line (the single-file launcher provides it)
+    L.info(consoleMode() ? 'Checking for ZenithTavern updates...' : 'Checking for updates...');
+    try { zenith = typeof globalThis.__zenithSelfUpdate === 'function' ? await globalThis.__zenithSelfUpdate({ quiet: !consoleMode(), ask: L.yesNo }) : false; }
+    catch { /* the check is optional: never block the start */ }
+  }
+  if (noUpdate || cfg.upstream.updates === 'never') return;
+  if (consoleMode()) L.info('Checking for SillyTavern updates...');
   const result = L.checkUpstreamUpdate();
   if (!result) { L.warn('Could not check for updates (offline?). Continuing with what you have.'); return; }
   if (!result.changed) {
     const stVersion = stVersionText();
     L.ok(consoleMode()
       ? `SillyTavern is up to date ${C.dim}(${result.current.slice(0, 7)})${C.reset}`
-      : `${cfg.name} is up to date. ${C.dim}(SillyTavern ${stVersion}${stVersion ? ' · ' : ''}${result.current.slice(0, 7)})${C.reset}`);
+      : `${zenith === 'declined' ? 'SillyTavern' : cfg.name} is up to date. ${C.dim}(v${L.VERSION} · SillyTavern ${stVersion}${stVersion ? ' · ' : ''}${result.current.slice(0, 7)})${C.reset}`);
     return;
   }
 

@@ -101,8 +101,9 @@ fs.writeFileSync(stampFile, VERSION);
 require(path.join(ROOT, 'src', process.argv.includes('--repair') ? 'repair.cjs' : 'launcher.cjs'));
 }
 
-const updateOnly = process.argv.includes('--update-only');
-selfUpdate().then((done) => { if (!done && !updateOnly) main(); }, () => { if (!updateOnly) main(); });
+// The start screen asks for the ZenithTavern update itself (src/launcher.cjs, right after "Checking for updates...").
+globalThis.__zenithSelfUpdate = selfUpdate;
+if (process.argv.includes('--update-only')) selfUpdate().catch(() => {}); else main();
 `;
 
 fs.mkdirSync(DIST, { recursive: true });

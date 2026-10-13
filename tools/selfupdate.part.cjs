@@ -1,7 +1,7 @@
 // ---- ZenithTavern self-update: checks the project's GitHub repo for a newer launcher ---------------------------
 // Runs first, before anything is unpacked. Offline, blocked, or no newer version => it silently does nothing.
 // Settings (tavern.config.json): "zenithUpdates": { "repo": "owner/name", "ref": "main", "mode": "ask" | "auto" | "off" }
-async function selfUpdate() {
+async function selfUpdate(opts = {}) {
   const args = process.argv.slice(2);
   if (process.env.ZENITH_SKIP_UPDATE === '1' || args.includes('--no-update') || args.includes('--smoke-test') || args.includes('--repair')) return false;
   let cfg = {};
@@ -18,17 +18,23 @@ async function selfUpdate() {
     meta = await res.json();
   } catch (e) { console.log('  • ZenithTavern update check: could not reach GitHub (' + (e && e.message || e) + '). Continuing.'); return false; }
   if (!meta || typeof meta.version !== 'string' || !/^[a-f0-9]{64}$/.test(String(meta.sha256))) return false;
-  if (meta.version === VERSION || !(Date.parse(meta.built) > Date.parse(BUILT))) { console.log(`  ✔ ZenithTavern is up to date (v${NUMBER}).`); return false; }
+  if (meta.version === VERSION || !(Date.parse(meta.built) > Date.parse(BUILT))) { if (!opts.quiet) console.log(`  ✔ ZenithTavern is up to date (v${NUMBER}).`); return false; }
 
   const when = new Date(meta.built).toLocaleString();
   if (u.mode !== 'auto') {
     if (!process.stdin.isTTY) { console.log('  • A newer ZenithTavern exists but this window cannot ask. Use Start-console to update.'); return false; }
-    const answer = await new Promise((resolve) => {
-      const rl = require('readline').createInterface({ input: process.stdin, output: process.stdout });
-      const timer = setTimeout(() => { rl.close(); resolve('n'); }, 30000);
-      rl.question(`\nA newer ZenithTavern is available: v${NUMBER} -> v${meta.number || '?'} (${when}). Update now? [Y/n] `, (a) => { clearTimeout(timer); rl.close(); resolve(a.trim().toLowerCase()); });
-    });
-    if (answer && !/^y/.test(answer)) { console.log('Okay, staying on the current version.'); return false; }
+    const question = `A newer ZenithTavern is available (v${NUMBER} -> v${meta.number || '?'}, ${when}). Update now?`;
+    let yes;
+    if (typeof opts.ask === 'function') yes = await opts.ask(question, 'Y');
+    else {
+      const answer = await new Promise((resolve) => {
+        const rl = require('readline').createInterface({ input: process.stdin, output: process.stdout });
+        const timer = setTimeout(() => { rl.close(); resolve('n'); }, 30000);
+        rl.question(`\n${question} [Y/n] `, (a) => { clearTimeout(timer); rl.close(); resolve(a.trim().toLowerCase()); });
+      });
+      yes = !answer || /^y/.test(answer);
+    }
+    if (!yes) { console.log('  • Okay, staying on the current version.'); return 'declined'; }
   }
 
   try {
