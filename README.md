@@ -276,6 +276,8 @@ Each command can be typed in the message box or clicked as a button in the slim 
 
 `!heat`, `!drama`, `!camera` and `!bonk` start the character's reply right away. `!state` applies from your next message.
 
+*Note:* SillyTavern saves a card by itself when a chat is opened. In this fork that automatic save is quietly accepted and ignored (the card is never written), so opening a chat shows no error. Renaming, replacing the picture and deleting are still refused.
+
 ## Version numbers
 
 The number is `X.Y.Z` and it only counts up. Each kind of change adds to its own place:

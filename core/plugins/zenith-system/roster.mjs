@@ -267,7 +267,10 @@ export async function installStrictGuards() {
                 case '/duplicate': return blockWith('duplicate', request, response);
                 case '/create': return allowCreate ? next() : blockWith('create', request, response);
                 // the card itself is read-only: no editing, renaming, new avatar or deleting
-                case '/edit': return blockWith('edit', request, response);
+                // SillyTavern also saves the card by itself when a chat is opened (to remember the chat), through this same route.
+                // Refusing it showed "Something went wrong while saving the character... webp", so it is quietly accepted and ignored:
+                // the card is never written, and nothing in the interface lets anyone edit it anyway.
+                case '/edit': console.warn('[Zenith] strict characters: ignored an automatic card save'); return response.status(200).send('ok');
                 case '/edit-avatar': return blockWith('edit', request, response);
                 case '/rename': return blockWith('edit', request, response);
                 case '/delete': return blockWith('delete', request, response);

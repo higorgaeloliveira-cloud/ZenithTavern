@@ -1,5 +1,5 @@
 {
-  "version": "0.6.14",
+  "version": "0.7.14",
   "history": [
     {
       "version": "0.0.1",
@@ -110,6 +110,13 @@
         "ui"
       ],
       "note": "LunaRouter: change a model after multiple failures (random, similar context length, or a word in the name)."
+    },
+    {
+      "version": "0.7.14",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Fix: opening a chat no longer shows 'Something went wrong while saving the character' (the automatic card save is accepted and ignored)."
     }
   ]
 }
