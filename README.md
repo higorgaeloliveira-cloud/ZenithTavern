@@ -125,7 +125,8 @@ The **Log Terminal** button at the very bottom of Settings opens a view-only win
 In **Settings**, right under the **Connect** button, press **LunaRouter**. A window opens where you set up:
 
 - **Connections (up to 2):** each one is *OpenRouter* or *LM Studio / local server* (any OpenAI-compatible address, for example `http://127.0.0.1:1234/v1`). Keys are never stored by LunaRouter: it uses the key you saved in Settings for that API. **Load models** lists what each connection offers.
-- **Models (up to 4):** pick the connection, type or choose the model name, and choose its **order** (1st, 2nd, 3rd, 4th).
+- **Models (up to 6):** pick the connection, type or choose the model name, and choose its **order** (1st to 6th).
+- **Finish cut-off replies with the next model** (on by default): if a model stops in the middle of a reply, or in the middle of thinking, the next model continues from where it stopped (cut back to the last finished sentence) and only the finished reply is sent to the chat. A model that ran out of budget while thinking, with no reply yet, hands over to the next model from scratch. This works with streaming off, which is the default.
 - **Use LunaRouter:** when ON, every reply is tried on the 1st model; if it fails (an error, an error message from the provider, an empty reply, or no answer within the time limit you set), the same request goes to the 2nd, and so on. Pressing Stop never retries. If every model fails you see SillyTavern's normal error.
 
 While it is ON, LunaRouter chooses the model: the one picked in Settings is ignored. It works with Chat Completion. Slash command: `/luna-router on|off|open`. Code: `core/extensions/zenith-router/`.

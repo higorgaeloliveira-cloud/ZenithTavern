@@ -1,7 +1,7 @@
 /*
  * LunaRouter - automatic fallback between models and APIs.
  *
- * You pick up to 4 models, say which connection each one uses (up to 2 connections) and in what
+ * You pick up to 6 models, say which connection each one uses (up to 2 connections) and in what
  * order they are tried. When a reply fails, LunaRouter sends the same request to the next model.
  *
  * How it works: SillyTavern sends every chat-completion reply to /api/backends/chat-completions/generate.
@@ -11,7 +11,7 @@
  */
 const MODULE = 'luna_router';
 const GENERATE_PATH = '/api/backends/chat-completions/generate';
-const MAX_ROUTES = 4;
+const MAX_ROUTES = 6;
 const TYPES = {
     off: { label: 'Not used', source: null },
     openrouter: { label: 'OpenRouter', source: 'openrouter', secret: 'api_key_openrouter' },
@@ -30,6 +30,7 @@ function defaults() {
         ],
         routes: [],           // in the order they are tried: { conn: 0|1, model: '' }
         retryEmpty: true,     // an empty reply counts as a failure
+        continueCut: true,    // a reply that stopped before it was finished is continued by the next model
         timeoutSec: 0,        // give up on a model after this long without an answer (0 = never)
     };
 }
@@ -77,13 +78,21 @@ async function judge(res, isStream, retryEmpty) {
             const data = await probe.json().catch(() => null);
             if (!data) return { ok: true };
             if (data.error) return { ok: false, error: data.error?.message || 'the API returned an error' };
-            if (retryEmpty && Array.isArray(data.choices)) {
-                const has = data.choices.some((c) => {
-                    const m = c?.message ?? {};
-                    return (typeof m.content === 'string' && m.content.trim()) || (Array.isArray(m.content) && m.content.length)
-                        || m.tool_calls?.length || m.reasoning_content || m.reasoning || c?.text?.trim?.();
-                });
-                if (!has) return { ok: false, error: 'empty reply' };
+            if (Array.isArray(data.choices)) {
+                const c0 = data.choices[0] || {};
+                const m = c0.message ?? {};
+                const text = typeof m.content === 'string' ? m.content : (Array.isArray(m.content) ? m.content.map((p) => p?.text || '').join('') : (c0.text || ''));
+                const hasText = !!String(text).trim();
+                const fin = String(c0.finish_reason || c0.native_finish_reason || '').toLowerCase();
+                const hitLimit = /length|max_tokens|max_output/.test(fin);
+                if (!m.tool_calls?.length) {
+                    // thinking models: the budget ran out while still thinking, so there is no reply at all
+                    if (!hasText && (m.reasoning_content || m.reasoning || hitLimit)) return { ok: false, error: 'cut off while thinking', cut: true, data, text: '' };
+                    if (!hasText && retryEmpty) return { ok: false, error: 'empty reply' };
+                    // the reply stopped before it was finished: by the limit, or in the middle of a sentence
+                    if (hasText && (hitLimit || (!fin && !/[.!?…"'”’*)\]~>]\s*$/.test(String(text).trim())))) return { ok: true, cut: true, data, text: String(text) };
+                }
+                return { ok: true, data, text: String(text) };
             }
             return { ok: true };
         }
@@ -139,21 +148,65 @@ async function routed(realFetch, input, init) {
     try { body = JSON.parse(init.body); } catch { return realFetch(input, init); }
 
     let lastFail = null;
+    let carry = '';        // what earlier models already wrote (cut at the last finished sentence)
+    let template = null;   // the first answer's JSON, reused to deliver the finished reply
     for (let i = 0; i < routes.length; i++) {
         const route = routes[i];
-        const result = await tryRoute(realFetch, url, init, body, route, s.connections[route.conn], s);
-        if (result.ok) {
+        const result = await tryRoute(realFetch, url, init, carry ? continuationBody(body, carry) : body, route, s.connections[route.conn], s);
+        const next = i + 1 < routes.length ? routeLabel(s, routes[i + 1]) : '';
+        if (result.ok && !(result.cut && s.continueCut !== false && result.data)) {
             lastUsed = routeLabel(s, route);
             if (i > 0) toastr.success(`Answered by ${routeLabel(s, route)}`, 'LunaRouter');
+            if (carry && result.data) return finishedResponse(result.data, join(carry, result.text || ''));
             return result.res;
+        }
+        if (result.ok || (result.cut && s.continueCut !== false)) {
+            // a model stopped before the reply was finished: keep what it wrote and let the next model continue from there
+            const kept = result.text ? cutAtSentence(carry ? join(carry, result.text) : result.text) : carry;
+            template ??= result.data;
+            carry = kept;
+            console.warn(`[LunaRouter] ${routeLabel(s, route)} stopped before the reply was finished (${carry.length} characters kept)`);
+            lastFail = result;
+            if (next) toastr.warning(`${routeLabel(s, route)} stopped before finishing. ${next} will continue from there…`, 'LunaRouter');
+            continue;
         }
         console.warn(`[LunaRouter] ${routeLabel(s, route)} failed: ${result.error}`);
         lastFail = result;
-        if (i + 1 < routes.length) toastr.warning(`${routeLabel(s, route)} failed (${String(result.error).slice(0, 80)}). Trying ${routeLabel(s, routes[i + 1])}…`, 'LunaRouter');
+        if (next) toastr.warning(`${routeLabel(s, route)} failed (${String(result.error).slice(0, 80)}). Trying ${next}…`, 'LunaRouter');
+    }
+    if (carry && template) {
+        toastr.warning('Every model stopped early. The reply was sent as far as it got.', 'LunaRouter');
+        return finishedResponse(template, carry);
     }
     toastr.error('Every model in LunaRouter failed. The last error is shown by SillyTavern.', 'LunaRouter');
     if (lastFail?.res) return lastFail.res;      // let SillyTavern show its usual error
     throw new TypeError(lastFail?.error || 'LunaRouter: no model answered');
+}
+
+/** Keeps the text up to the last finished sentence, so the next model starts on a clean boundary (never mid-word). */
+function cutAtSentence(text) {
+    const t = String(text).replace(/\s+$/, '');
+    const m = [...t.matchAll(/[.!?…]+["'”’*)\]~]*(?=\s|$)/g)].pop();
+    if (m) return t.slice(0, m.index + m[0].length);
+    return t.length >= 200 ? t.replace(/\s+\S*$/, '') : ''; // no finished sentence: only keep a long start, without its half-written last word
+}
+const join = (a, b) => (!b ? a : !a ? b : (/\s$/.test(a) || /^[\s.,;:!?)]/.test(b) ? a + b : `${a} ${b}`));
+
+/** The same request, plus what has been written so far and a note to carry on from it. */
+function continuationBody(body, carry) {
+    if (!Array.isArray(body.messages)) return body;
+    return { ...body, messages: [...body.messages,
+        { role: 'assistant', content: carry },
+        { role: 'user', content: '[The reply above was cut off before it was finished. Continue it from exactly where it stopped: no repeating, no restarting, no new header line, no note about the cut. Write only the rest of the reply, in the same voice, format and length rules.]' }] };
+}
+
+/** Builds the answer SillyTavern expects, holding the finished text. */
+function finishedResponse(data, text) {
+    const out = structuredClone(data);
+    const c0 = out.choices[0];
+    c0.finish_reason = 'stop';
+    if (c0.message) { c0.message.content = text; delete c0.message.reasoning_content; delete c0.message.reasoning; } else c0.text = text;
+    return new Response(JSON.stringify(out), { status: 200, headers: { 'Content-Type': 'application/json' } });
 }
 
 const realFetch = window.fetch.bind(window);
@@ -236,7 +289,7 @@ function buildForm(draft, rerenderOuter) {
                     h('button', { type: 'button', class: 'menu_button', onclick: () => loadModels(draft, i, render) }, 'Load models'),
                     h('small', {}, modelStatus[i])) : null)),
 
-            h('h4', {}, 'Models (up to 4, tried in this order)'),
+            h('h4', {}, 'Models (up to 6, tried in this order)'),
             draft.routes.map((route, i) => h('div', { class: 'lr-route' },
                 (() => {
                     const sel = h('select', { class: 'text_pole lr-order', title: 'Order' }, draft.routes.map((_, k) => h('option', { value: k, ...(k === i ? { selected: true } : {}) }, `${k + 1}${['st', 'nd', 'rd', 'th'][k]}`)));
@@ -263,6 +316,8 @@ function buildForm(draft, rerenderOuter) {
             h('h4', {}, 'Options'),
             h('label', { class: 'lr-row' }, h('span', {}, 'Treat an empty reply as a failure'),
                 (() => { const c = h('input', { type: 'checkbox', ...(draft.retryEmpty ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.retryEmpty = c.checked; }); return c; })()),
+            h('label', { class: 'lr-row', title: 'If a model stops in the middle of a reply (or in the middle of thinking), the next model continues from where it stopped, and only the finished reply is sent to the chat.' }, h('span', {}, 'Finish cut-off replies with the next model'),
+                (() => { const c = h('input', { type: 'checkbox', ...(draft.continueCut ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.continueCut = c.checked; }); return c; })()),
             h('label', { class: 'lr-row' }, h('span', {}, 'Give up on a model after (seconds, 0 = never)'),
                 (() => { const n = h('input', { class: 'text_pole lr-num', type: 'number', min: 0, max: 600, value: draft.timeoutSec }); n.addEventListener('input', () => { draft.timeoutSec = Math.max(0, Number(n.value) || 0); }); return n; })()),
             lastUsed ? h('p', { class: 'lr-note' }, `Last reply came from: ${lastUsed}`) : null,
@@ -276,7 +331,7 @@ async function openRouterPopup() {
     const { callGenericPopup, POPUP_TYPE, POPUP_RESULT, saveSettingsDebounced } = ctx();
     await loadSecretState();
     const current = settings();
-    const draft = structuredClone({ enabled: current.enabled, connections: current.connections, routes: current.routes, retryEmpty: current.retryEmpty, timeoutSec: current.timeoutSec });
+    const draft = structuredClone({ enabled: current.enabled, connections: current.connections, routes: current.routes, retryEmpty: current.retryEmpty, continueCut: current.continueCut, timeoutSec: current.timeoutSec });
     const content = h('div', { class: 'lr-popup' }, h('h3', {}, '🌙 LunaRouter'), buildForm(draft));
     const result = await callGenericPopup(content, POPUP_TYPE.CONFIRM, '', { okButton: 'Save', cancelButton: 'Cancel', wide: true, allowVerticalScrolling: true });
     if (result !== POPUP_RESULT.AFFIRMATIVE) return;

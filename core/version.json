@@ -1,5 +1,5 @@
 {
-  "version": "0.3.10",
+  "version": "0.4.11",
   "history": [
     {
       "version": "0.0.1",
@@ -79,6 +79,14 @@
         "ui"
       ],
       "note": "Spectrum: Audio Simulation slider (all modes) and Lanes slider (Custom)."
+    },
+    {
+      "version": "0.4.11",
+      "kinds": [
+        "internal",
+        "ui"
+      ],
+      "note": "LunaRouter: a cut-off reply (or cut-off thinking) is continued by the next model before it reaches the chat; up to 6 models."
     }
   ]
 }
