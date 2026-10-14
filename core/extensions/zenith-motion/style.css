@@ -1,0 +1,75 @@
+/*
+ * Zenith Motion - things ease in and out instead of snapping. Pure CSS (no scripts), so it cannot break anything.
+ * Everything honours the system setting "reduce motion": with it on, nothing here moves.
+ * Only transform, opacity and colours are animated, which keeps it smooth on phones.
+ */
+:root { --zmo-ease: cubic-bezier(.2, .8, .2, 1); --zmo-fast: .16s; --zmo-mid: .28s; }
+
+@keyframes zmo-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes zmo-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes zmo-pop { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes zmo-pop-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(10px) scale(.97); } }
+@keyframes zmo-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes zmo-drop { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes zmo-drop-out { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -8px); } }
+
+/* buttons and icons: colour, lift and press feedback */
+.menu_button, .mes_button, .drawer-icon, .zph-fab, .zc-btn, .zm-adv-seg, #send_but, .zph-app-icon, .zr-card, .zr-btn, .zr-x, .zm-x,
+.character_select, .group_select, .bg_example, .avatar-container, .list-group-item, .extension_block, .inline-drawer-header {
+  transition: background-color var(--zmo-fast) ease, border-color var(--zmo-fast) ease, color var(--zmo-fast) ease,
+    box-shadow var(--zmo-mid) var(--zmo-ease), transform var(--zmo-mid) var(--zmo-ease), opacity var(--zmo-fast) ease;
+}
+.zph-fab:hover:not(:active), .drawer-icon:hover:not(:active) { transform: translateY(-2px) scale(1.06); }
+.zph-fab:active, .zc-btn:active, .menu_button:active, .zm-adv-seg:active, .zr-btn:active { transform: scale(.95); }
+.zc-btn:hover:not([disabled]), .zm-adv-seg:hover { transform: translateY(-1px); }
+.zr-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px #0008; }
+.zph-app-icon { transition-property: transform, box-shadow, filter; }
+.zph-app:hover .zph-app-icon { transform: scale(1.08); }
+.zph-app:active .zph-app-icon { transform: scale(.92); }
+
+/* new chat messages settle in; the last one only, so loading a long chat does not make everything jump */
+#chat .mes.last_mes { animation: zmo-rise .35s var(--zmo-ease) backwards; }
+
+/* settings and panel sections open with a soft rise */
+details[open] > *:not(summary) { animation: zmo-rise .28s var(--zmo-ease) backwards; }
+.inline-drawer-content { animation: zmo-fade .25s ease backwards; }
+
+/* Zenith pop-ups and panels */
+.zc-overlay { animation: zmo-fade .18s ease backwards; }
+.zc-modal { animation: zmo-pop .26s var(--zmo-ease) backwards; }
+.zc-overlay.zc-out { animation: zmo-fade-out .16s ease both; pointer-events: none; }
+.zc-overlay.zc-out .zc-modal { animation: zmo-pop-out .16s ease both; }
+.zr-overlay { animation: zmo-fade .22s ease backwards; }
+.zr-overlay.zr-out { animation: zmo-fade-out .17s ease both; pointer-events: none; }
+.zr-card { animation: zmo-rise .4s var(--zmo-ease) backwards; }
+.zr-card:nth-child(1) { animation-delay: 45ms; }
+.zr-card:nth-child(2) { animation-delay: 90ms; }
+.zr-card:nth-child(3) { animation-delay: 135ms; }
+.zr-card:nth-child(4) { animation-delay: 180ms; }
+.zr-card:nth-child(5) { animation-delay: 225ms; }
+.zr-card:nth-child(6) { animation-delay: 270ms; }
+.zr-card:nth-child(7) { animation-delay: 315ms; }
+.zr-card:nth-child(8) { animation-delay: 360ms; }
+.zr-card:nth-child(9) { animation-delay: 405ms; }
+.zr-card:nth-child(10) { animation-delay: 450ms; }
+.zr-card:nth-child(11) { animation-delay: 495ms; }
+.zr-card:nth-child(12) { animation-delay: 540ms; }
+.zm-panel.zm-open { animation: zmo-drop .24s var(--zmo-ease) backwards; }
+.zm-panel.zm-open.zm-closing { animation: zmo-drop-out .17s ease both; pointer-events: none; }
+.zph-wrap.zph-open.zph-closing .zph-phone { animation: zmo-pop-out .2s ease both; }
+.zph-wrap.zph-open.zph-closing { pointer-events: none; }
+.zm-adv-sliders { animation: zmo-rise .25s var(--zmo-ease) backwards; }
+#zenith_bar .zph-fab { animation: zmo-rise .4s var(--zmo-ease) backwards; }
+#zenith_bar .zph-fab:nth-child(2) { animation-delay: .04s; } #zenith_bar .zph-fab:nth-child(3) { animation-delay: .08s; }
+#zenith_bar .zph-fab:nth-child(4) { animation-delay: .12s; } #zenith_bar .zph-fab:nth-child(5) { animation-delay: .16s; }
+#zenith_bar .zph-fab:nth-child(6) { animation-delay: .2s; } #zenith_bar .zph-fab:nth-child(7) { animation-delay: .24s; }
+#zenith_spectrum { animation: zmo-fade .5s ease backwards; }
+
+/* the volume-style sliders glide */
+.zm-adv-range { transition: opacity var(--zmo-fast) ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .zc-overlay, .zc-modal, .zr-overlay, .zr-card, .zm-panel, .zph-phone, .zm-adv-sliders, #zenith_bar .zph-fab, #zenith_spectrum, #chat .mes.last_mes,
+  details[open] > *:not(summary), .inline-drawer-content { animation: none !important; }
+  .menu_button, .mes_button, .drawer-icon, .zph-fab, .zc-btn, .zm-adv-seg, .zr-card, .zph-app-icon { transition: none !important; transform: none !important; }
+}

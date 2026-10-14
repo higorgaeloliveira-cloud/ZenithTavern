@@ -172,7 +172,8 @@ async function open() {
 }
 
 function close() {
-    root?.remove(); root = null;
+    if (root) { const gone = root; gone.classList.add('zr-out'); setTimeout(() => gone.remove(), 180); }
+    root = null;
     document.getElementById('zenith_roster_btn')?.classList.remove('zr-active');
 }
 

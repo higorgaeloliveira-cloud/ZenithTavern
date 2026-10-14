@@ -290,3 +290,7 @@ You can see it in the console banner, in the "newer version is available: v0.3.5
 
 For the maintainer: `node tools/bump.cjs ui|internal|major "what changed"` raises the number (and keeps a short history in `core/version.json`), then `node tools/build.cjs`.
 
+## Smooth motion
+
+Zenith Motion (`core/extensions/zenith-motion`, CSS only) makes the interface ease instead of snapping: buttons and icons lift and press, new chat messages settle in, and the command pop-ups, the Roster-Downloader (its cards rise one after another), the Music panel, the phone, settings sections and the command bar all fade or slide in and out. Only transform, opacity and colours are animated, so it stays smooth on phones. If your system is set to "reduce motion", none of it moves.
+

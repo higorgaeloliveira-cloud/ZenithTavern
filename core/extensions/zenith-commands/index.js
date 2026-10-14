@@ -34,7 +34,7 @@ function modal({ title, lead, body, buttons }) {
     if (modalOpen) modalOpen(null);
     return new Promise((resolve) => {
         const btnEls = [];
-        const done = (v) => { overlay.remove(); document.removeEventListener('keydown', onKey, true); modalOpen = null; resolve(v); };
+        const done = (v) => { overlay.classList.add('zc-out'); setTimeout(() => overlay.remove(), 170); document.removeEventListener('keydown', onKey, true); modalOpen = null; resolve(v); };
         const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); done(null); } };
         const content = typeof body === 'function' ? body(done) : body;
         const foot = h('div', { class: 'zc-foot' }, buttons.map((b) => {

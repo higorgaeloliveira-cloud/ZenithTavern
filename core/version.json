@@ -1,5 +1,5 @@
 {
-  "version": "0.4.11",
+  "version": "0.4.12",
   "history": [
     {
       "version": "0.0.1",
@@ -87,6 +87,13 @@
         "ui"
       ],
       "note": "LunaRouter: a cut-off reply (or cut-off thinking) is continued by the next model before it reaches the chat; up to 6 models."
+    },
+    {
+      "version": "0.4.12",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Smooth motion: Zenith Motion adds easing and enter/exit animations across the interface."
     }
   ]
 }

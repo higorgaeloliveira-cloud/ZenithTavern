@@ -320,10 +320,14 @@ function fit() {
     wrap.style.setProperty('--zph-scale', String(s));
 }
 
+let phoneCloseTimer = 0;
 function setOpen(v) {
     open = v;
     if (v) { closeApp(); if (!cfg().keepUnlocked) setUnlocked(false); tick(); fit(); }
-    wrap.classList.toggle('zph-open', v);
+    clearTimeout(phoneCloseTimer);
+    wrap.classList.remove('zph-closing');
+    if (v) wrap.classList.add('zph-open');
+    else if (wrap.classList.contains('zph-open')) { wrap.classList.add('zph-closing'); phoneCloseTimer = setTimeout(() => wrap.classList.remove('zph-open', 'zph-closing'), 200); }
     document.getElementById('zenith_phone_btn')?.classList.toggle('zph-btn-on', v);
 }
 

@@ -453,9 +453,13 @@ audio.addEventListener('pause', updateSpectrum);
 audio.addEventListener('ended', updateSpectrum);
 window.addEventListener('resize', updateSpectrum);
 
+let closeTimer = 0;
 function setOpen(v) {
     open = v;
-    root.classList.toggle('zm-open', v);
+    clearTimeout(closeTimer);
+    root.classList.remove('zm-closing');
+    if (v) root.classList.add('zm-open');
+    else if (root.classList.contains('zm-open')) { root.classList.add('zm-closing'); closeTimer = setTimeout(() => root.classList.remove('zm-open', 'zm-closing'), 180); }
     document.getElementById('zenith_music_btn')?.classList.toggle('zm-active', v);
     if (v) render();
 }
