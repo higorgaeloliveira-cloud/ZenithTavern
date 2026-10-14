@@ -30,6 +30,10 @@ function defaults() {
         ],
         routes: [],           // in the order they are tried: { conn: 0|1, model: '' }
         retryEmpty: true,     // an empty reply counts as a failure
+        switchOnFail: false,  // swap a model that keeps failing for another one from the same connection
+        switchAfter: 3,       // ...after this many failures in a row
+        switchMode: 'random', // random | similar (closest context length) | name (has a word in its name)
+        switchWord: '',
         repeatSame: false,    // the same model may be called again after a failure
         repeatTimes: 3,       // ...up to this many calls in total before moving on / giving up
         continueCut: true,    // a reply that stopped before it was finished is continued by the next model
@@ -142,11 +146,64 @@ async function tryRoute(realFetch, url, init, body, route, conn, s) {
     }
 }
 
+// ---------------------------------------------------------------- change a model that keeps failing
+const failCount = {};          // "conn:model" -> failures in a row (this session)
+const swaps = {};              // "conn:model" -> replacement model (this session; cleared when the LunaRouter popup is saved)
+const catalogCache = {};       // connection -> { at, list: [{ id, ctx }] }
+const routeKey = (r) => `${r.conn}:${r.model.trim()}`;
+const NOT_CHAT = /embed|whisper|tts|moderation|rerank|dall-?e|image|audio|speech|transcri/i;
+
+async function catalogOf(s, connIndex) {
+    const conn = s.connections[connIndex], type = TYPES[conn?.type];
+    if (!type?.source) return [];
+    const key = `${conn.type}|${conn.url || ''}`;
+    const hit = catalogCache[key];
+    if (hit && Date.now() - hit.at < 600000) return hit.list;
+    try {
+        const body = { chat_completion_source: type.source };
+        if (type.source === 'custom') body.custom_url = conn.url.trim();
+        const res = await realFetch('/api/backends/chat-completions/status', { method: 'POST', headers: ctx().getRequestHeaders(), body: JSON.stringify(body) });
+        const data = await res.json();
+        const list = ((Array.isArray(data) ? data : data.data) || []).map((m) => ({
+            id: m.id || m.name,
+            ctx: Number(m.context_length ?? m.context_window ?? m.max_context_length ?? m.loaded_context_length ?? m.max_model_len ?? 0) || 0,
+        })).filter((m) => m.id);
+        catalogCache[key] = { at: Date.now(), list };
+        return list;
+    } catch { return []; }
+}
+
+/** Picks the replacement for a model that failed too many times, or null when there is none. */
+async function pickSubstitute(s, route) {
+    const list = await catalogOf(s, route.conn);
+    const taken = new Set(s.routes.filter((r) => r.conn === route.conn).map((r) => r.model.trim()));
+    const dead = new Set(Object.keys(failCount).filter((k) => failCount[k] >= Math.max(2, Number(s.switchAfter) || 3)).map((k) => k.split(':').slice(1).join(':')));
+    const pool = list.filter((m) => !NOT_CHAT.test(m.id) && !taken.has(m.id) && !dead.has(m.id) && !Object.values(swaps).includes(m.id));
+    if (!pool.length) return null;
+    const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    if (s.switchMode === 'name') {
+        const word = String(s.switchWord || '').trim().toLowerCase();
+        const hits = word ? pool.filter((m) => m.id.toLowerCase().includes(word)) : [];
+        return hits.length ? random(hits).id : null;
+    }
+    if (s.switchMode === 'similar') {
+        const mine = list.find((m) => m.id === route.model.trim())?.ctx || 0;
+        const known = pool.filter((m) => m.ctx > 0);
+        if (mine && known.length) {
+            const dist = (m) => Math.abs(Math.log(m.ctx / mine));
+            const best = Math.min(...known.map(dist));
+            return random(known.filter((m) => dist(m) <= best + 0.05)).id; // the closest context length; ties are picked at random
+        }
+    }
+    return random(pool).id;
+}
+
 async function routed(realFetch, input, init) {
     const s = settings();
     // "Call same model multiple times": each model gets up to repeatTimes calls in a row before the next model is tried
     const times = s.repeatSame ? Math.min(10, Math.max(2, Math.round(Number(s.repeatTimes) || 3))) : 1;
-    const routes = activeRoutes(s).flatMap((r) => Array(times).fill(r));
+    const base = activeRoutes(s).map((r) => (swaps[routeKey(r)] ? { ...r, model: swaps[routeKey(r)], was: r.model } : r));
+    const routes = base.flatMap((r) => Array(times).fill(r));
     const url = typeof input === 'string' ? input : input.url;
     let body;
     try { body = JSON.parse(init.body); } catch { return realFetch(input, init); }
@@ -157,10 +214,11 @@ async function routed(realFetch, input, init) {
     for (let i = 0; i < routes.length; i++) {
         const route = routes[i];
         const result = await tryRoute(realFetch, url, init, carry ? continuationBody(body, carry) : body, route, s.connections[route.conn], s);
-        const sameNext = i + 1 < routes.length && routes[i + 1] === route;
-        const next = i + 1 < routes.length ? routeLabel(s, routes[i + 1]) : '';
-        const nextText = sameNext ? `${next} again (call ${(i % times) + 2}/${times})` : next;
+        let sameNext = i + 1 < routes.length && routes[i + 1] === route;
+        let next = i + 1 < routes.length ? routeLabel(s, routes[i + 1]) : '';
+        let nextText = sameNext ? `${next} again (call ${(i % times) + 2}/${times})` : next;
         if (result.ok && !(result.cut && s.continueCut !== false && result.data)) {
+            failCount[routeKey(route)] = 0;
             lastUsed = routeLabel(s, route);
             if (i > 0) toastr.success(`Answered by ${routeLabel(s, route)}`, 'LunaRouter');
             if (carry && result.data) return finishedResponse(result.data, join(carry, result.text || ''));
@@ -178,6 +236,22 @@ async function routed(realFetch, input, init) {
         }
         console.warn(`[LunaRouter] ${routeLabel(s, route)} failed: ${result.error}`);
         lastFail = result;
+        const key = routeKey(route);
+        failCount[key] = (failCount[key] || 0) + 1;
+        if (s.switchOnFail && failCount[key] >= Math.max(2, Number(s.switchAfter) || 3)) {
+            const sub = await pickSubstitute(s, route);
+            if (sub) {
+                const replacement = { ...route, model: sub, was: route.was || route.model };
+                swaps[routeKey({ conn: route.conn, model: route.was || route.model })] = sub;
+                toastr.warning(`${route.model} failed ${failCount[key]} times in a row. Switching to ${sub}.`, 'LunaRouter');
+                let found = false;
+                for (let k = i + 1; k < routes.length; k++) if (routes[k] === route) { routes[k] = replacement; found = true; }
+                if (!found) routes.splice(i + 1, 0, ...Array(times).fill(replacement));
+                sameNext = routes[i + 1] === replacement;
+                next = routeLabel(s, routes[i + 1]);
+                nextText = sameNext ? `${next} (new model)` : next;
+            } else toastr.info(`${route.model} keeps failing, but no replacement model was found.`, 'LunaRouter');
+        }
         if (next) toastr.warning(`${routeLabel(s, route)} failed (${String(result.error).slice(0, 80)}). Trying ${nextText}…`, 'LunaRouter');
         if (sameNext) await new Promise((r) => setTimeout(r, 700)); // a short breath before calling the same model again
     }
@@ -325,6 +399,18 @@ function buildForm(draft, rerenderOuter) {
                 (() => { const c = h('input', { type: 'checkbox', ...(draft.retryEmpty ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.retryEmpty = c.checked; }); return c; })()),
             h('label', { class: 'lr-row', title: 'If a model stops in the middle of a reply (or in the middle of thinking), the next model continues from where it stopped, and only the finished reply is sent to the chat.' }, h('span', {}, 'Finish cut-off replies with the next model'),
                 (() => { const c = h('input', { type: 'checkbox', ...(draft.continueCut ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.continueCut = c.checked; }); return c; })()),
+            h('label', { class: 'lr-row', title: 'When a model fails several times in a row, replace it with another model from the same connection.' }, h('span', {}, 'Change model after multiple failures?'),
+                (() => { const c = h('input', { type: 'checkbox', ...(draft.switchOnFail ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.switchOnFail = c.checked; render(); }); return c; })()),
+            draft.switchOnFail ? h('div', { class: 'lr-sub lr-switch' },
+                h('label', { class: 'lr-row' }, h('span', {}, 'After this many failures in a row (2-10)'),
+                    (() => { const n = h('input', { class: 'text_pole lr-num', type: 'number', min: 2, max: 10, value: draft.switchAfter }); n.addEventListener('input', () => { draft.switchAfter = Math.min(10, Math.max(2, Math.round(Number(n.value) || 3))); }); return n; })()),
+                [['random', 'Shift to a random model'], ['similar', 'Shift to a model with a similar context length'], ['name', 'Shift to a model with this word in the name:']].map(([id, label]) =>
+                    h('label', { class: 'lr-row lr-radio' },
+                        (() => { const r = h('input', { type: 'radio', name: 'lr-switch-mode', ...(draft.switchMode === id ? { checked: true } : {}) }); r.addEventListener('change', () => { draft.switchMode = id; render(); }); return r; })(),
+                        h('span', {}, label))),
+                draft.switchMode === 'name' ? (() => { const w = h('input', { class: 'text_pole', type: 'text', placeholder: 'for example: llama', value: draft.switchWord || '' }); w.addEventListener('input', () => { draft.switchWord = w.value; }); return w; })() : null,
+                h('p', { class: 'lr-note' }, 'The replacement comes from the models your connection offers (load them once with "Load models"). It is used for this session; saving this window starts fresh.'),
+                Object.keys(swaps).length ? h('p', { class: 'lr-note' }, `Replaced this session: ${Object.entries(swaps).map(([k, v]) => `${k.split(':').slice(1).join(':')} → ${v}`).join(', ')}`) : null) : null,
             h('label', { class: 'lr-row', title: 'When a model fails, call that same model again before moving on to the next one.' }, h('span', {}, 'Call same model multiple times'),
                 (() => { const c = h('input', { type: 'checkbox', ...(draft.repeatSame ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.repeatSame = c.checked; render(); }); return c; })()),
             draft.repeatSame ? h('label', { class: 'lr-row lr-sub' }, h('span', {}, 'How many times the same model can be called before giving up (2-10)'),
@@ -342,11 +428,13 @@ async function openRouterPopup() {
     const { callGenericPopup, POPUP_TYPE, POPUP_RESULT, saveSettingsDebounced } = ctx();
     await loadSecretState();
     const current = settings();
-    const draft = structuredClone({ enabled: current.enabled, connections: current.connections, routes: current.routes, retryEmpty: current.retryEmpty, continueCut: current.continueCut, repeatSame: current.repeatSame, repeatTimes: current.repeatTimes, timeoutSec: current.timeoutSec });
+    const draft = structuredClone({ enabled: current.enabled, connections: current.connections, routes: current.routes, retryEmpty: current.retryEmpty, continueCut: current.continueCut, switchOnFail: current.switchOnFail, switchAfter: current.switchAfter, switchMode: current.switchMode, switchWord: current.switchWord, repeatSame: current.repeatSame, repeatTimes: current.repeatTimes, timeoutSec: current.timeoutSec });
     const content = h('div', { class: 'lr-popup' }, h('h3', {}, '🌙 LunaRouter'), buildForm(draft));
     const result = await callGenericPopup(content, POPUP_TYPE.CONFIRM, '', { okButton: 'Save', cancelButton: 'Cancel', wide: true, allowVerticalScrolling: true });
     if (result !== POPUP_RESULT.AFFIRMATIVE) return;
     Object.assign(current, draft);
+    for (const k of Object.keys(swaps)) delete swaps[k];          // a saved setup starts fresh
+    for (const k of Object.keys(failCount)) delete failCount[k];
     saveSettingsDebounced();
     updateBadge();
     const n = activeRoutes(current).length;

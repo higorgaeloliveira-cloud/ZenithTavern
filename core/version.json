@@ -1,5 +1,5 @@
 {
-  "version": "0.5.13",
+  "version": "0.6.14",
   "history": [
     {
       "version": "0.0.1",
@@ -102,6 +102,14 @@
         "ui"
       ],
       "note": "LunaRouter: option to call the same model multiple times (2-10) before giving up."
+    },
+    {
+      "version": "0.6.14",
+      "kinds": [
+        "internal",
+        "ui"
+      ],
+      "note": "LunaRouter: change a model after multiple failures (random, similar context length, or a word in the name)."
     }
   ]
 }
