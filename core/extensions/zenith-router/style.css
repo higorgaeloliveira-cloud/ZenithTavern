@@ -22,3 +22,5 @@
 .lr-x { margin: 0; color: #ff7b7b; padding: 2px 9px; }
 .lr-add { width: 100%; margin: 6px 0; }
 .lr-num { max-width: 6em; flex: none !important; }
+
+.lr-sub { margin-left: 18px; animation: zmo-rise .25s cubic-bezier(.2, .8, .2, 1) backwards; }

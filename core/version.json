@@ -1,5 +1,5 @@
 {
-  "version": "0.4.12",
+  "version": "0.5.13",
   "history": [
     {
       "version": "0.0.1",
@@ -94,6 +94,14 @@
         "ui"
       ],
       "note": "Smooth motion: Zenith Motion adds easing and enter/exit animations across the interface."
+    },
+    {
+      "version": "0.5.13",
+      "kinds": [
+        "internal",
+        "ui"
+      ],
+      "note": "LunaRouter: option to call the same model multiple times (2-10) before giving up."
     }
   ]
 }

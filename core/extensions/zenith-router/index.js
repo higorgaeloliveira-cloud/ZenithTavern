@@ -30,6 +30,8 @@ function defaults() {
         ],
         routes: [],           // in the order they are tried: { conn: 0|1, model: '' }
         retryEmpty: true,     // an empty reply counts as a failure
+        repeatSame: false,    // the same model may be called again after a failure
+        repeatTimes: 3,       // ...up to this many calls in total before moving on / giving up
         continueCut: true,    // a reply that stopped before it was finished is continued by the next model
         timeoutSec: 0,        // give up on a model after this long without an answer (0 = never)
     };
@@ -142,7 +144,9 @@ async function tryRoute(realFetch, url, init, body, route, conn, s) {
 
 async function routed(realFetch, input, init) {
     const s = settings();
-    const routes = activeRoutes(s);
+    // "Call same model multiple times": each model gets up to repeatTimes calls in a row before the next model is tried
+    const times = s.repeatSame ? Math.min(10, Math.max(2, Math.round(Number(s.repeatTimes) || 3))) : 1;
+    const routes = activeRoutes(s).flatMap((r) => Array(times).fill(r));
     const url = typeof input === 'string' ? input : input.url;
     let body;
     try { body = JSON.parse(init.body); } catch { return realFetch(input, init); }
@@ -153,7 +157,9 @@ async function routed(realFetch, input, init) {
     for (let i = 0; i < routes.length; i++) {
         const route = routes[i];
         const result = await tryRoute(realFetch, url, init, carry ? continuationBody(body, carry) : body, route, s.connections[route.conn], s);
+        const sameNext = i + 1 < routes.length && routes[i + 1] === route;
         const next = i + 1 < routes.length ? routeLabel(s, routes[i + 1]) : '';
+        const nextText = sameNext ? `${next} again (call ${(i % times) + 2}/${times})` : next;
         if (result.ok && !(result.cut && s.continueCut !== false && result.data)) {
             lastUsed = routeLabel(s, route);
             if (i > 0) toastr.success(`Answered by ${routeLabel(s, route)}`, 'LunaRouter');
@@ -167,12 +173,13 @@ async function routed(realFetch, input, init) {
             carry = kept;
             console.warn(`[LunaRouter] ${routeLabel(s, route)} stopped before the reply was finished (${carry.length} characters kept)`);
             lastFail = result;
-            if (next) toastr.warning(`${routeLabel(s, route)} stopped before finishing. ${next} will continue from there…`, 'LunaRouter');
+            if (next) toastr.warning(`${routeLabel(s, route)} stopped before finishing. ${nextText} will continue from there…`, 'LunaRouter');
             continue;
         }
         console.warn(`[LunaRouter] ${routeLabel(s, route)} failed: ${result.error}`);
         lastFail = result;
-        if (next) toastr.warning(`${routeLabel(s, route)} failed (${String(result.error).slice(0, 80)}). Trying ${next}…`, 'LunaRouter');
+        if (next) toastr.warning(`${routeLabel(s, route)} failed (${String(result.error).slice(0, 80)}). Trying ${nextText}…`, 'LunaRouter');
+        if (sameNext) await new Promise((r) => setTimeout(r, 700)); // a short breath before calling the same model again
     }
     if (carry && template) {
         toastr.warning('Every model stopped early. The reply was sent as far as it got.', 'LunaRouter');
@@ -318,6 +325,10 @@ function buildForm(draft, rerenderOuter) {
                 (() => { const c = h('input', { type: 'checkbox', ...(draft.retryEmpty ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.retryEmpty = c.checked; }); return c; })()),
             h('label', { class: 'lr-row', title: 'If a model stops in the middle of a reply (or in the middle of thinking), the next model continues from where it stopped, and only the finished reply is sent to the chat.' }, h('span', {}, 'Finish cut-off replies with the next model'),
                 (() => { const c = h('input', { type: 'checkbox', ...(draft.continueCut ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.continueCut = c.checked; }); return c; })()),
+            h('label', { class: 'lr-row', title: 'When a model fails, call that same model again before moving on to the next one.' }, h('span', {}, 'Call same model multiple times'),
+                (() => { const c = h('input', { type: 'checkbox', ...(draft.repeatSame ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.repeatSame = c.checked; render(); }); return c; })()),
+            draft.repeatSame ? h('label', { class: 'lr-row lr-sub' }, h('span', {}, 'How many times the same model can be called before giving up (2-10)'),
+                (() => { const n = h('input', { class: 'text_pole lr-num', type: 'number', min: 2, max: 10, value: draft.repeatTimes }); n.addEventListener('input', () => { draft.repeatTimes = Math.min(10, Math.max(2, Math.round(Number(n.value) || 3))); }); return n; })()) : null,
             h('label', { class: 'lr-row' }, h('span', {}, 'Give up on a model after (seconds, 0 = never)'),
                 (() => { const n = h('input', { class: 'text_pole lr-num', type: 'number', min: 0, max: 600, value: draft.timeoutSec }); n.addEventListener('input', () => { draft.timeoutSec = Math.max(0, Number(n.value) || 0); }); return n; })()),
             lastUsed ? h('p', { class: 'lr-note' }, `Last reply came from: ${lastUsed}`) : null,
@@ -331,7 +342,7 @@ async function openRouterPopup() {
     const { callGenericPopup, POPUP_TYPE, POPUP_RESULT, saveSettingsDebounced } = ctx();
     await loadSecretState();
     const current = settings();
-    const draft = structuredClone({ enabled: current.enabled, connections: current.connections, routes: current.routes, retryEmpty: current.retryEmpty, continueCut: current.continueCut, timeoutSec: current.timeoutSec });
+    const draft = structuredClone({ enabled: current.enabled, connections: current.connections, routes: current.routes, retryEmpty: current.retryEmpty, continueCut: current.continueCut, repeatSame: current.repeatSame, repeatTimes: current.repeatTimes, timeoutSec: current.timeoutSec });
     const content = h('div', { class: 'lr-popup' }, h('h3', {}, '🌙 LunaRouter'), buildForm(draft));
     const result = await callGenericPopup(content, POPUP_TYPE.CONFIRM, '', { okButton: 'Save', cancelButton: 'Cancel', wide: true, allowVerticalScrolling: true });
     if (result !== POPUP_RESULT.AFFIRMATIVE) return;
