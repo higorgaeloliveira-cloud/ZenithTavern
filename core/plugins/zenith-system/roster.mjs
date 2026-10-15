@@ -170,6 +170,28 @@ function checkHash(buf, expected, remote, what) {
     else if (remote) throw new Error(`${what} has no checksum in roster.json (required for remote rosters)`);
 }
 
+// ------------------------------------------------------------------ embedded lorebook -> World Info file
+function toWorldInfo(book) {
+    const entries = {};
+    book.entries.forEach((e, index) => {
+        const x = e.extensions || {};
+        const uid = e.id ?? index;
+        entries[uid] = {
+            uid, key: e.keys || [], keysecondary: e.secondary_keys || [], comment: e.comment || '', content: e.content || '',
+            constant: !!e.constant, vectorized: false, selective: !!e.selective, selectiveLogic: x.selectiveLogic ?? 0,
+            addMemo: !!e.comment, order: e.insertion_order ?? 100, position: x.position ?? (e.position === 'before_char' ? 0 : 1),
+            disable: e.enabled === false, excludeRecursion: x.exclude_recursion ?? false, preventRecursion: x.prevent_recursion ?? false,
+            delayUntilRecursion: x.delay_until_recursion ?? false, probability: x.probability ?? 100, useProbability: x.useProbability ?? true,
+            depth: x.depth ?? 4, group: x.group ?? '', groupOverride: false, groupWeight: 100, scanDepth: x.scan_depth ?? null,
+            caseSensitive: x.case_sensitive ?? null, matchWholeWords: null, useGroupScoring: null, automationId: '', role: x.role ?? 0,
+            sticky: x.sticky ?? null, cooldown: x.cooldown ?? null, delay: x.delay ?? null, displayIndex: x.display_index ?? index,
+            ignoreBudget: false, triggers: [], matchPersonaDescription: false, matchCharacterDescription: false, matchCharacterPersonality: false,
+            matchCharacterDepthPrompt: false, matchScenario: false, matchCreatorNotes: false, outletName: '', characterFilter: { isExclude: false, names: [], tags: [] },
+        };
+    });
+    return { entries };
+}
+
 // ------------------------------------------------------------------ install
 let busy = Promise.resolve();
 
@@ -204,6 +226,14 @@ async function installOne(request, entry, remote) {
     const tmp = `${target}.${process.pid}.tmp`;
     fs.writeFileSync(tmp, card);
     fs.renameSync(tmp, target);
+
+    // A card with an embedded lorebook: write it as a World Info file (the card's "world" points at it), so it is active without any import step.
+    const book = data?.data?.character_book;
+    if (book?.entries?.length && data?.data?.extensions?.world) {
+        const worldsDir = request.user.directories.worlds;
+        fs.mkdirSync(worldsDir, { recursive: true });
+        fs.writeFileSync(path.join(worldsDir, `${sanitize(data.data.extensions.world)}.json`), JSON.stringify(toWorldInfo(book), null, 2));
+    }
 
     const written = [];
     if (sprites.length) {

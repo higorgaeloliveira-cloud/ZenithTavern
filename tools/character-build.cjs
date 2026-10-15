@@ -52,6 +52,9 @@ const description = [
   section('CONTINUITY RULES (always follow)', bullets([...list(rec.encounter_rules), ...(list(rec.continuity?.unset_details).length ? [`Details that are still unset (leave them unset, do not present guesses as canon): ${list(rec.continuity.unset_details).join('; ')}.`] : [])])),
 ].filter(Boolean).join('\n');
 
+const extra = rec.card || {};   // optional: scenario, system_prompt, post_history_instructions, mes_example
+const bookPath = path.join(dir, 'lorebook.json'); // optional: embedded lorebook (SillyTavern character_book)
+const book = fs.existsSync(bookPath) ? JSON.parse(fs.readFileSync(bookPath, 'utf8')) : null;
 const g = rec.greetings || {};
 const firstMes = g.standard?.text || '';
 const alternates = [g.custom_scenario?.text].filter(Boolean);
@@ -59,16 +62,16 @@ const tags = ['Asterhaven', 'ZenithTavern', 'university', ...list(rec.tags)];
 const v2 = {
   spec: 'chara_card_v2', spec_version: '2.0',
   data: {
-    name: rec.name, description, personality: '', scenario: '', first_mes: firstMes, mes_example: '',
+    name: rec.name, description, personality: '', scenario: extra.scenario || '', first_mes: firstMes, mes_example: extra.mes_example || '',
     creator_notes: rec.tagline || '',
-    system_prompt: '', post_history_instructions: '', alternate_greetings: alternates, tags,
+    system_prompt: extra.system_prompt || '', post_history_instructions: extra.post_history_instructions || '', ...(book ? { character_book: book } : {}), alternate_greetings: alternates, tags,
     creator: 'ZenithTavern', character_version: String(rec.schema_version || '1.0'),
-    extensions: { talkativeness: '0.5', fav: false, world: '', depth_prompt: { prompt: '', depth: 4, role: 'system' }, zenith: { id: rec.id } },
+    extensions: { talkativeness: '0.5', fav: false, world: book ? book.name : '', depth_prompt: { prompt: '', depth: 4, role: 'system' }, zenith: { id: rec.id } },
   },
 };
 const v3 = JSON.parse(JSON.stringify(v2)); v3.spec = 'chara_card_v3'; v3.spec_version = '3.0';
 Object.assign(v3.data, { group_only_greetings: [], nickname: '', source: [], creation_date: Math.floor(Date.now() / 1000), modification_date: Math.floor(Date.now() / 1000) });
-Object.assign(v2, { name: v2.data.name, description: v2.data.description, personality: '', scenario: '', first_mes: firstMes, mes_example: '' });
+Object.assign(v2, { name: v2.data.name, description: v2.data.description, personality: '', scenario: extra.scenario || '', first_mes: firstMes, mes_example: extra.mes_example || '' });
 
 // ---- PNG: drop old text chunks, add chara (v2) + ccv3 (v3) before IEND
 const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();

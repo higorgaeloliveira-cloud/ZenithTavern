@@ -311,3 +311,7 @@ The button with the paste icon in the bar opens a list of every format; click on
 
 ## Welcome page
 The title shows `ZenithTavern vX · updated <date>` (the SillyTavern version is in its tooltip). Under it, **Messages Available** estimates how many replies are left on your OpenRouter key: credit left divided by the average cost of your last replies (it appears after your first reply). The refresh button re-reads the balance and the key button opens API connections. Only OpenRouter exposes a balance; other APIs show nothing.
+
+## Mirel (scripted route character)
+A roster character with an embedded 17-entry lorebook ("Mirel Study Route", written to your World Info on download). Six study days, a lockout, an interlude, the morning after, then freeplay. Each reply starts with header lines (`¦¦ date ~ time ~ place ~ (CURC) ¦¦`, `¦¦ STUDY: DAY n/6 ¦¦`, `¦¦ Collar Status: [Active] ¦¦`); the day number in the header is what turns on that day's module. Characters can carry a lorebook: put `lorebook.json` (a SillyTavern `character_book`) in the character's source folder and rebuild with `tools/character-build.cjs`.
+Header format `¦¦ date ~ time ~ place ~ (TAG) ¦¦` now renders as a card (see Text formats).

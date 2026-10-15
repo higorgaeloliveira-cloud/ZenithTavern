@@ -24,6 +24,27 @@
           "sha256": "fc8b38cfec44e66650dea8cf848642d7af3e92daaf3994a7846d1008f36e6526"
         }
       ]
+    },
+    {
+      "id": "mirel",
+      "name": "Mirel",
+      "file": "Mirel.png",
+      "tagline": "A shapeless, over-attached specimen. A scripted route: six days of study, one lockout, then freeplay.",
+      "tags": [
+        "Asterhaven",
+        "ZenithTavern",
+        "university",
+        "route",
+        "scripted",
+        "shapeshifter",
+        "monster girl",
+        "research center",
+        "slow burn"
+      ],
+      "version": 2,
+      "card": "mirel/card.png",
+      "sha256": "037a973398491128300ac8e948aca9071b15d5689a4e272e8b5f07e244582d7c",
+      "sprites": []
     }
   ]
 }

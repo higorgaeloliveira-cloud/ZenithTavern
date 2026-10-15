@@ -1,5 +1,5 @@
 {
-  "version": "0.10.16",
+  "version": "0.11.16",
   "history": [
     {
       "version": "0.0.1",
@@ -146,6 +146,14 @@
         "internal"
       ],
       "note": "Welcome page: ZenithTavern version with release date, and Messages Available counter (OpenRouter credit)",
+      "date": "2026-10-14"
+    },
+    {
+      "version": "0.11.16",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Mirel: scripted-route character with embedded lorebook (roster); Header text format; roster installs embedded lorebooks as World Info",
       "date": "2026-10-14"
     }
   ],

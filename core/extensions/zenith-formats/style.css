@@ -15,3 +15,10 @@
 .zf-input { display: flex; gap: 10px; align-items: center; padding-top: 12px; border-top: 1px solid #3a3a3a; }
 .zf-input span { flex: 1; padding: 8px 14px; border: 1px solid #444; border-radius: 999px; background: #2a2a2a; color: #777; }
 .zf-input b { padding: 8px 18px; border-radius: 999px; background: #62d4ee; color: #111; }
+
+.zf-header { margin: 6px 0 12px; padding-bottom: 10px; border-bottom: 1px solid var(--SmartThemeBorderColor, #444); font-style: normal; }
+.zf-place { font-size: 1.35em; font-weight: 700; color: var(--SmartThemeBodyColor, #fff); margin-bottom: 4px; }
+.zf-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; opacity: .85; }
+.zf-tag { color: #6aa9e8; font-weight: 600; }
+.zf-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.zf-chips span { padding: 2px 10px; border-radius: 999px; font-size: .85em; border: 1px solid var(--SmartThemeBorderColor, #444); opacity: .85; }
