@@ -260,6 +260,29 @@ const COMMANDS = {
     current: { icon: 'fa-file-lines', title: '!current', run: () => cmdCurrent() },
     state: { icon: 'fa-face-smile', title: '!state', run: () => cmdState() },
 };
+const EXTRA_BUTTONS = { formats: { icon: 'fa-paste', title: 'Text formats (click to copy)', run: () => cmdFormats() } };
+
+/** Pop-up with every text format: click one to copy it to the clipboard. */
+async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {
+        const t = h('textarea', { style: 'position:fixed;opacity:0' }); t.value = text; document.body.append(t); t.select();
+        let ok = false; try { ok = document.execCommand('copy'); } catch { /* ignore */ } t.remove(); return ok;
+    }
+}
+function cmdFormats() {
+    const list = (window.ZenithFormats?.FORMATS || []).filter((f) => f.example);
+    return modal({
+        title: 'Text formats',
+        lead: 'Click a format to copy it. Paste it in a message and it turns into a card.',
+        body: () => h('div', { class: 'zc-formats' }, list.length ? list.map((f) => {
+            const b = h('button', { type: 'button', class: 'zc-fmt' }, h('strong', {}, f.name || f.id), h('pre', {}, f.example), h('span', { class: 'zc-copied' }, 'Click to copy'));
+            b.addEventListener('click', async () => { const ok = await copyText(f.example); b.classList.toggle('zc-fmt-ok', ok); b.querySelector('.zc-copied').textContent = ok ? 'Copied!' : 'Could not copy'; });
+            return b;
+        }) : h('p', {}, 'No formats loaded.')),
+        buttons: [{ label: 'Close', value: null, kind: '' }],
+    });
+}
+
 const TYPED = new RegExp(`^\\s*!(${Object.keys(COMMANDS).join('|')})(?![\\w-])\\s*(.*)$`, 'is');
 
 function refreshButtons() {
@@ -273,7 +296,7 @@ function refreshButtons() {
 function mountButtons() {
     const bar = document.getElementById('zenith_bar');
     if (!bar) return false;
-    for (const [id, c] of Object.entries(COMMANDS)) {
+    for (const [id, c] of Object.entries({ ...COMMANDS, ...EXTRA_BUTTONS })) {
         if (bar.querySelector(`[data-zc="${id}"]`)) continue;
         const b = h('button', { type: 'button', class: 'zph-fab zc-fab', 'data-zc': id, title: c.title, onclick: () => c.run() });
         b.innerHTML = `<i class="fa-solid ${c.icon}"></i>`;

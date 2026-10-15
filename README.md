@@ -298,3 +298,13 @@ For the maintainer: `node tools/bump.cjs ui|internal|major "what changed"` raise
 
 Zenith Motion (`core/extensions/zenith-motion`, CSS only) makes the interface ease instead of snapping: buttons and icons lift and press, new chat messages settle in, and the command pop-ups, the Roster-Downloader (its cards rise one after another), the Music panel, the phone, settings sections and the command bar all fade or slide in and out. Only transform, opacity and colours are animated, so it stays smooth on phones. If your system is set to "reduce motion", none of it moves.
 
+
+## Text formats (Zenith Formats)
+Lines typed with `¦` become styled cards in a message. Phone is built in:
+```
+Phone¦Weynet - Kinji¦85%
+Texting¦Lurkle
+Incoming¦2:34 PM¦Lurkle¦u a stalker or something? lol
+Outgoing¦2:36 PM¦Lurkle¦who is this
+```
+The button with the paste icon in the bar opens a list of every format; click one to copy it. New formats are one object in `core/extensions/zenith-formats/index.js`.

@@ -1,5 +1,5 @@
 {
-  "version": "0.8.15",
+  "version": "0.9.15",
   "history": [
     {
       "version": "0.0.1",
@@ -131,6 +131,13 @@
         "internal"
       ],
       "note": "LunaRouter: continuation no longer restarts the reply (no repeated header or paragraphs, keeps paragraph size)"
+    },
+    {
+      "version": "0.9.15",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Text formats: Phone card (Phone¦ Texting¦ Incoming¦ Outgoing¦) and a bar button that lists formats to copy"
     }
   ]
 }

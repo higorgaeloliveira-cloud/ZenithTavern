@@ -1,0 +1,17 @@
+.zf-phone { max-width: 420px; margin: 8px 0; padding: 14px 16px; background: #1c1c1c; color: #eee; border: 1px solid #3a3a3a; border-radius: 14px; font-family: inherit; font-style: normal; }
+.zf-bar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #3a3a3a; color: #62d4ee; font-weight: 700; font-size: 1.05em; }
+.zf-bat { display: inline-flex; align-items: center; gap: 6px; }
+.zf-batt { display: inline-block; width: 22px; height: 11px; border: 2px solid currentColor; border-radius: 3px; position: relative; padding: 1px; box-sizing: content-box; }
+.zf-batt::after { content: ""; position: absolute; right: -5px; top: 2px; width: 3px; height: 7px; background: currentColor; border-radius: 0 2px 2px 0; }
+.zf-batt b { display: block; height: 100%; background: currentColor; border-radius: 1px; }
+.zf-contact { text-align: center; color: #a6e22e; font-weight: 700; font-size: 1.15em; margin: 14px 0 10px; }
+.zf-msgs { display: flex; flex-direction: column; gap: 10px; padding-bottom: 10px; }
+.zf-msg { max-width: 78%; padding: 10px 14px 6px; background: #333; border-radius: 16px; line-height: 1.35; }
+.zf-in { align-self: flex-start; border-bottom-left-radius: 6px; }
+.zf-out { align-self: flex-end; background: #1f5f73; border-bottom-right-radius: 6px; }
+.zf-name { color: #ff69b4; font-weight: 700; margin-bottom: 2px; }
+.zf-text { word-break: break-word; }
+.zf-time { text-align: right; color: #888; font-size: .8em; margin-top: 4px; }
+.zf-input { display: flex; gap: 10px; align-items: center; padding-top: 12px; border-top: 1px solid #3a3a3a; }
+.zf-input span { flex: 1; padding: 8px 14px; border: 1px solid #444; border-radius: 999px; background: #2a2a2a; color: #777; }
+.zf-input b { padding: 8px 18px; border-radius: 999px; background: #62d4ee; color: #111; }
