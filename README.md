@@ -308,3 +308,6 @@ Incoming¦2:34 PM¦Lurkle¦u a stalker or something? lol
 Outgoing¦2:36 PM¦Lurkle¦who is this
 ```
 The button with the paste icon in the bar opens a list of every format; click one to copy it. New formats are one object in `core/extensions/zenith-formats/index.js`.
+
+## Welcome page
+The title shows `ZenithTavern vX · updated <date>` (the SillyTavern version is in its tooltip). Under it, **Messages Available** estimates how many replies are left on your OpenRouter key: credit left divided by the average cost of your last replies (it appears after your first reply). The refresh button re-reads the balance and the key button opens API connections. Only OpenRouter exposes a balance; other APIs show nothing.

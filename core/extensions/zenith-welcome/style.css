@@ -1,42 +1,7 @@
-/* Risk notice shown under the persona name on the very first start. */
-.zenith-risk {
-    margin-top: 14px;
-    padding: 12px 14px;
-    border: 1px solid var(--SmartThemeBorderColor, #888);
-    border-left: 4px solid #d9534f;
-    border-radius: 8px;
-    background: rgba(217, 83, 79, 0.08);
-    text-align: left;
-}
-.zenith-risk-text {
-    margin: 0 0 12px 0;
-    font-weight: 700;
-    line-height: 1.4;
-}
-.zenith-risk-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-.zenith-risk-buttons .menu_button {
-    min-width: 110px;
-    justify-content: center;
-}
-.zenith-risk-buttons .zenith-yes { border-color: #4caf50; }
-.zenith-risk-buttons .zenith-no  { border-color: #d9534f; }
-
-/* Full-page message after choosing "No". */
-.zenith-declined {
-    position: fixed;
-    inset: 0;
-    z-index: 100000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 24px;
-    background: #111;
-    color: #eee;
-    font-size: 1.15rem;
-    line-height: 1.6;
-}
+.zw-usage { position: relative; margin: 8px 0 12px; padding: 12px 88px 12px 16px; border-radius: 12px; border: 1px solid var(--SmartThemeBorderColor, #444); background: color-mix(in srgb, var(--SmartThemeBlurTintColor, #222) 80%, transparent); }
+.zw-main { font-size: 1.15em; }
+.zw-num { color: var(--zenith-accent, #f5c451); margin-left: 4px; }
+.zw-sub { margin-top: 3px; font-size: .85em; opacity: .7; }
+.zw-btn, .zw-key { position: absolute; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; color: inherit; background: transparent; border: 1px solid var(--SmartThemeBorderColor, #444); }
+.zw-btn { right: 52px; } .zw-key { right: 12px; }
+.zw-btn:hover, .zw-key:hover { border-color: var(--zenith-accent, #f5c451); }

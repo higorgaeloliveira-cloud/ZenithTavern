@@ -1,5 +1,5 @@
 {
-  "version": "0.9.15",
+  "version": "0.10.16",
   "history": [
     {
       "version": "0.0.1",
@@ -138,6 +138,16 @@
         "internal"
       ],
       "note": "Text formats: Phone card (Phone¦ Texting¦ Incoming¦ Outgoing¦) and a bar button that lists formats to copy"
+    },
+    {
+      "version": "0.10.16",
+      "kinds": [
+        "ui",
+        "internal"
+      ],
+      "note": "Welcome page: ZenithTavern version with release date, and Messages Available counter (OpenRouter credit)",
+      "date": "2026-10-14"
     }
-  ]
+  ],
+  "released": "2026-10-14"
 }

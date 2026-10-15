@@ -26,6 +26,8 @@ const data = JSON.parse(fs.readFileSync(file, 'utf8'));
 const cur = data.version.split('.').map(Number);
 for (const k of kinds) STEP[k].forEach((n, i) => { cur[i] += n; });
 data.version = cur.join('.');
-data.history.push({ version: data.version, kinds, note });
+const released = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }); // YYYY-MM-DD
+data.released = released;
+data.history.push({ version: data.version, kinds, note, date: released });
 fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
 console.log(`Version is now ${data.version}  (${kinds.join(' + ')}: ${note})`);

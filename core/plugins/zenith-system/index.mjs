@@ -121,8 +121,26 @@ export async function init(router) {
     });
 
     router.get('/version', (_request, response) => {
-        try { response.json({ version: JSON.parse(fs.readFileSync(VERSION_PATH, 'utf8')).version }); }
-        catch { response.json({ version: '' }); }
+        try { const v = JSON.parse(fs.readFileSync(VERSION_PATH, 'utf8')); response.json({ version: v.version, released: v.released || '' }); }
+        catch { response.json({ version: '', released: '' }); }
+    });
+
+    // Credit left on the connected OpenRouter key (the key stays on the server; only the numbers go to the page).
+    router.get('/usage', async (request, response) => {
+        try {
+            const { readSecret, SECRET_KEYS } = await import('../../src/endpoints/secrets.js');
+            const key = readSecret(request.user.directories, SECRET_KEYS.OPENROUTER);
+            if (!key) return response.json({ ok: false, reason: 'no-key' });
+            const headers = { Authorization: `Bearer ${key}` };
+            const get = async (p) => { const r = await fetch(`https://openrouter.ai/api/v1/${p}`, { headers }); if (!r.ok) throw new Error(`HTTP ${r.status}`); return (await r.json()).data || {}; };
+            const info = await get('key');
+            let credits = {};
+            try { credits = await get('credits'); } catch { /* the key may not be allowed to read credits */ }
+            const left = info.limit_remaining ?? (credits.total_credits != null ? credits.total_credits - credits.total_usage : null);
+            response.json({ ok: true, source: 'openrouter', usage: info.usage ?? credits.total_usage ?? 0, left, isFree: !!info.is_free_tier, bought: credits.total_credits ?? null });
+        } catch (error) {
+            response.json({ ok: false, reason: 'error', error: String(error?.message || error) });
+        }
     });
 
     router.get('/presets', (_request, response) => {
