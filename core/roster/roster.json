@@ -41,9 +41,9 @@
         "research center",
         "slow burn"
       ],
-      "version": 2,
+      "version": 3,
       "card": "mirel/card.png",
-      "sha256": "037a973398491128300ac8e948aca9071b15d5689a4e272e8b5f07e244582d7c",
+      "sha256": "8e0608449445f1b6ea1dd1bb96ce8aa0031684f194c67711cc5ce742f63bd4fe",
       "sprites": []
     }
   ]
