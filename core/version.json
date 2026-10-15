@@ -1,5 +1,5 @@
 {
-  "version": "0.13.17",
+  "version": "0.13.18",
   "history": [
     {
       "version": "0.0.1",
@@ -178,6 +178,14 @@
         "internal"
       ],
       "note": "New roster character: Riko Kitsumi (kitsune, standard + custom scenario greetings)",
+      "date": "2026-10-15"
+    },
+    {
+      "version": "0.13.18",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Version numbers now count 0-20 and carry to the left (0.13.20 -> 0.14.0)",
       "date": "2026-10-15"
     }
   ],

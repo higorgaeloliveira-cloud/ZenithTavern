@@ -8,7 +8,8 @@
  *   node tools/bump.cjs major "what changed"              huge change or addition                      -> +1.0.0
  *   node tools/bump.cjs ui,internal "what changed"        a change of both kinds adds both
  *
- * The numbers only add up: 0.0.1 + internal = 0.1.1, then + major = 1.1.1. Nothing resets.
+ * Each part counts from 0 to 20. One step past 20 carries into the part on its left and the part itself goes back to 0:
+ * 0.13.20 + ui = 0.14.0, and 0.20.x + internal = 1.0.x. A higher number is still always the newer version.
  * The number and a short history are kept in core/version.json.
  */
 const fs = require('fs');
@@ -25,6 +26,8 @@ if (!kinds.length || kinds.some((k) => !STEP[k]) || !note) {
 const data = JSON.parse(fs.readFileSync(file, 'utf8'));
 const cur = data.version.split('.').map(Number);
 for (const k of kinds) STEP[k].forEach((n, i) => { cur[i] += n; });
+// carry: every part holds 0..20; 21 becomes 0 and adds one to the part on its left
+for (let i = cur.length - 1; i > 0; i--) while (cur[i] > 20) { cur[i] -= 21; cur[i - 1] += 1; }
 data.version = cur.join('.');
 const released = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }); // YYYY-MM-DD
 data.released = released;

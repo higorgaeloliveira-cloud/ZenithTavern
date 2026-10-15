@@ -288,7 +288,7 @@ The number is `X.Y.Z` and it only counts up. Each kind of change adds to its own
 | Inside: prompts, characters, configs, phone, server | `0.1.0` | 0.0.1 -> 0.1.1 |
 | Major: a huge change or addition | `1.0.0` | 0.0.1 -> 1.0.1 |
 
-A change of two kinds adds both. Nothing resets to zero, so a higher number is always the newer version.
+A change of two kinds adds both. Each part counts 0 to 20: one more than 20 carries to the left and the part goes back to 0 (`0.13.20` + interface change = `0.14.0`), so a higher number is still always the newer version.
 
 You can see it in the console banner, in the "newer version is available: v0.3.5 -> v0.3.6" question when you start, and in the version line of the interface (`ZenithTavern v0.3.5 (SillyTavern ...)`).
 
