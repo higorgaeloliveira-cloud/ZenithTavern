@@ -1,5 +1,5 @@
 {
-  "version": "0.12.16",
+  "version": "0.12.17",
   "history": [
     {
       "version": "0.0.1",
@@ -162,6 +162,14 @@
         "internal"
       ],
       "note": "Mirel: removed the softening (no 'nobody was harmed', no toned-down violence or intimacy)",
+      "date": "2026-10-15"
+    },
+    {
+      "version": "0.12.17",
+      "kinds": [
+        "ui"
+      ],
+      "note": "!heat and the Obsessed state: removed the softening",
       "date": "2026-10-15"
     }
   ],

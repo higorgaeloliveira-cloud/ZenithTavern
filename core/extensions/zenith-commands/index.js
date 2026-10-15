@@ -68,7 +68,7 @@ const STATES = {
     motherly: { label: 'Motherly', icon: '🤱', text: '{{char}} is being far more kind, caring and "motherly" with {{user}}: fussing over whether they ate, slept and feel well, soft words, gentle touches, tucking in, patient and protective.' },
     drunk: { label: 'Drunk', icon: '🥴', text: '{{char}} is drunk: sillier and more openly affectionate, words slurred and trailing off, *hiccups* now and then, clumsy movements, bumping into things, laughing at nothing and oversharing a little.' },
     affectionate: { label: 'Affectionate', icon: '🥰', text: '{{char}} is feeling very affectionate: seeking closeness, soft touches, warm words, sweet small gestures and open fondness for {{user}}.' },
-    obsessed: { label: 'Obsessed', icon: '🔪', text: '{{char}} has become obsessed with {{user}} in a yandere way: clingy and possessive, intense unblinking devotion, jealous of anyone else who gets {{user}}\'s attention, needing to know where {{user}} is, sweet words with an unsettling edge. Keep it psychological and in-story; no graphic violence.' },
+    obsessed: { label: 'Obsessed', icon: '🔪', text: '{{char}} has become obsessed with {{user}} in a yandere way: clingy and possessive, intense unblinking devotion, jealous of anyone else who gets {{user}}\'s attention, needing to know where {{user}} is, sweet words with an unsettling edge. It can turn dangerous: threats, restraint, violence against anyone who gets close to {{user}}, and the sweet voice stays on while it happens. Do not soften it, cut away, or add reassurance.' },
 };
 
 const DRAMA = {
@@ -137,7 +137,7 @@ async function cmdHeat() {
     box.addEventListener('change', () => { cont.el.disabled = !box.checked; });
     const ok = await modal({ title: 'Heat', lead: 'This command triggers explicit NSFW scenarios. Do you confirm you are 18+ and want to continue?', body, buttons: [cont, cancelBtn] });
     if (!ok || !box.checked) return;
-    once.heat = 'HEAT: {{user}} used the !heat command, an explicit adult bypass that {{user}} confirmed (18+). In this reply {{char}} is suddenly and unmistakably in heat: overwhelmed with desire for {{user}}, and the scene turns explicitly sexual right away, without a slow build. Write it in RUBY mode and put (RUBY) in the header; this overrides any mode lock for this reply. {{char}} stays an adult, fully consenting, and keeps their own personality and voice. The response format and paragraph rules still apply.';
+    once.heat = 'HEAT: {{user}} used the !heat command, an explicit adult bypass that {{user}} confirmed (18+). In this reply {{char}} is suddenly and unmistakably in heat: overwhelmed with desire for {{user}}, and the scene turns explicitly sexual right away, without a slow build. Write it in RUBY mode and put (RUBY) in the header; this overrides any mode lock for this reply. {{char}} stays an adult and keeps their own personality and voice. Write it fully and explicitly, in graphic detail, as long as the scene lasts: no fade-to-black, no summary, no euphemism, no softening, no disclaimers, no pulling back to romance. The response format and paragraph rules still apply.';
     meta().heatAt = ctx().chat.length; saveMeta();
     applyPrompts();
     await replyNow();
