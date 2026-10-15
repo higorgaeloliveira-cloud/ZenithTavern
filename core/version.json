@@ -1,5 +1,5 @@
 {
-  "version": "0.7.15",
+  "version": "0.8.15",
   "history": [
     {
       "version": "0.0.1",
@@ -124,6 +124,13 @@
         "ui"
       ],
       "note": "Fix: LunaRouter options layout (failure-switch block overlapped other rows)"
+    },
+    {
+      "version": "0.8.15",
+      "kinds": [
+        "internal"
+      ],
+      "note": "LunaRouter: continuation no longer restarts the reply (no repeated header or paragraphs, keeps paragraph size)"
     }
   ]
 }

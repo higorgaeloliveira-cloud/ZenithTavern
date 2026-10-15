@@ -221,12 +221,13 @@ async function routed(realFetch, input, init) {
             failCount[routeKey(route)] = 0;
             lastUsed = routeLabel(s, route);
             if (i > 0) toastr.success(`Answered by ${routeLabel(s, route)}`, 'LunaRouter');
-            if (carry && result.data) return finishedResponse(result.data, join(carry, result.text || ''));
+            if (carry && result.data) { const m = mergeContinuation(carry, result.text); return finishedResponse(result.data, m.restarted ? m.text : join(carry, m.text)); }
             return result.res;
         }
         if (result.ok || (result.cut && s.continueCut !== false)) {
             // a model stopped before the reply was finished: keep what it wrote and let the next model continue from there
-            const kept = result.text ? cutAtSentence(carry ? join(carry, result.text) : result.text) : carry;
+            const m = mergeContinuation(carry, result.text);
+            const kept = result.text ? cutAtSentence(carry && !m.restarted ? join(carry, m.text) : m.text) : carry;
             template ??= result.data;
             carry = kept;
             console.warn(`[LunaRouter] ${routeLabel(s, route)} stopped before the reply was finished (${carry.length} characters kept)`);
@@ -276,9 +277,44 @@ const join = (a, b) => (!b ? a : !a ? b : (/\s$/.test(a) || /^[\s.,;:!?)]/.test(
 /** The same request, plus what has been written so far and a note to carry on from it. */
 function continuationBody(body, carry) {
     if (!Array.isArray(body.messages)) return body;
+    const paras = carry.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+    const words = (p) => p.split(/\s+/).length;
+    const longest = Math.max(...paras.map(words), 1);
+    const avg = Math.round(paras.reduce((n, p) => n + words(p), 0) / Math.max(paras.length, 1));
+    const first = carry.split('\n').find((l) => l.trim()) || '';
+    const rules = [
+        'The reply above was cut off before it was finished. Continue it from exactly the last word. It is ONE reply, not a new one.',
+        'Do not repeat anything already written. Do not start over. Do not write any header, title, date, time or scene line again' + (first.length < 160 ? ` (the reply already began with: "${first.trim()}")` : '') + '.',
+        `Keep the same paragraph size as above (about ${avg} words per paragraph, never more than ${longest}). Do not write longer paragraphs than the ones already there.`,
+        'Finish the reply in roughly one or two more short paragraphs, then stop. No note about the cut.',
+    ];
     return { ...body, messages: [...body.messages,
         { role: 'assistant', content: carry },
-        { role: 'user', content: '[The reply above was cut off before it was finished. Continue it from exactly where it stopped: no repeating, no restarting, no new header line, no note about the cut. Write only the rest of the reply, in the same voice, format and length rules.]' }] };
+        { role: 'user', content: `[${rules.join(' ')}]` }] };
+}
+
+const norm = (t) => String(t).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+
+/** Joins what was kept with the next model's text, and removes a restart: repeated header or repeated opening paragraphs. */
+function mergeContinuation(carry, text) {
+    let t = String(text || '').replace(/^\s+/, '');
+    if (!carry || !t) return { text: t, restarted: false };
+    const cn = norm(carry);
+    // the model wrote the whole reply again: its own text replaces the kept one
+    if (cn.length > 30 && norm(t).startsWith(cn.slice(0, 40))) return { text: t, restarted: true };
+    // drop leading paragraphs / lines that already exist in the kept text
+    const parts = t.split(/(\n\s*\n)/);
+    while (parts.length) {
+        const n = norm(parts[0]);
+        if (!n || (n.length > 8 && cn.includes(n))) { parts.shift(); continue; }
+        break;
+    }
+    t = parts.join('').replace(/^\s+/, '');
+    // a repeated first line (header, date, scene line) at the start
+    const firstLine = norm((carry.split('\n').find((l) => l.trim()) || ''));
+    const lines = t.split('\n');
+    if (firstLine.length > 6 && norm(lines[0]) === firstLine) t = lines.slice(1).join('\n').replace(/^\s+/, '');
+    return { text: t, restarted: false };
 }
 
 /** Builds the answer SillyTavern expects, holding the finished text. */
