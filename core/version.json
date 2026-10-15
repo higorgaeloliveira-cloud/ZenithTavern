@@ -1,5 +1,5 @@
 {
-  "version": "0.12.17",
+  "version": "0.13.17",
   "history": [
     {
       "version": "0.0.1",
@@ -170,6 +170,14 @@
         "ui"
       ],
       "note": "!heat and the Obsessed state: removed the softening",
+      "date": "2026-10-15"
+    },
+    {
+      "version": "0.13.17",
+      "kinds": [
+        "internal"
+      ],
+      "note": "New roster character: Riko Kitsumi (kitsune, standard + custom scenario greetings)",
       "date": "2026-10-15"
     }
   ],

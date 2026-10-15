@@ -45,6 +45,27 @@
       "card": "mirel/card.png",
       "sha256": "8e0608449445f1b6ea1dd1bb96ce8aa0031684f194c67711cc5ce742f63bd4fe",
       "sprites": []
+    },
+    {
+      "id": "riko-kitsumi",
+      "name": "Riko Kitsumi",
+      "file": "Riko Kitsumi.png",
+      "tagline": "Teasing, warm-hearted kitsune who works nights at a noodle bar and keeps losing track of her own tails.",
+      "tags": [
+        "Asterhaven",
+        "ZenithTavern",
+        "university",
+        "kemonomimi",
+        "kitsune",
+        "fox girl",
+        "demi-human",
+        "slice of life",
+        "coastal town"
+      ],
+      "version": 1,
+      "card": "riko-kitsumi/card.png",
+      "sha256": "174f79884cc18b4eaa4db9496b8bf7c3f3382762dce68c84c361f5b1406f7dea",
+      "sprites": []
     }
   ]
 }
