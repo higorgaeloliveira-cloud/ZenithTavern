@@ -401,7 +401,7 @@ function buildForm(draft, rerenderOuter) {
                 (() => { const c = h('input', { type: 'checkbox', ...(draft.continueCut ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.continueCut = c.checked; }); return c; })()),
             h('label', { class: 'lr-row', title: 'When a model fails several times in a row, replace it with another model from the same connection.' }, h('span', {}, 'Change model after multiple failures?'),
                 (() => { const c = h('input', { type: 'checkbox', ...(draft.switchOnFail ? { checked: true } : {}) }); c.addEventListener('change', () => { draft.switchOnFail = c.checked; render(); }); return c; })()),
-            draft.switchOnFail ? h('div', { class: 'lr-sub lr-switch' },
+            draft.switchOnFail ? h('div', { class: 'lr-sub lr-failbox' },
                 h('label', { class: 'lr-row' }, h('span', {}, 'After this many failures in a row (2-10)'),
                     (() => { const n = h('input', { class: 'text_pole lr-num', type: 'number', min: 2, max: 10, value: draft.switchAfter }); n.addEventListener('input', () => { draft.switchAfter = Math.min(10, Math.max(2, Math.round(Number(n.value) || 3))); }); return n; })()),
                 [['random', 'Shift to a random model'], ['similar', 'Shift to a model with a similar context length'], ['name', 'Shift to a model with this word in the name:']].map(([id, label]) =>

@@ -1,5 +1,5 @@
 {
-  "version": "0.7.14",
+  "version": "0.7.15",
   "history": [
     {
       "version": "0.0.1",
@@ -117,6 +117,13 @@
         "internal"
       ],
       "note": "Fix: opening a chat no longer shows 'Something went wrong while saving the character' (the automatic card save is accepted and ignored)."
+    },
+    {
+      "version": "0.7.15",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Fix: LunaRouter options layout (failure-switch block overlapped other rows)"
     }
   ]
 }

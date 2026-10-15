@@ -25,5 +25,6 @@
 
 .lr-sub { margin-left: 18px; animation: zmo-rise .25s cubic-bezier(.2, .8, .2, 1) backwards; }
 
-.lr-switch { display: flex; flex-direction: column; gap: 6px; }
+.lr-failbox { display: flex; flex-direction: column; gap: 6px; }
+.lr-radio > input[type=radio] { flex: none; }
 .lr-radio { justify-content: flex-start; gap: 8px; }
