@@ -57,7 +57,7 @@ const bookPath = path.join(dir, 'lorebook.json'); // optional: embedded lorebook
 const book = fs.existsSync(bookPath) ? JSON.parse(fs.readFileSync(bookPath, 'utf8')) : null;
 const g = rec.greetings || {};
 const firstMes = g.standard?.text || '';
-const alternates = [g.custom_scenario?.text].filter(Boolean);
+const alternates = [g.dating?.text, g.custom_scenario?.text].filter(Boolean);
 const tags = ['Asterhaven', 'ZenithTavern', 'university', ...list(rec.tags)];
 const v2 = {
   spec: 'chara_card_v2', spec_version: '2.0',

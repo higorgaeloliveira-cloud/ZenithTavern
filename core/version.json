@@ -1,5 +1,5 @@
 {
-  "version": "0.14.18",
+  "version": "0.15.18",
   "history": [
     {
       "version": "0.0.1",
@@ -194,6 +194,14 @@
         "internal"
       ],
       "note": "Riko Kitsumi: real card image and greeting image",
+      "date": "2026-10-16"
+    },
+    {
+      "version": "0.15.18",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Riko Kitsumi: new Dating greeting (greeting 2); custom scenario is now greeting 3",
       "date": "2026-10-16"
     }
   ],
