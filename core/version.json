@@ -1,5 +1,5 @@
 {
-  "version": "0.13.18",
+  "version": "0.14.18",
   "history": [
     {
       "version": "0.0.1",
@@ -187,7 +187,15 @@
       ],
       "note": "Version numbers now count 0-20 and carry to the left (0.13.20 -> 0.14.0)",
       "date": "2026-10-15"
+    },
+    {
+      "version": "0.14.18",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Riko Kitsumi: real card image and greeting image",
+      "date": "2026-10-16"
     }
   ],
-  "released": "2026-10-15"
+  "released": "2026-10-16"
 }
