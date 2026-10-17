@@ -1,5 +1,5 @@
 {
-  "version": "0.17.20",
+  "version": "0.18.0",
   "history": [
     {
       "version": "0.0.1",
@@ -227,6 +227,14 @@
         "ui"
       ],
       "note": "EX-Roster: lists refresh every time the window is opened (no caching)",
+      "date": "2026-10-17"
+    },
+    {
+      "version": "0.18.0",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Character List: updated cards show their new picture (stale thumbnails are refreshed)",
       "date": "2026-10-17"
     }
   ],

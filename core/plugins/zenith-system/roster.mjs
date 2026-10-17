@@ -71,6 +71,21 @@ function writeLedger(request, ledger) {
     fs.writeFileSync(tmp, JSON.stringify(ledger, null, 2));
     fs.renameSync(tmp, file);
 }
+/** SillyTavern keeps a small cached picture of every card. When a card is replaced by a newer version the old picture would stay
+ *  (a placeholder if the first version had no image), so any cached picture older than its card is deleted and made again. */
+function dropStaleThumbs(request, force = false) {
+    try {
+        const dirs = request.user.directories;
+        if (!dirs.thumbnailsAvatar) return;
+        for (const item of Object.values(readLedger(request).items)) {
+            if (!item?.avatar) continue;
+            const thumb = path.join(dirs.thumbnailsAvatar, item.avatar);
+            if (!fs.existsSync(thumb)) continue;
+            const card = path.join(dirs.characters, item.avatar);
+            if (force || !fs.existsSync(card) || fs.statSync(thumb).mtimeMs < fs.statSync(card).mtimeMs) fs.unlinkSync(thumb);
+        }
+    } catch (e) { console.warn('[Zenith] thumbnail refresh failed', e?.message || e); }
+}
 function installedAvatars(request) {
     return new Set(Object.values(readLedger(request).items).map((i) => i.avatar));
 }
@@ -253,6 +268,7 @@ async function installOne(request, entry, remote) {
 
     ledger.items[entry.id] = { avatar: entry.file, name: cardName, version: entry.version, sprites: written, images: images.map((i) => i.name), installedAt: new Date().toISOString() };
     writeLedger(request, ledger);
+    dropStaleThumbs(request, true);
     return { id: entry.id, ok: true, avatar: entry.file, name: cardName, sprites: written.length };
 }
 
@@ -308,6 +324,7 @@ export async function installStrictGuards() {
                 case '/edit-attribute': return ['fav', 'chat'].includes(request.body?.field) ? next() : blockWith('edit', request, response);
                 case '/merge-attributes': return mergeAllowed(request.body) ? next() : blockWith('edit', request, response);
                 case '/all': {
+                    dropStaleThumbs(request);
                     const send = response.send.bind(response);
                     response.send = (body) => {
                         try {
