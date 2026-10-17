@@ -225,9 +225,9 @@
         "coastal town",
         "dorm"
       ],
-      "version": 1,
+      "version": 2,
       "card": "juno-tidewell/card.png",
-      "sha256": "57796690e1292ec1e0a717bfd03c10ce1cb255fa402dd62dc1db48b8715483cc",
+      "sha256": "63feaa8b85a4a38670751abc45c9504c8ef2d2249f2f7b3c474b0cc2982cb76b",
       "sprites": []
     }
   ]

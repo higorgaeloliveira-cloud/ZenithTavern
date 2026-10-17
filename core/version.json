@@ -1,5 +1,5 @@
 {
-  "version": "0.20.1",
+  "version": "0.20.2",
   "history": [
     {
       "version": "0.0.1",
@@ -259,6 +259,14 @@
         "ui"
       ],
       "note": "Mirel: card picture",
+      "date": "2026-10-17"
+    },
+    {
+      "version": "0.20.2",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Juno Tidewell: card picture",
       "date": "2026-10-17"
     }
   ],
