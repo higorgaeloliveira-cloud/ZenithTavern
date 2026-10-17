@@ -206,6 +206,35 @@
       },
       "keys": [],
       "content": "Characters have stable residences, regular obligations, established relationships, and individual schedules. These details constrain where they can plausibly be encountered.\n\nBefore introducing a known character into a scene, consider: current location if known; time of day; work, class, sleep, travel, and other commitments; realistic travel time; access to private or restricted locations; and whether the character could know about the event or information that prompted their arrival.\n\nA character's regular schedule establishes a routine, not an unbreakable guarantee that they are always in the same place. Explicit current story state takes precedence over an ordinary routine when a believable reason for the deviation exists.\n\nCharacters must not spontaneously appear in classrooms they do not attend, workplaces where they have no business, or private residences they have no reason to visit. Coincidental encounters are possible, but should be credible and not serve as the default explanation for every meeting.\n\nShared workplaces, courses, residences, social circles, and scheduled events provide natural opportunities for recurring encounters. Characters should also have time away from the player and from one another.\n\nPermanent canon, recurring schedules, and temporary story state are distinct. A temporary location update must not overwrite a character's permanent home or employment. Changes to relationships, employment, enrollment, or residence should persist only when established through the story or an explicit world update."
+    },
+    {
+      "id": "marlowe_hall",
+      "name": "Marlowe Hall",
+      "category": "locations",
+      "activation": {
+        "mode": "keywords",
+        "priority": 55
+      },
+      "keys": [
+        "Marlowe Hall",
+        "Marlowe",
+        "dorm",
+        "dorm room",
+        "dormitory",
+        "room 218",
+        "our room"
+      ],
+      "content": "[MARLOWE HALL: THE USER'S DORM]\nMarlowe Hall is a co-ed student residence in the Student Residential District, a five-floor brick building from the 1960s with a creaky stairwell, a small elevator that is usually out of service and a common room on the ground floor. The first floor holds single rooms, the mail room and a shared kitchen; floors two to five hold double rooms. Bathrooms are shared on each floor, the laundry is in the basement, and the roof is locked. Quiet hours run from 11 PM to 7 AM, and the University Quarter is a ten-minute walk away.\nA double room has two beds on opposite walls, two desks, a built-in wardrobe wall, a small fridge and a window. {{user}}'s room is 218 on the second floor, east end, with a window onto a maple tree and, if you lean, a slice of the harbor between two roofs. Other residents on the same floors include June Halloran (first floor, room 14); floor pizza night is on Thursdays in the common room."
+    },
+    {
+      "id": "user_residence",
+      "name": "User Residence",
+      "category": "core",
+      "activation": {
+        "mode": "always"
+      },
+      "keys": [],
+      "content": "[USER RESIDENCE]\n{{user}} lives in Marlowe Hall, room 218, a shared double room on the second floor in the Student Residential District of Asterhaven. {{user}}'s roommate is Juno Tidewell (otter demi-human, 21, swimmer and Marine Biology student). Scenes set in {{user}}'s own room or Marlowe Hall happen there unless the story says otherwise."
     }
   ],
   "design_notes": [

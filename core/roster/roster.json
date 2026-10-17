@@ -91,9 +91,9 @@
         "slice of life",
         "coastal town"
       ],
-      "version": 2,
+      "version": 3,
       "card": "june-halloran/card.png",
-      "sha256": "0ffb96142d0fd841d62fd06b121fd7128e7c368d998165ae482cf877589d5e49",
+      "sha256": "d2f2ea2a01bad8058f838f911e039d70265e974e7cea9ccfcaec3d2954b2d800",
       "sprites": []
     },
     {
@@ -204,6 +204,30 @@
       "version": 2,
       "card": "teodor-lindqvist/card.png",
       "sha256": "496375e037930d88f910e55a5941222b8804a94328b808a158740103379835d3",
+      "sprites": []
+    },
+    {
+      "id": "juno-tidewell",
+      "name": "Juno Tidewell",
+      "file": "Juno Tidewell.png",
+      "tagline": "Loud, warm, messy otter swimmer and marine biology student who is {{user}}'s roommate and cannot stand a quiet room.",
+      "tags": [
+        "Asterhaven",
+        "ZenithTavern",
+        "university",
+        "kemonomimi",
+        "otter girl",
+        "roommate",
+        "warm",
+        "chaotic",
+        "swim team",
+        "slice of life",
+        "coastal town",
+        "dorm"
+      ],
+      "version": 1,
+      "card": "juno-tidewell/card.png",
+      "sha256": "57796690e1292ec1e0a717bfd03c10ce1cb255fa402dd62dc1db48b8715483cc",
       "sprites": []
     }
   ]
