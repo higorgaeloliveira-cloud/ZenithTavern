@@ -1,5 +1,5 @@
 {
-  "version": "0.18.0",
+  "version": "0.19.0",
   "history": [
     {
       "version": "0.0.1",
@@ -235,6 +235,14 @@
         "ui"
       ],
       "note": "Character List: updated cards show their new picture (stale thumbnails are refreshed)",
+      "date": "2026-10-17"
+    },
+    {
+      "version": "0.19.0",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Portraits for Cassian, Delphine, June, Marigold, Odette, Teodor; Mirel is green; Nika removed",
       "date": "2026-10-17"
     }
   ],
