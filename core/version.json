@@ -1,5 +1,5 @@
 {
-  "version": "0.20.2",
+  "version": "1.0.2",
   "history": [
     {
       "version": "0.0.1",
@@ -267,6 +267,14 @@
         "ui"
       ],
       "note": "Juno Tidewell: card picture",
+      "date": "2026-10-17"
+    },
+    {
+      "version": "1.0.2",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Asterhaven lorebook rewritten as full lore (v2.0): all locations, species, culture, calendar, directory; lower priority than the cast",
       "date": "2026-10-17"
     }
   ],

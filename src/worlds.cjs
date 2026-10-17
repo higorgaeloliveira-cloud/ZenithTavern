@@ -79,7 +79,17 @@ function installWorlds({ roots, destDir }) {
         // A managed lorebook (the cast) is refreshed when a newer version ships, but only if the installed copy was never edited.
         if (!out.zenith_hash) continue;
         let old; try { old = JSON.parse(fs.readFileSync(dest, 'utf8')); } catch { continue; }
-        if (!old.zenith_hash || old.zenith_hash === out.zenith_hash || hashOf(old.entries) !== old.zenith_hash) continue;
+        if (!old.zenith_hash) {
+          // An older copy that was installed before this lorebook became managed (a newer, fuller version now ships).
+          // Keep the old one as "<name> (old)" so nothing is lost, and install the new one in its place.
+          let bak = `${safe} (old)`; let n = 2;
+          while (fs.existsSync(path.join(destDir, `${bak}.json`))) bak = `${safe} (old ${n++})`;
+          fs.renameSync(dest, path.join(destDir, `${bak}.json`));
+          fs.writeFileSync(dest, JSON.stringify(out, null, 2));
+          added.push(`${safe} (replaced, old copy kept as "${bak}")`);
+          continue;
+        }
+        if (old.zenith_hash === out.zenith_hash || hashOf(old.entries) !== old.zenith_hash) continue;
         fs.writeFileSync(dest, JSON.stringify(out, null, 2));
         added.push(`${safe} (updated)`);
         continue;
