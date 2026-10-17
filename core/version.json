@@ -1,5 +1,5 @@
 {
-  "version": "0.20.0",
+  "version": "0.20.1",
   "history": [
     {
       "version": "0.0.1",
@@ -251,6 +251,14 @@
         "internal"
       ],
       "note": "Marlowe Hall room 218 defined as the user's dorm; roommate Juno Tidewell added (card, lorebooks)",
+      "date": "2026-10-17"
+    },
+    {
+      "version": "0.20.1",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Mirel: card picture",
       "date": "2026-10-17"
     }
   ],
