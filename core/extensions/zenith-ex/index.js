@@ -29,7 +29,7 @@ function h(tag, props = {}, ...kids) {
 const say = (msg, type = 'info') => { try { globalThis.toastr?.[type]?.(msg, 'EX-Roster'); } catch { /* no toastr */ } };
 
 async function api(path, { method = 'GET', body } = {}) {
-    const opts = { method };
+    const opts = { method, cache: 'no-store' };
     if (body !== undefined) { opts.headers = ctx().getRequestHeaders(); opts.body = JSON.stringify(body); } else opts.headers = ctx().getRequestHeaders();
     let r;
     try { r = await fetch(`${API}${path}`, opts); } catch { throw new Error('No connection.'); }

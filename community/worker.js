@@ -144,9 +144,9 @@ export default {
       if (path === '/admin') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8' } });
 
       if (path === '/api/list' && request.method === 'GET') {
-        // The listing is kept in memory for 2 minutes (KV allows 1000 list calls a day on the free plan).
+        // The listing is kept in memory for 20 seconds (KV allows 1000 list calls a day on the free plan).
         let items;
-        if (memo.items && Date.now() - memo.t < 120_000) items = memo.items;
+        if (memo.items && Date.now() - memo.t < 20_000) items = memo.items;
         else {
           items = [];
           let cursor;
@@ -164,7 +164,7 @@ export default {
         let out = items;
         if (kind) out = out.filter((i) => i.kind === kind);
         if (q) out = out.filter((i) => `${i.name} ${i.author} ${i.summary} ${i.species}`.toLowerCase().includes(q));
-        return json({ items: out.slice(0, 200) });
+        return json({ items: out.slice(0, 200) }, 200, { 'cache-control': 'no-store' });
       }
 
       let m;

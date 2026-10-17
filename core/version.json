@@ -1,5 +1,5 @@
 {
-  "version": "0.17.19",
+  "version": "0.17.20",
   "history": [
     {
       "version": "0.0.1",
@@ -220,7 +220,15 @@
       ],
       "note": "EX-Roster phone app: create and share characters and places as lorebooks; community server (Worker)",
       "date": "2026-10-16"
+    },
+    {
+      "version": "0.17.20",
+      "kinds": [
+        "ui"
+      ],
+      "note": "EX-Roster: lists refresh every time the window is opened (no caching)",
+      "date": "2026-10-17"
     }
   ],
-  "released": "2026-10-16"
+  "released": "2026-10-17"
 }
