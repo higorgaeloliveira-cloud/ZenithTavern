@@ -110,7 +110,7 @@ function defaultToOpenRouter() {
 // ------------------------------------------------------------ one-time: switch on the starter lorebooks
 // Lorebooks the launcher installs from core/worlds are turned on for all chats ONCE (World Info > "Active World(s)").
 // If you switch one off later it stays off: each name is only handled once. Add names here for new starter worlds.
-const STARTER_WORLDS = ['Asterhaven'];
+const STARTER_WORLDS = ['Asterhaven', 'Characters', 'Sub-bots'];
 function activateStarterWorlds() {
     const { extensionSettings, saveSettingsDebounced } = ctx();
     const s = (extensionSettings.zenith_ui ??= {});

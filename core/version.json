@@ -1,5 +1,5 @@
 {
-  "version": "0.15.18",
+  "version": "0.16.19",
   "history": [
     {
       "version": "0.0.1",
@@ -202,6 +202,15 @@
         "internal"
       ],
       "note": "Riko Kitsumi: new Dating greeting (greeting 2); custom scenario is now greeting 3",
+      "date": "2026-10-16"
+    },
+    {
+      "version": "0.16.19",
+      "kinds": [
+        "ui",
+        "internal"
+      ],
+      "note": "Cast: 7 new characters (June, Cassian, Odette, Marigold, Delphine, Teo, Nika); lorebooks Characters and Sub-bots; !Name command and button call characters into the scene",
       "date": "2026-10-16"
     }
   ],

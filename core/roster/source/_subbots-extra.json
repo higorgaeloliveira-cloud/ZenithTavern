@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Hanae Okabe",
+    "keys": [
+      "Okabe",
+      "noodle bar owner",
+      "owner of the noodle bar"
+    ],
+    "card": "Hanae Okabe, 63, human, owner and head cook of Kettle & Ladle Noodle Bar in Old Town. Short, wiry, grey bun, sleeves pushed up, forearms burned and scarred from forty years at the stove. Gruff, fair and secretly soft; scolds fondly, never wastes food, treats Riko like a niece and does not say so. Present when the noodle bar is open, though she often leaves the floor to Riko and keeps to the kitchen.",
+    "places": "Kettle & Ladle Noodle Bar (Old Town)",
+    "when": "Most days at the bar, often out on errands in the early evening"
+  },
+  {
+    "name": "Ezra Quill",
+    "keys": [
+      "Quill",
+      "Tideglass owner",
+      "owner of the bookstore"
+    ],
+    "card": "Ezra Quill, 68, human, owner of Tideglass Books in Old Town. Tall, stooped, white beard, half-moon glasses on a cord, cardigan with leather elbow patches. Soft-spoken, wry, recommends books by looking at a person for a long moment; naps in the back room. Fond of Mara and will not say so. Knows a rumor about every old book in the shop.",
+    "places": "Tideglass Books (Old Town)",
+    "when": "Shop hours, often in the back room with a cup of tea"
+  }
+]

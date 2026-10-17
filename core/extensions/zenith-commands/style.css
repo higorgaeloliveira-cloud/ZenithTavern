@@ -35,3 +35,12 @@
 .zc-fmt pre { margin: 6px 0; white-space: pre-wrap; word-break: break-word; font-size: 12px; color: #cfc6ad; background: none; border: 0; padding: 0; }
 .zc-copied { font-size: 12px; opacity: .7; }
 .zc-fmt-ok { border-color: #7bd88f; } .zc-fmt-ok .zc-copied { color: #7bd88f; opacity: 1; }
+
+.zc-field input + input { margin-top: 8px; }
+.zc-err { margin: 0 0 8px; color: #ff8d8d; font-size: 14px; }
+.zc-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.zc-chip { cursor: pointer; padding: 5px 10px; border-radius: 999px; font-size: 13px; color: #eee; background: #2a2418; border: 1px solid #5a4b2a; }
+.zc-chip:hover { border-color: var(--zenith-accent, #f5c451); }
+.zc-here { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; }
+.zc-guest { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 999px; background: #3a2f14; border: 1px solid var(--zenith-accent, #f5c451); }
+.zc-x { cursor: pointer; border: 0; background: none; color: #eee; font-size: 16px; line-height: 1; padding: 0 6px; }

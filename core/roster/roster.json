@@ -73,6 +73,159 @@
           "sha256": "c38aa41fb1754943ffaa651b128bc41f23c9585b3e2d0d17f4a8081451afe6e3"
         }
       ]
+    },
+    {
+      "id": "june-halloran",
+      "name": "June Halloran",
+      "file": "June Halloran.png",
+      "tagline": "Shy tuxedo-cat astronomy student who is a confident late-night radio voice and a mumbling mess in daylight.",
+      "tags": [
+        "Asterhaven",
+        "ZenithTavern",
+        "university",
+        "kemonomimi",
+        "cat girl",
+        "nekomimi",
+        "shy",
+        "radio",
+        "slice of life",
+        "coastal town"
+      ],
+      "version": 1,
+      "card": "june-halloran/card.png",
+      "sha256": "b2d63f0dad1184a1c67d4ff26d76175af8e8852892430ba8c68f7b2bffaa52c2",
+      "sprites": []
+    },
+    {
+      "id": "cassian-mercer",
+      "name": "Cassian Mercer",
+      "file": "Cassian Mercer.png",
+      "tagline": "Stoic wolf bartender who runs a harbor bar like a lighthouse and never asks anyone for help.",
+      "tags": [
+        "Asterhaven",
+        "ZenithTavern",
+        "university",
+        "kemonomimi",
+        "wolf",
+        "okamimimi",
+        "male",
+        "bartender",
+        "harbor",
+        "slice of life"
+      ],
+      "version": 1,
+      "card": "cassian-mercer/card.png",
+      "sha256": "7462e0a29c7b2a445a1275c51c02744e6f3ff9b34543b442989d832594821846",
+      "sprites": []
+    },
+    {
+      "id": "odette-marchetti",
+      "name": "Odette Marchetti",
+      "file": "Odette Marchetti.png",
+      "tagline": "Burned-out golden-retriever nursing student whose tail keeps wagging for patients even when she is running on empty.",
+      "tags": [
+        "Asterhaven",
+        "ZenithTavern",
+        "university",
+        "kemonomimi",
+        "dog girl",
+        "retriever",
+        "nurse",
+        "burnout",
+        "baking",
+        "slice of life"
+      ],
+      "version": 1,
+      "card": "odette-marchetti/card.png",
+      "sha256": "6f9e48956c2520ef0dd63629d9bbd0a48f555f3fc2b628070426154c30c0b699",
+      "sprites": []
+    },
+    {
+      "id": "marigold-fenwick",
+      "name": "Marigold Fenwick",
+      "file": "Marigold Fenwick.png",
+      "tagline": "Chaotic, generous tanuki professor of Maritime History who cannot say no and cannot lie without her tail puffing.",
+      "tags": [
+        "Asterhaven",
+        "ZenithTavern",
+        "university",
+        "kemonomimi",
+        "tanuki",
+        "raccoon dog",
+        "professor",
+        "adult",
+        "cheerful",
+        "slice of life"
+      ],
+      "version": 1,
+      "card": "marigold-fenwick/card.png",
+      "sha256": "dd77892a12af5058ca33067b913562ecfcabbd0e919f117cd842b449421018eb",
+      "sprites": []
+    },
+    {
+      "id": "delphine-ashcroft",
+      "name": "Delphine Ashcroft",
+      "file": "Delphine Ashcroft.png",
+      "tagline": "Polished, sharp-tongued rabbit heiress who runs the student scene and cannot stop her ears from telling the truth.",
+      "tags": [
+        "Asterhaven",
+        "ZenithTavern",
+        "university",
+        "kemonomimi",
+        "rabbit",
+        "usagimimi",
+        "lop ears",
+        "student council",
+        "rich girl",
+        "slice of life"
+      ],
+      "version": 1,
+      "card": "delphine-ashcroft/card.png",
+      "sha256": "cd3f5071bd605b6e72fc1f0e1a7209db1a9d46aa46fa74e59ce624a18a2527e4",
+      "sprites": []
+    },
+    {
+      "id": "teodor-lindqvist",
+      "name": "Teodor Lindqvist",
+      "file": "Teodor Lindqvist.png",
+      "tagline": "Gentle, anxious fallow-deer botanist who talks through plants because people are harder.",
+      "tags": [
+        "Asterhaven",
+        "ZenithTavern",
+        "university",
+        "kemonomimi",
+        "deer",
+        "male",
+        "botany",
+        "shy",
+        "gentle",
+        "slice of life"
+      ],
+      "version": 1,
+      "card": "teodor-lindqvist/card.png",
+      "sha256": "b4634455ca51e000d9fa7274d8abc2c678959bf7258ad2f8534fff5d4984723a",
+      "sprites": []
+    },
+    {
+      "id": "nika-volkova",
+      "name": "Nika Volkova",
+      "file": "Nika Volkova.png",
+      "tagline": "Hot-tempered tigress boxing coach whose insults are affection and whose secret hobby is cross-stitch.",
+      "tags": [
+        "Asterhaven",
+        "ZenithTavern",
+        "university",
+        "kemonomimi",
+        "tiger",
+        "tsundere",
+        "boxing",
+        "gym",
+        "slice of life"
+      ],
+      "version": 1,
+      "card": "nika-volkova/card.png",
+      "sha256": "8c23116018dc6e8d53817f2a010278c8474f027f75fa8985aeaaae5eb0ac5868",
+      "sprites": []
     }
   ]
 }

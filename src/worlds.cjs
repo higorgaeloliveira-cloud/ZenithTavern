@@ -10,6 +10,8 @@
  */
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const hashOf = (entries) => crypto.createHash('sha1').update(JSON.stringify(entries)).digest('hex');
 
 /** Portable ZenithTavern world -> SillyTavern World Info file. */
 function convert(src) {
@@ -37,6 +39,8 @@ function convert(src) {
       constant: isAlways,
       key: isAlways ? [] : [...(e.keys || [])],
       order: isAlways ? 100 - always.indexOf(e) * 5 : Number(e.activation?.priority ?? 50),
+      ...(e.character_filter?.length ? { characterFilter: { isExclude: true, names: [...e.character_filter], tags: [] } } : {}),
+      ...(e.prevent_recursion ? { preventRecursion: true, excludeRecursion: true } : {}),
     });
     uid++;
   }
@@ -47,7 +51,7 @@ function convert(src) {
       disable: true, order: 0,
     });
   }
-  return { name: src.world?.name || 'World', entries };
+  return { name: src.world?.name || 'World', entries, managed: !!src.world?.managed };
 }
 
 /** Install every lorebook found in the worlds folders. Returns the names that were added. */
@@ -64,13 +68,22 @@ function installWorlds({ roots, destDir }) {
       let out;
       if (file.endsWith('.zenith-world.json') || data.schema_version) {
         const c = convert(data); name = c.name; out = { entries: c.entries };
+        if (c.managed) out.zenith_hash = hashOf(out.entries);
       } else if (data.entries) {
         name = file.replace(/\.json$/i, ''); out = data;
       } else continue;
       const safe = name.replace(/[\\/:*?"<>|]/g, '').trim();
       if (!safe) continue;
       const dest = path.join(destDir, `${safe}.json`);
-      if (fs.existsSync(dest)) continue;
+      if (fs.existsSync(dest)) {
+        // A managed lorebook (the cast) is refreshed when a newer version ships, but only if the installed copy was never edited.
+        if (!out.zenith_hash) continue;
+        let old; try { old = JSON.parse(fs.readFileSync(dest, 'utf8')); } catch { continue; }
+        if (!old.zenith_hash || old.zenith_hash === out.zenith_hash || hashOf(old.entries) !== old.zenith_hash) continue;
+        fs.writeFileSync(dest, JSON.stringify(out, null, 2));
+        added.push(`${safe} (updated)`);
+        continue;
+      }
       fs.writeFileSync(dest, JSON.stringify(out, null, 2));
       added.push(safe);
     }

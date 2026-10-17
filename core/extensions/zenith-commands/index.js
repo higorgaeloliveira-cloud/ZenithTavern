@@ -10,6 +10,8 @@
  *   !bonk     if the scene is going NSFW, the character settles into romantic / affectionate instead
  *   !current  shows what the model understood about YOUR persona (nothing goes to the chat)
  *   !state    the character is in a chosen state until "Stop"
+ *   !Name     (e.g. !Mara) calls a character into the scene: looked up in the lorebook "Characters", then "Sub-bots".
+ *             The button (!cast) asks for the name. The guest stays in the scene until removed from that pop-up.
  */
 const ctx = () => SillyTavern.getContext();
 const KEY = 'zenith_commands';
@@ -106,6 +108,8 @@ function applyPrompts() {
     for (const k of ['heat', 'drama', 'camera']) set(k, once[k]);
     set('bonk', m.bonk?.left > 0 ? bonkText() : '');
     set('state', m.state && STATES[m.state] ? `STATE: ${STATES[m.state].text} This state lasts until {{user}} stops it. {{char}} stays recognisably themselves (same name, history and way of speaking); only the mood and behaviour change. The response format and paragraph rules stay as they are.` : '', 1);
+    set('guests', guestsText(), 1);
+    set('guest', once.guest, 0);
     refreshButtons();
 }
 const bonkText = () => 'BONK: {{user}} just "bonked" {{char}}, a playful stop to the way the scene was heading. {{char}} reacts in character (flustered, amused or sheepish) and settles the scene into something romantic and affectionate instead: closeness, cuddling, tender kisses, warm words. No explicit sexual content in this reply. Write the header mode as (SAPH). This overrides the mode lock and anything that was pushing the scene towards explicit content.';
@@ -204,6 +208,108 @@ async function cmdState() {
     applyPrompts();
 }
 
+
+// ------------------------------------------------------------------ !Name : characters called into the scene
+// Lookup order: lorebook "Characters" (full profile) first, then "Sub-bots" (short cast card).
+const CAST_BOOKS = ['Characters', 'Sub-bots'];
+let castIndex = { Characters: [], 'Sub-bots': [] };   // [{ name, keys, content }]
+const norm = (t) => String(t || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+
+async function loadBook(name) {
+    const c = ctx();
+    let data = null;
+    try { if (typeof c.loadWorldInfo === 'function') data = await c.loadWorldInfo(name); } catch { /* fall back below */ }
+    if (!data) {
+        try { const r = await fetch('/api/worldinfo/get', { method: 'POST', headers: c.getRequestHeaders(), body: JSON.stringify({ name }) }); if (r.ok) data = await r.json(); } catch { /* not installed */ }
+    }
+    return Object.values(data?.entries || {})
+        .filter((e) => e && !e.disable && !e.constant && String(e.comment || '').trim())
+        .map((e) => ({ name: String(e.comment).trim(), keys: [].concat(e.key || []).map(String), content: String(e.content || '') }));
+}
+let loading = null;
+function loadCast() {
+    return (loading ??= (async () => {
+        for (const b of CAST_BOOKS) castIndex[b] = await loadBook(b);
+        applyPrompts();
+    })().finally(() => { loading = null; }));
+}
+
+function matchEntry(list, q, useKeys) {
+    const n = norm(q);
+    if (!n) return null;
+    const names = (e) => { const w = norm(e.name).split(' '); return [norm(e.name), w[0], w[w.length - 1]]; };
+    const exact = list.filter((e) => names(e).includes(n) || (useKeys && e.keys.some((k) => norm(k) === n)));
+    if (exact.length === 1) return exact[0];
+    if (exact.length > 1) return exact.find((e) => norm(e.name) === n) || exact[0];
+    if (n.length >= 3) { const pre = list.filter((e) => norm(e.name).split(' ').some((w) => w.startsWith(n)) || norm(e.name).startsWith(n)); if (pre.length === 1) return pre[0]; }
+    return null;
+}
+/** Characters first, then Sub-bots. Returns { name, full, bot } or null. */
+function findCast(q) {
+    const full = matchEntry(castIndex.Characters, q, true);
+    const bot = full ? castIndex['Sub-bots'].find((e) => norm(e.name) === norm(full.name)) : matchEntry(castIndex['Sub-bots'], q, false);
+    const name = (full || bot)?.name;
+    return name ? { name, full, bot } : null;
+}
+const isCurrentChar = (name) => { const c = ctx(); return !c.groupId && norm(c.name2) === norm(name); };
+const guests = () => (meta().guests ??= []);
+const guestCard = (g) => { const f = findCast(g.name); return f?.bot?.content || f?.full?.content || ''; };
+function guestsText() {
+    const list = (meta().guests || []).map(guestCard).filter(Boolean);
+    if (!list.length) return '';
+    return `SCENE CAST: these named characters are in the scene with {{user}} and {{char}} right now. Play each of them in the same replies as {{char}}, each with their own voice, body language and (for demi-humans) ears and tail reacting to the moment. {{char}} stays the lead; the others join in naturally, and may leave when it fits the story.\n${list.join('\n\n')}`;
+}
+
+/** Adds a guest and (replyNow) starts the reply. Returns false when it is the current character. */
+async function addGuest(hit, hint = '', replyNow_ = true) {
+    if (!needChat()) return false;
+    if (isCurrentChar(hit.name)) { toastr.info(`${hit.name} is the character you are already talking to.`); return false; }
+    const list = guests();
+    const wasIn = list.some((g) => norm(g.name) === norm(hit.name));
+    if (!wasIn) list.push({ name: hit.name });
+    saveMeta();
+    const profile = (hit.full || hit.bot)?.content || '';
+    once.guest = `SCENE GUEST: {{user}} used the !${hit.name.split(' ')[0]} command and calls ${hit.name} into the scene. In THIS reply ${hit.name} ${wasIn ? 'takes a more active part in the scene' : 'enters the scene'} alongside {{char}}, in the same message. ` +
+        (hint ? `How they show up, from {{user}}: "${hint}". ` : 'You decide how and why they are there, fitting the place, the hour and the story (a customer, an errand, looking for someone, passing by). ') +
+        `Play ${hit.name} as their own person with their own voice and body language; they and {{char}} react to each other only as far as the chat has established, with no invented shared history. Do not write {{user}}'s actions. The response format and paragraph rules still apply. Profile of ${hit.name}:\n${profile}`;
+    toastr.info(`${hit.name} joins the scene.`);
+    applyPrompts();
+    if (replyNow_) await replyNow();
+    return true;
+}
+function removeGuest(name) {
+    const m = meta();
+    m.guests = (m.guests || []).filter((g) => norm(g.name) !== norm(name));
+    if (!m.guests.length) delete m.guests;
+    saveMeta(); applyPrompts();
+    toastr.info(`${name} is no longer tracked in the scene. Write their exit in the story if they are still there.`);
+}
+
+async function cmdCast(arg = '') {
+    if (!needChat()) return;
+    await loadCast();
+    const names = [...new Set([...castIndex.Characters, ...castIndex['Sub-bots']].map((e) => e.name))].filter((n) => !isCurrentChar(n));
+    let prefill = arg, error = '';
+    for (;;) {
+        const input = h('input', { type: 'text', class: 'zc-input text_pole', placeholder: 'Character name, for example: Mara', maxlength: '60', value: prefill });
+        const hint = h('input', { type: 'text', class: 'zc-input text_pole', placeholder: 'Optional: how should they show up?', maxlength: '200' });
+        const here = (meta().guests || []).map((g) => h('span', { class: 'zc-guest' }, g.name, h('button', { type: 'button', class: 'zc-x', title: 'Remove from the scene', onclick: (ev) => { removeGuest(g.name); ev.currentTarget.parentElement.remove(); } }, '×')));
+        const body = h('div', { class: 'zc-field' }, error ? h('p', { class: 'zc-err' }, error) : null, input, hint,
+            names.length ? h('div', { class: 'zc-chips' }, names.map((n) => h('button', { type: 'button', class: 'zc-chip', onclick: () => { input.value = n; input.focus(); } }, n))) : h('p', { class: 'zc-dim' }, 'No cast lorebooks found. Make sure "Characters" and "Sub-bots" are installed.'),
+            here.length ? h('div', { class: 'zc-here' }, h('b', {}, 'In the scene now:'), here) : null);
+        const now = { label: 'Add and reply', kind: 'primary', value: () => ({ q: input.value.trim(), hint: hint.value.trim(), reply: true }) };
+        const later = { label: 'Add for next message', value: () => ({ q: input.value.trim(), hint: hint.value.trim(), reply: false }) };
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); now.el.click(); } });
+        const r = await modal({ title: 'Call a character', lead: 'Who do you want in the scene? The Characters lorebook is searched first, then Sub-bots.', body, buttons: [now, later, cancelBtn] });
+        if (!r) return;
+        if (!r.q) { error = 'Type a name first.'; prefill = ''; continue; }
+        const hit = findCast(r.q);
+        if (!hit) { error = `No character called "${r.q}" in Characters or Sub-bots.`; prefill = r.q; continue; }
+        await addGuest(hit, r.hint, r.reply);
+        return;
+    }
+}
+
 // ---- !current: what the model understood about the user's persona. Nothing here is sent to the chat.
 function personaInfo() {
     const c = ctx();
@@ -259,6 +365,7 @@ const COMMANDS = {
     bonk: { icon: 'fa-baseball-bat-ball', title: '!bonk', run: () => cmdBonk() },
     current: { icon: 'fa-file-lines', title: '!current', run: () => cmdCurrent() },
     state: { icon: 'fa-face-smile', title: '!state', run: () => cmdState() },
+    cast: { icon: 'fa-user-plus', title: '!Name (call a character into the scene)', run: (a) => cmdCast(a) },
 };
 const EXTRA_BUTTONS = { formats: { icon: 'fa-paste', title: 'Text formats (click to copy)', run: () => cmdFormats() } };
 
@@ -291,6 +398,8 @@ function refreshButtons() {
     const st = document.querySelector('#zenith_bar [data-zc="state"]');
     if (st) st.title = m.state ? `!state (now: ${STATES[m.state]?.label || m.state})` : '!state';
     document.querySelector('#zenith_bar [data-zc="bonk"]')?.classList.toggle('zph-btn-on', m.bonk?.left > 0);
+    const cb = document.querySelector('#zenith_bar [data-zc="cast"]');
+    if (cb) { cb.classList.toggle('zph-btn-on', !!m.guests?.length); cb.title = m.guests?.length ? `!Name (in the scene: ${m.guests.map((g) => g.name).join(', ')})` : '!Name (call a character into the scene)'; }
 }
 
 function mountButtons() {
@@ -310,11 +419,20 @@ function mountButtons() {
 function catchTyped(e) {
     const box = document.getElementById('send_textarea');
     if (!box) return;
-    const m = String(box.value || '').match(TYPED);
-    if (!m) return;
+    const text = String(box.value || '');
+    const m = text.match(TYPED);
+    let run = m ? () => COMMANDS[m[1].toLowerCase()].run(m[2].trim()) : null;
+    if (!run) { // "!Name" (a known character, from the cache of the two lorebooks)
+        const w = text.match(/^\s*!([^\n]+)$/)?.[1]?.trim().split(/\s+/) || [];
+        for (let n = Math.min(3, w.length); n >= 1 && !run; n--) {
+            const hit = findCast(w.slice(0, n).join(' '));
+            if (hit) run = () => addGuest(hit, w.slice(n).join(' '), true);
+        }
+    }
+    if (!run) return;
     e.preventDefault(); e.stopImmediatePropagation();
     box.value = ''; box.dispatchEvent(new Event('input', { bubbles: true }));
-    COMMANDS[m[1].toLowerCase()].run(m[2].trim());
+    run();
 }
 document.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' || e.shiftKey || e.isComposing || e.target?.id !== 'send_textarea') return;
@@ -328,8 +446,10 @@ jQuery(() => {
     const { eventSource, eventTypes } = ctx();
     let tries = 0;
     const t = setInterval(() => { if (mountButtons() || ++tries > 60) clearInterval(t); }, 500);
-    const reset = () => { once = {}; applyPrompts(); };
+    const reset = () => { once = {}; applyPrompts(); loadCast(); };
     eventSource.on(eventTypes.CHAT_CHANGED, reset);
+    for (const ev of [eventTypes.WORLDINFO_UPDATED, eventTypes.APP_READY]) if (ev) eventSource.on(ev, () => loadCast());
+    loadCast();
     for (const ev of [eventTypes.GENERATION_ENDED, eventTypes.GENERATION_STOPPED]) if (ev) eventSource.on(ev, afterReply);
     applyPrompts();
     const { SlashCommandParser, SlashCommand } = ctx();
