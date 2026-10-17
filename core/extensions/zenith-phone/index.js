@@ -200,6 +200,8 @@ const APPS = [
       render: panelScreen('copycat'), live: panelLive('copycat') },
     { id: 'ooc', name: 'OOC', title: 'OOC Mode', icon: 'fa-comments', color: 'linear-gradient(160deg,#5be37d,#1fa141)',
       render: panelScreen('ooc'), live: panelLive('ooc') },
+    { id: 'exroster', name: 'EX-Roster', title: 'EX-Roster', icon: 'fa-user-plus', color: 'linear-gradient(160deg,#f5c451,#b9770e)',
+      launch: () => (globalThis.ZenithEx ? globalThis.ZenithEx.open() : globalThis.toastr?.warning('EX-Roster is not loaded.')) },
     { id: 'settings', name: 'Settings', title: 'Settings', icon: 'fa-gear', color: 'linear-gradient(160deg,#9a9aa2,#4a4a52)', dock: true,
       render: () => settingsApp() },
 ];
@@ -247,7 +249,7 @@ function buildLock() {
 }
 
 function buildHome() {
-    const tile = (a) => h('button', { class: 'zph-app', type: 'button', 'data-app': a.id, title: a.name, onclick: () => openApp(a.id) },
+    const tile = (a) => h('button', { class: 'zph-app', type: 'button', 'data-app': a.id, title: a.name, onclick: () => (a.launch ? a.launch() : openApp(a.id)) },
         h('span', { class: 'zph-app-icon', style: `background:${a.color || '#555'}` }, h('i', { class: `fa-solid ${a.icon}` }), h('em', { class: 'zph-dot' })),
         a.dock ? null : h('span', { class: 'zph-app-name' }, a.name));
     return h('div', { class: 'zph-home' },

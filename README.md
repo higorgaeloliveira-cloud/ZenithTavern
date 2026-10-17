@@ -324,3 +324,12 @@ New characters in this cast: June Halloran (cat, campus radio), Cassian Mercer (
 ## Mirel (scripted route character)
 A roster character with an embedded 17-entry lorebook ("Mirel Study Route", written to your World Info on download). Six study days, a lockout, an interlude, the morning after, then freeplay. Each reply starts with header lines (`¦¦ date ~ time ~ place ~ (CURC) ¦¦`, `¦¦ STUDY: DAY n/6 ¦¦`, `¦¦ Collar Status: [Active] ¦¦`); the day number in the header is what turns on that day's module. Characters can carry a lorebook: put `lorebook.json` (a SillyTavern `character_book`) in the character's source folder and rebuild with `tools/character-build.cjs`.
 Header format `¦¦ date ~ time ~ place ~ (TAG) ¦¦` now renders as a card (see Text formats).
+
+## EX-Roster (phone app: create and share characters and places)
+Open the phone and tap **EX-Roster**. It opens a full-screen window with two options.
+- **CREATE** a *character* (name, age 18+, description, personality, prompt, strict roleplay rules, where they work, a card picture, up to 16 expressions) or a *location*. Pick **Public** (listed for everyone) or **Private** (only people with the share code). Pictures are shrunk automatically. You get a share code, and **My creations** lets you remove what you published.
+- **IMPORT** characters, locations, a share code, or a whole lorebook file (SillyTavern World Info `.json`).
+  A character becomes entries in the lorebooks **Community Characters** (full profile) and **Community Sub-bots** (short card keyed by their places), so `!Name` and places in the story find them like the built-in cast. A location becomes an entry in **Community Locations**. Expressions are saved as sprites in `characters/<Name>/`. The lorebooks are switched on automatically.
+- Everything is for adults: the age must be 18+ and the uploader confirms it. The server refuses anything else.
+
+The shared items are stored by a small server you run for free: `community/worker.js` (a Cloudflare Worker with Workers KV, no payment card needed). Bindings: `STORE` (KV namespace) and the secret `ADMIN_KEY`. The address is set in `tavern.config.json` under `exroster.url` (a default is built in). Open `<your worker address>/admin` to look at and remove public uploads. Free limits: 1 GB of storage, 1,000 uploads per day, 100,000 reads per day; uploads are capped at about 2 MB and rate-limited.

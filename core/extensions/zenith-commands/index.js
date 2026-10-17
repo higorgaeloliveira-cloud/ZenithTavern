@@ -212,6 +212,7 @@ async function cmdState() {
 // ------------------------------------------------------------------ !Name : characters called into the scene
 // Lookup order: lorebook "Characters" (full profile) first, then "Sub-bots" (short cast card).
 const CAST_BOOKS = ['Characters', 'Sub-bots'];
+const COMMUNITY_BOOKS = { Characters: 'Community Characters', 'Sub-bots': 'Community Sub-bots' };   // made in the EX-Roster app
 let castIndex = { Characters: [], 'Sub-bots': [] };   // [{ name, keys, content }]
 const norm = (t) => String(t || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 
@@ -226,10 +227,11 @@ async function loadBook(name) {
         .filter((e) => e && !e.disable && !e.constant && String(e.comment || '').trim())
         .map((e) => ({ name: String(e.comment).trim(), keys: [].concat(e.key || []).map(String), content: String(e.content || '') }));
 }
+globalThis.ZenithCast = { reload: () => loadCast(), find: (q) => findCast(q) };
 let loading = null;
 function loadCast() {
     return (loading ??= (async () => {
-        for (const b of CAST_BOOKS) castIndex[b] = await loadBook(b);
+        for (const b of CAST_BOOKS) castIndex[b] = [...await loadBook(b), ...await loadBook(COMMUNITY_BOOKS[b])];
         applyPrompts();
     })().finally(() => { loading = null; }));
 }

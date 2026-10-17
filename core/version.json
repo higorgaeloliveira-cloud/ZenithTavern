@@ -1,5 +1,5 @@
 {
-  "version": "0.16.19",
+  "version": "0.17.19",
   "history": [
     {
       "version": "0.0.1",
@@ -211,6 +211,14 @@
         "internal"
       ],
       "note": "Cast: 7 new characters (June, Cassian, Odette, Marigold, Delphine, Teo, Nika); lorebooks Characters and Sub-bots; !Name command and button call characters into the scene",
+      "date": "2026-10-16"
+    },
+    {
+      "version": "0.17.19",
+      "kinds": [
+        "internal"
+      ],
+      "note": "EX-Roster phone app: create and share characters and places as lorebooks; community server (Worker)",
       "date": "2026-10-16"
     }
   ],
