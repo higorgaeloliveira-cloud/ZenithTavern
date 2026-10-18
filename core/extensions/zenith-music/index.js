@@ -21,7 +21,7 @@ function settings() {
     s.specLength ??= 100; // Advanced: how far the bars may go, 10-100 % of the free space on the right
     s.specBeat ??= 50;    // Advanced: how strongly the bars react, 0-100
     // Advanced: normal | aggressive | custom (only Custom uses the two sliders). Someone who already moved a slider keeps Custom.
-    s.specSim ??= 100;    // Advanced: Audio Simulation, how long the bars look compared with the real level (like a lower volume), 10-100 %
+    s.specSim ??= 100;    // Advanced: Audio Simulation, a lower volume for every band: same ceiling, bands reach it less often, 10-100 %
     s.specLanes ??= 56;   // Advanced (Custom): how many bars, 20-150
     s.specMode ??= (s.specLength !== 100 || s.specBeat !== 50) ? 'custom' : 'normal';
     return s;
@@ -340,7 +340,7 @@ function drawSpectrum() {
     const st = settings();
     // Normal and Aggressive always use the full length; only Custom takes the sliders.
     const maxLen = W * (mode === 'custom' ? Math.min(1, Math.max(0.1, Number(st.specLength) / 100)) : 1); // "Length": the bars never go past this
-    const sim = Math.min(1, Math.max(0.1, Number(st.specSim) / 100));
+    const sim = Math.min(1, Math.max(0.1, Number(st.specSim) / 100)); // Audio Simulation = a lower volume for every band: same ceiling, but only a louder moment gets a band there
     const beat = mode === 'custom' ? Math.min(1, Math.max(0, Number(st.specBeat) / 100)) : 0.5;
     const span = 1.1 + (1 - beat) * 1.4; // "Beat": how far above the song's own average a bar must go to reach the maximum
     const curve = 2.2 - beat * 1.0;      //        and how sharply it jumps on peaks (low = calm, high = lively)
@@ -394,10 +394,10 @@ function drawSpectrum() {
         const tv = new Float32Array(BARS);
         for (let i = 0; i < BARS; i++) {
             const tilt = 1 + ((BARS - 1 - i) / BARS) * 0.6;
-            const base = Math.min(1, Math.pow(Math.min(1, (raw[i] / agcMean) * tilt / span), curve)); // the Normal look
+            const base = Math.min(1, Math.pow(Math.min(1, (raw[i] / agcMean) * sim * tilt / span), curve)); // the Normal look
             if (isBass[i]) {
                 const shape = Math.min(1, raw[i] / bassPeak);
-                const hit = sample(now - (i - firstBass) * 9) * (0.3 + 0.7 * Math.pow(shape, 1.5)); // top bass bar first, the lowest last
+                const hit = sample(now - (i - firstBass) * 9) * (0.3 + 0.7 * Math.pow(shape, 1.5)) * sim; // top bass bar first, the lowest last
                 tv[i] = Math.min(1, base + hit * (1 - base));
             } else tv[i] = base;
         }
@@ -413,10 +413,10 @@ function drawSpectrum() {
             v = target[i];
             level[i] = v > level[i] ? v : level[i] * 0.84 + v * 0.16;
         } else {
-            v = Math.min(1, Math.pow(Math.min(1, (raw[i] / agcMean) * tilt / span), curve));
+            v = Math.min(1, Math.pow(Math.min(1, (raw[i] / agcMean) * sim * tilt / span), curve));
             level[i] = v > level[i] ? v : level[i] * 0.86 + v * 0.14; // quick attack, soft fall
         }
-        const len = Math.min(maxLen, Math.max(0, level[i] * maxLen * sim)); // Audio Simulation: same movement, shorter, like a lower volume
+        const len = Math.min(maxLen, Math.max(0, level[i] * maxLen)); // the ceiling stays 100%; Audio Simulation lowers each band's own volume before this (see 'sim')
         if (len < 1.5) continue;
         const y = i * slot + (slot - thick) / 2;
         const grad = g2d.createLinearGradient(W, 0, W - len, 0);
@@ -500,7 +500,7 @@ function mount() {
                     info.textContent = MODES.find((m) => m[0] === cur)?.[2] || '';
                 };
                 paint();
-                const sim = row('Audio Simulation', 'specSim', 'Makes every bar shorter by the same proportion, like a lower volume, without touching your real volume. Lower it if the bars hit the limit.', 10);
+                const sim = row('Audio Simulation', 'specSim', 'Lowers the volume the bars "hear", without touching your real volume. The ceiling stays at 100%, but every band is less likely to reach it. Lower it if the bars hit the top too often.', 10);
                 return h('div', { class: 'zm-adv-box' }, sim, h('div', { class: 'zm-adv-segs' }, segs), info, sliders);
             })()),
         h('div', { class: 'zm-body' }));
