@@ -416,7 +416,9 @@ function drawSpectrum() {
             v = Math.min(1, Math.pow(Math.min(1, (raw[i] / agcMean) * sim * tilt / span), curve));
             level[i] = v > level[i] ? v : level[i] * 0.86 + v * 0.14; // quick attack, soft fall
         }
-        const len = Math.min(maxLen, Math.max(0, level[i] * maxLen)); // the ceiling stays 100%; Audio Simulation lowers each band's own volume before this (see 'sim')
+        // Length is a CEILING: the bar keeps growing at its full size and is cut off where the ceiling is (it is not scaled down).
+        // Audio Simulation is different: it lowers each band's own volume before this (see 'sim'), so bands reach the ceiling less often.
+        const len = Math.min(maxLen, Math.max(0, level[i] * W));
         if (len < 1.5) continue;
         const y = i * slot + (slot - thick) / 2;
         const grad = g2d.createLinearGradient(W, 0, W - len, 0);
