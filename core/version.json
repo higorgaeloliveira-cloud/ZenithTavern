@@ -1,5 +1,5 @@
 {
-  "version": "1.1.2",
+  "version": "1.1.3",
   "history": [
     {
       "version": "0.0.1",
@@ -283,6 +283,14 @@
         "internal"
       ],
       "note": "Maps: City, Campus and Dorm floor plans with residents (phone app + /maps); June is room 114",
+      "date": "2026-10-18"
+    },
+    {
+      "version": "1.1.3",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Mirel greeting revised; Riko dating greeting stray asterisk",
       "date": "2026-10-18"
     }
   ],

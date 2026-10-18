@@ -41,9 +41,9 @@
         "research center",
         "slow burn"
       ],
-      "version": 5,
+      "version": 6,
       "card": "mirel/card.png",
-      "sha256": "2e1a8f0bc3ec0e50af7113a86c0bd8afa18f2a778f2865cbb5ed8924de08b587",
+      "sha256": "60373946d6996568b3492eacc1e759ca2e4bed02596d181e5f937e471bec54e5",
       "sprites": []
     },
     {
@@ -62,9 +62,9 @@
         "slice of life",
         "coastal town"
       ],
-      "version": 4,
+      "version": 5,
       "card": "riko-kitsumi/card.png",
-      "sha256": "5c73a0a30d62695e5dd715f044b33a96ae5bc25eb1dc4b764713717e2d817446",
+      "sha256": "dcb8f988ffdb989b7572a23f20f843c8c510d611016a0e9dfdf8f6b50434ab7e",
       "sprites": [],
       "images": [
         {
