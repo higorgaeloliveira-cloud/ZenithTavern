@@ -343,3 +343,6 @@ Phone app **Maps** (or `/maps`, `/maps city|campus|dorms`). City and Campus show
 
 ## Presets (text formats)
 The layers button next to the `!` buttons lists every preset with a picture. Click one to copy it, paste it into a message, change the text. Presets: Header, Z-Droid (phone), Discord, Whiteboard, Clipboard, Terminal, Email, Social post, Diary, News, Receipt, Radio, Status screen, Student ID. Avatars are emoji (replace the emoji, no uploads). The `!` button bar scrolls sideways.
+
+## Messages app (Z-Droid)
+Phone app **Messages**. Every Z-Droid text block (`Texting¦Name`, `Incoming¦time¦Name¦text`, `Outgoing¦time¦text`) in the current chat becomes a conversation, and you can text from the app (bolt button = ask for a reply right away when you text the chat's character). Everything is per chat: a new chat starts with an empty phone. Texts you send are stored in that chat only and the model is told they are private between the two people; others only see public reactions.

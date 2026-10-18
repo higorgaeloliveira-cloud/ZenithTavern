@@ -1,5 +1,5 @@
 {
-  "version": "1.2.3",
+  "version": "1.3.3",
   "history": [
     {
       "version": "0.0.1",
@@ -299,6 +299,14 @@
         "internal"
       ],
       "note": "Presets: Discord, Whiteboard, Clipboard, Terminal, Email, Post, Diary, News, Receipt, Radio, Status, ID; Phone renamed Z-Droid; scrollable button bar",
+      "date": "2026-10-18"
+    },
+    {
+      "version": "1.3.3",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Messages app: Z-Droid texts imported per chat, texting from the phone, private-message rules for the model",
       "date": "2026-10-18"
     }
   ],
