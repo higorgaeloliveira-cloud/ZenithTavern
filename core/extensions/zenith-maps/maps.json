@@ -1,0 +1,131 @@
+{
+  "city": {
+    "title": "Asterhaven",
+    "viewBox": [1000, 640],
+    "areas": [
+      { "id": "res", "name": "Student Residential District", "x": 40, "y": 130, "w": 270, "h": 270, "color": "#c98f3b" },
+      { "id": "uq", "name": "University Quarter", "x": 330, "y": 40, "w": 290, "h": 230, "color": "#5a8fd6" },
+      { "id": "old", "name": "Old Town", "x": 330, "y": 290, "w": 290, "h": 160, "color": "#c0623f" },
+      { "id": "rn", "name": "Residential Neighborhoods", "x": 640, "y": 40, "w": 320, "h": 410, "color": "#5fae7a" },
+      { "id": "hf", "name": "Harborfront", "x": 120, "y": 470, "w": 760, "h": 60, "color": "#38a3b8" }
+    ],
+    "buses": [
+      { "name": "Harbor Line", "color": "#f2c744", "points": [[430, 500], [470, 440], [470, 300], [470, 180]] },
+      { "name": "Line 4", "color": "#ff7a90", "points": [[470, 180], [640, 250], [780, 200]] },
+      { "name": "Line 4 (Old Town)", "color": "#ff7a90", "points": [[470, 380], [640, 340], [800, 330]] }
+    ],
+    "places": [
+      { "id": "marlowe", "name": "Marlowe Hall", "area": "res", "x": 150, "y": 215, "icon": "H", "dorm": "marlowe",
+        "text": "Main dorm: five floors, basement laundry, common room on the ground floor. {{user}} lives in room 218 with Juno.",
+        "who": ["You (218)", "Juno Tidewell (218)", "June Halloran (114)"] },
+      { "id": "b2", "name": "Dorm Building 2", "area": "res", "x": 95, "y": 320, "icon": "2", "dorm": "b2",
+        "text": "Second residence block (name to be decided).", "who": [] },
+      { "id": "b3", "name": "Dorm Building 3", "area": "res", "x": 235, "y": 335, "icon": "3", "dorm": "b3",
+        "text": "Third residence block (name to be decided).", "who": [] },
+      { "id": "apts", "name": "Student Apartments", "area": "res", "x": 250, "y": 215, "icon": "A",
+        "text": "Shared three- and four-storey blocks with thin walls and clanking radiators.",
+        "who": ["Mara Venn", "Teodor Lindqvist"] },
+      { "id": "campus", "name": "Asterhaven University (campus)", "area": "uq", "x": 475, "y": 150, "icon": "U", "campus": true,
+        "text": "Lecture halls, labs, library, Student Union, glasshouse, pool, radio. Ten minutes on foot from Marlowe Hall.",
+        "who": ["Marigold Fenwick", "Delphine Ashcroft", "June Halloran", "Teodor Lindqvist", "Juno Tidewell"] },
+      { "id": "tideglass", "name": "Tideglass Books", "area": "old", "x": 395, "y": 350, "icon": "B",
+        "text": "Used bookstore. Owner Ezra Quill. Closed around 7 PM.", "who": ["Mara Venn (works here)"] },
+      { "id": "kettle", "name": "Kettle & Ladle Noodle Bar", "area": "old", "x": 525, "y": 360, "icon": "N",
+        "text": "Eight stools, four tables, chalkboard menu. Owner Hanae Okabe. Riko rents a room above a shop on the same street.",
+        "who": ["Riko Kitsumi (evenings)", "Hanae Okabe"] },
+      { "id": "saltlantern", "name": "The Salt Lantern", "area": "hf", "x": 330, "y": 495, "icon": "L",
+        "text": "Harbor bar with lanterns and a long counter. Open late afternoon to about 2 AM. Cassian lives in the flat above.",
+        "who": ["Cassian Mercer"] },
+      { "id": "promenade", "name": "Promenade & Docks", "area": "hf", "x": 560, "y": 495, "icon": "P",
+        "text": "Wide waterfront walk with benches and viewpoints. The docks at the east end handle fishing boats and small cargo.", "who": [] },
+      { "id": "ashcroft", "name": "Ashcroft Shipping & Penthouse", "area": "hf", "x": 760, "y": 495, "icon": "S",
+        "text": "Family shipping firm: offices and warehouses; the penthouse overlooks the harbor.", "who": ["Delphine Ashcroft (penthouse)"] },
+      { "id": "hospital", "name": "Asterhaven General Hospital", "area": "rn", "x": 790, "y": 160, "icon": "+",
+        "text": "Seven floors, Emergency Department, clinics. Line 4 stops here.", "who": ["Odette Marchetti (works here)"] },
+      { "id": "odette", "name": "Odette's flat", "area": "rn", "x": 850, "y": 330, "icon": "O",
+        "text": "Small rented flat that smells of baking. Two cats.", "who": ["Odette Marchetti"] },
+      { "id": "corvane", "name": "Corvane University (off the map)", "area": "rn", "x": 925, "y": 110, "icon": "C", "offmap": true,
+        "text": "A different town, too far to commute. Setting of Mirel's route only.", "who": ["Mirel"] }
+    ],
+    "travel": [
+      "Marlowe Hall to the University Quarter: 10 min on foot",
+      "Student Residential District to Old Town: 15-20 min on foot, 5 by bus",
+      "Old Town to the Harborfront: 10 min on foot",
+      "University Quarter to the Harborfront: 20 min on foot, 8 by bus",
+      "University Quarter to the hospital: 12 min by bus. Old Town to the hospital: 15 by bus",
+      "Harbor Line every 12 min until midnight. Line 4 serves the neighborhoods and hospital. Night Owl hourly until about 2:30 AM"
+    ]
+  },
+  "campus": {
+    "title": "Asterhaven University",
+    "viewBox": [1000, 640],
+    "places": [
+      { "id": "gate", "name": "Main Gate & bus stop", "x": 430, "y": 560, "w": 140, "h": 40, "type": "gate",
+        "text": "Harbor Line stop. Marlowe Hall is a 10-minute walk west.", "who": [] },
+      { "id": "admin", "name": "Administration Building", "x": 120, "y": 70, "w": 170, "h": 90, "type": "hall",
+        "text": "Housing office (slow) and registrar.", "who": [] },
+      { "id": "library", "name": "University Library", "x": 390, "y": 70, "w": 220, "h": 100, "type": "library",
+        "text": "Reading rooms, silent floors, rare-books room, folklore stacks. Open late in exam periods.", "who": [] },
+      { "id": "physics", "name": "Physics Building & Observatory Dome", "x": 650, "y": 70, "w": 170, "h": 100, "type": "science",
+        "text": "Dome on the roof (key from the physics department). Open nights on clear Fridays.", "who": ["June Halloran (thesis)"] },
+      { "id": "glasshouse", "name": "University Glasshouse", "x": 845, "y": 70, "w": 125, "h": 120, "type": "green",
+        "text": "Victorian glass-and-iron botanical garden behind the science buildings.", "who": ["Teodor Lindqvist (assistant)"] },
+      { "id": "brine", "name": "Brine Hall (Humanities)", "x": 120, "y": 230, "w": 180, "h": 130, "type": "hall",
+        "text": "Stone faculty building with ship models in the corridors. Goldie's office is on the third floor.", "who": ["Marigold Fenwick (3rd floor)"] },
+      { "id": "union", "name": "Student Union, Lantern Lounge & WAST", "x": 700, "y": 230, "w": 190, "h": 130, "type": "union",
+        "text": "Student Union Office (first floor), Lantern Society lounge (invitation only), WAST 88.1 radio in the basement.", "who": ["Delphine Ashcroft", "June Halloran (radio, 11 PM-2 AM)"] },
+      { "id": "cafe", "name": "Campus Cafe", "x": 440, "y": 385, "w": 120, "h": 50, "type": "cafe",
+        "text": "On the quad. Strong coffee, pastries, lunch queue.", "who": [] },
+      { "id": "labs", "name": "Science & Lecture Halls", "x": 120, "y": 410, "w": 180, "h": 110, "type": "science",
+        "text": "Lecture halls and laboratories.", "who": [] },
+      { "id": "marine", "name": "Marine Biology Lab", "x": 680, "y": 410, "w": 130, "h": 110, "type": "science",
+        "text": "Tanks, microscopes, a cold room.", "who": ["Juno Tidewell (volunteer)"] },
+      { "id": "pool", "name": "University Pool", "x": 830, "y": 410, "w": 140, "h": 110, "type": "pool",
+        "text": "Fifty-metre indoor pool with a viewing gallery. Swim team practice 6-8 AM; open swim in the evenings.", "who": ["Juno Tidewell"] }
+    ],
+    "quad": { "x": 500, "y": 280, "rx": 150, "ry": 80, "label": "Central Quad" },
+    "exits": [
+      { "label": "To Marlowe Hall and the Student Residential District (10 min)", "x": 20, "y": 300, "side": "left" },
+      { "label": "Harbor Line to Old Town and Harborfront", "x": 500, "y": 625, "side": "bottom" }
+    ]
+  },
+  "dorms": {
+    "buildings": [
+      { "id": "marlowe", "name": "Marlowe Hall", "sub": "Student Residential District, five floors, co-ed",
+        "text": "1960s brick building. Small elevator, usually out of service. Quiet hours 11 PM to 7 AM. Roof locked. Thursday is floor pizza night.",
+        "floors": [
+          { "id": "b", "label": "Basement", "custom": [
+            { "x": 100, "y": 70, "w": 330, "h": 280, "t": "laundry", "label": "Laundry (6 machines, 2 broken)", "id": "laundry" },
+            { "x": 440, "y": 70, "w": 160, "h": 120, "t": "storage", "label": "Storage", "id": "storage" },
+            { "x": 440, "y": 230, "w": 160, "h": 120, "t": "storage", "label": "Bike room", "id": "bikes" },
+            { "x": 610, "y": 70, "w": 210, "h": 280, "t": "storage", "label": "Boiler room", "id": "boiler" } ] },
+          { "id": "1", "label": "1st floor", "north": "common:3:Common Room,mail:1:Mail Room,kitchen:2:Shared Kitchen,r*4", "south": "r*10" },
+          { "id": "2", "label": "2nd floor", "north": "ra:1:RA,r*4,bath:1:Bath,r*4", "south": "r*10" },
+          { "id": "3", "label": "3rd floor", "north": "r*4,bath:1:Bath,study:2:Study Lounge,r*3", "south": "r*10" },
+          { "id": "4", "label": "4th floor", "north": "r*4,bath:1:Bath,r*5", "south": "r*10" },
+          { "id": "5", "label": "5th floor", "north": "ra:1:RA,r*4,bath:1:Bath,r*4", "south": "r*10" }
+        ],
+        "residents": [
+          { "name": "You", "room": "218", "note": "with Juno", "user": true },
+          { "name": "Juno Tidewell", "room": "218", "note": "with you" },
+          { "name": "June Halloran", "room": "114", "note": "single room" }
+        ] },
+      { "id": "b2", "name": "Dorm Building 2", "sub": "Student Residential District, name to be decided",
+        "text": "Placeholder building. Add residents in maps.json.",
+        "floors": [
+          { "id": "1", "label": "1st floor", "north": "common:2:Common Room,mail:1:Mail Room,r*5", "south": "r*8" },
+          { "id": "2", "label": "2nd floor", "north": "ra:1:RA,r*3,bath:1:Bath,r*3", "south": "r*8" },
+          { "id": "3", "label": "3rd floor", "north": "r*3,bath:1:Bath,study:1:Study,r*3", "south": "r*8" }
+        ],
+        "residents": [] },
+      { "id": "b3", "name": "Dorm Building 3", "sub": "Student Residential District, name to be decided",
+        "text": "Placeholder building. Add residents in maps.json.",
+        "floors": [
+          { "id": "1", "label": "1st floor", "north": "common:2:Common Room,mail:1:Mail Room,r*3", "south": "r*6" },
+          { "id": "2", "label": "2nd floor", "north": "ra:1:RA,r*2,bath:1:Bath,r*2", "south": "r*6" },
+          { "id": "3", "label": "3rd floor", "north": "r*2,bath:1:Bath,study:1:Study,r*2", "south": "r*6" }
+        ],
+        "residents": [] }
+    ]
+  }
+}

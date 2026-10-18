@@ -202,6 +202,8 @@ const APPS = [
       render: panelScreen('ooc'), live: panelLive('ooc') },
     { id: 'exroster', name: 'EX-Roster', title: 'EX-Roster', icon: 'fa-user-plus', color: 'linear-gradient(160deg,#f5c451,#b9770e)',
       launch: () => (globalThis.ZenithEx ? globalThis.ZenithEx.open() : globalThis.toastr?.warning('EX-Roster is not loaded.')) },
+    { id: 'maps', name: 'Maps', title: 'Maps', icon: 'fa-map-location-dot', color: 'linear-gradient(160deg,#5be3b5,#14876a)',
+      launch: () => (globalThis.ZenithMaps ? globalThis.ZenithMaps.open() : globalThis.toastr?.warning('Maps is not loaded.')) },
     { id: 'settings', name: 'Settings', title: 'Settings', icon: 'fa-gear', color: 'linear-gradient(160deg,#9a9aa2,#4a4a52)', dock: true,
       render: () => settingsApp() },
 ];

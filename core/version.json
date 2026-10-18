@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.1.2",
   "history": [
     {
       "version": "0.0.1",
@@ -276,7 +276,15 @@
       ],
       "note": "Asterhaven lorebook rewritten as full lore (v2.0): all locations, species, culture, calendar, directory; lower priority than the cast",
       "date": "2026-10-17"
+    },
+    {
+      "version": "1.1.2",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Maps: City, Campus and Dorm floor plans with residents (phone app + /maps); June is room 114",
+      "date": "2026-10-18"
     }
   ],
-  "released": "2026-10-17"
+  "released": "2026-10-18"
 }

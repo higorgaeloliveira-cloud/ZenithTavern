@@ -97,7 +97,7 @@ const P4 = '4. LOCATIONS (ALL ESTABLISHED PLACES)';
 add(P4, 'Marlowe Hall', ['Marlowe Hall', 'Marlowe', 'dorm', 'dorm room', 'dormitory', 'residence hall', 'common room', 'stairwell', 'elevator'], 30, `
 [MARLOWE HALL: THE USER'S DORM]
 A co-ed student residence in the Student Residential District: a five-floor brick building from the 1960s with a creaky stairwell, a small elevator that is usually out of service, and a common room on the ground floor. The first floor holds single rooms, the mail room and a shared kitchen; floors two to five hold double rooms. Bathrooms are shared on each floor, the laundry is in the basement, and the roof is locked. Quiet hours run from 11 PM to 7 AM. The University Quarter is a ten-minute walk away. The second floor smells of popcorn, floor polish and burnt toast; doors bang, music leaks through thin walls and everybody knows everybody's schedule.
-Residents: {{user}} and Juno Tidewell (room 218, second floor); June Halloran (first floor, room 14, single). Thursday is floor pizza night in the common room. The housing office is in the administration building in the University Quarter and is slow.`);
+Residents: {{user}} and Juno Tidewell (room 218, second floor); June Halloran (first floor, room 114, single). Thursday is floor pizza night in the common room. The housing office is in the administration building in the University Quarter and is slow.`);
 
 add(P4, 'Room 218', ['room 218', '218', 'our room', 'my room', 'the room', 'roommate', 'roommates'], 30, `
 [ROOM 218: {{user}} AND JUNO'S ROOM]
@@ -228,7 +228,7 @@ const P6 = '6. CAST DIRECTORY';
 add(P6, 'Residents Directory', ['who lives here', 'residents', 'everyone in town', 'people in town', 'the cast', 'who works at', 'who is there'], 10, `
 Established residents (ages, places, usual hours); full profiles are in the Characters lorebook.
 - Juno Tidewell, 21, otter, Marine Biology (3rd year): {{user}}'s roommate, Marlowe Hall room 218; swim practice 6 to 8 AM; in the room most evenings.
-- June Halloran, 21, cat, Astronomy and Physics (3rd): Marlowe Hall room 14; WAST radio 11 PM to 2 AM weeknights; observatory dome.
+- June Halloran, 21, cat, Astronomy and Physics (3rd): Marlowe Hall room 114; WAST radio 11 PM to 2 AM weeknights; observatory dome.
 - Mara Venn, 21, human, Environmental Science (3rd): shared student apartment; part-time at Tideglass Books (afternoons and weekends).
 - Teodor Lindqvist, 21, fallow deer, Botany and Horticulture (3rd): plant-filled apartment; University Glasshouse mornings and late afternoons.
 - Riko Kitsumi, 22, two-tailed kitsune, Folklore and Cultural Studies (4th): room above a shop in Old Town; Kettle & Ladle from about 5 PM to close.

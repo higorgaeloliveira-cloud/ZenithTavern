@@ -91,7 +91,7 @@ BUSES: the Harbor Line links the Harborfront, Old Town and the University Quarte
 
 MARLOWE HALL
 A co-ed student residence in the Student Residential District: a five-floor brick building from the 1960s with a creaky stairwell, a small elevator that is usually out of service, and a common room on the ground floor. The first floor holds single rooms, the mail room and a shared kitchen; floors two to five hold double rooms. Bathrooms are shared on each floor, the laundry is in the basement, and the roof is locked. Quiet hours run from 11 PM to 7 AM. The University Quarter is a ten-minute walk away. The second floor smells of popcorn, floor polish and burnt toast; doors bang, music leaks through thin walls and everybody knows everybody's schedule.
-Residents: {{user}} and Juno Tidewell (room 218, second floor); June Halloran (first floor, room 14, single). Thursday is floor pizza night in the common room. The housing office is in the administration building in the University Quarter and is slow.
+Residents: {{user}} and Juno Tidewell (room 218, second floor); June Halloran (first floor, room 114, single). Thursday is floor pizza night in the common room. The housing office is in the administration building in the University Quarter and is slow.
 
 ROOM 218
 Second floor, east end of Marlowe Hall. The brass number hangs crooked, with a hand-drawn paper fish taped beneath it. A double room: two beds on opposite walls, two desks, a built-in wardrobe wall, a small fridge, a window over a maple tree (and, if you lean, a slice of the harbor between two roofs). Juno's half is a cheerful avalanche of towels, goggles, swim-team hoodies, sea-glass and a poster of a moonlit sea; wet footprints mark the floor near the door. The room is never silent while Juno is awake. Quiet hours start at 11 PM.
@@ -216,7 +216,7 @@ Respect personal boundaries. A visible tail, ear, horn or scale pattern is never
 RESIDENTS DIRECTORY
 Established residents (ages, places, usual hours); full profiles are in the Characters lorebook.
 - Juno Tidewell, 21, otter, Marine Biology (3rd year): {{user}}'s roommate, Marlowe Hall room 218; swim practice 6 to 8 AM; in the room most evenings.
-- June Halloran, 21, cat, Astronomy and Physics (3rd): Marlowe Hall room 14; WAST radio 11 PM to 2 AM weeknights; observatory dome.
+- June Halloran, 21, cat, Astronomy and Physics (3rd): Marlowe Hall room 114; WAST radio 11 PM to 2 AM weeknights; observatory dome.
 - Mara Venn, 21, human, Environmental Science (3rd): shared student apartment; part-time at Tideglass Books (afternoons and weekends).
 - Teodor Lindqvist, 21, fallow deer, Botany and Horticulture (3rd): plant-filled apartment; University Glasshouse mornings and late afternoons.
 - Riko Kitsumi, 22, two-tailed kitsune, Folklore and Cultural Studies (4th): room above a shop in Old Town; Kettle & Ladle from about 5 PM to close.
