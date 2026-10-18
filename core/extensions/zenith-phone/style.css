@@ -5,7 +5,8 @@
   border: 1px solid var(--SmartThemeBorderColor, #555); background: var(--SmartThemeBlurTintColor, #222);
   color: var(--SmartThemeBodyColor, #ddd); font-size: 17px; cursor: pointer; opacity: .75; display: flex; align-items: center; justify-content: center; }
 /* the slim bar above the message box; every Zenith quick button lives here */
-#zenith_bar { display: flex; align-items: center; justify-content: flex-start; gap: 8px; width: 100%; box-sizing: border-box; padding: 4px 6px 2px; }
+#zenith_bar { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-start; gap: 8px; width: 100%; box-sizing: border-box; padding: 8px 10px 6px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+#zenith_bar::-webkit-scrollbar { display: none; }
 .zph-fab:hover { opacity: 1; }
 .zph-fab.zph-btn-on { border-color: var(--zenith-accent, #f5c451); color: var(--zenith-accent, #f5c451); box-shadow: 0 0 10px color-mix(in srgb, var(--zenith-accent, #f5c451) 53%, transparent); opacity: 1; }
 

@@ -369,7 +369,7 @@ const COMMANDS = {
     state: { icon: 'fa-face-smile', title: '!state', run: () => cmdState() },
     cast: { icon: 'fa-user-plus', title: '!Name (call a character into the scene)', run: (a) => cmdCast(a) },
 };
-const EXTRA_BUTTONS = { formats: { icon: 'fa-paste', title: 'Text formats (click to copy)', run: () => cmdFormats() } };
+const EXTRA_BUTTONS = { formats: { icon: 'fa-layer-group', title: 'Presets (click one to copy it)', run: () => cmdFormats() } };
 
 /** Pop-up with every text format: click one to copy it to the clipboard. */
 async function copyText(text) {
@@ -381,10 +381,10 @@ async function copyText(text) {
 function cmdFormats() {
     const list = (window.ZenithFormats?.FORMATS || []).filter((f) => f.example);
     return modal({
-        title: 'Text formats',
-        lead: 'Click a format to copy it. Paste it in a message and it turns into a card.',
+        title: 'Presets',
+        lead: 'Click a preset to copy it. Paste it in a message, change the text, and it turns into this card.',
         body: () => h('div', { class: 'zc-formats' }, list.length ? list.map((f) => {
-            const b = h('button', { type: 'button', class: 'zc-fmt' }, h('strong', {}, f.name || f.id), h('pre', {}, f.example), h('span', { class: 'zc-copied' }, 'Click to copy'));
+            const b = h('button', { type: 'button', class: 'zc-fmt' }, h('strong', {}, f.name || f.id), (() => { const v = h('div', { class: 'zc-prev' }); v.innerHTML = window.ZenithFormats?.preview?.(f) || ''; return v; })(), h('span', { class: 'zc-copied' }, 'Click to copy'));
             b.addEventListener('click', async () => { const ok = await copyText(f.example); b.classList.toggle('zc-fmt-ok', ok); b.querySelector('.zc-copied').textContent = ok ? 'Copied!' : 'Could not copy'; });
             return b;
         }) : h('p', {}, 'No formats loaded.')),

@@ -44,3 +44,7 @@
 .zc-here { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; }
 .zc-guest { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 999px; background: #3a2f14; border: 1px solid var(--zenith-accent, #f5c451); }
 .zc-x { cursor: pointer; border: 0; background: none; color: #eee; font-size: 16px; line-height: 1; padding: 0 6px; }
+
+.zc-fmt strong { display: block; margin-bottom: 8px; }
+.zc-prev { pointer-events: none; margin-bottom: 6px; } .zc-prev .zf-card { max-width: 100%; margin: 0; }
+.zc-modal:has(.zc-formats) { width: min(560px, 100%); }

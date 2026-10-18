@@ -340,3 +340,6 @@ It is written from one source, `tools/asterhaven-lore.cjs`; run `node tools/aste
 
 ## Maps (City / Campus / Dorms)
 Phone app **Maps** (or `/maps`, `/maps city|campus|dorms`). City and Campus show a drawn map with pins and a list of every place; tap a place to see it. Dorms: pick a building, pick a floor, see the floor plan, and below it everyone on that floor with their room; tap a resident to light up their room. All data lives in `core/extensions/zenith-maps/maps.json` (buildings, floors, room rows, residents).
+
+## Presets (text formats)
+The layers button next to the `!` buttons lists every preset with a picture. Click one to copy it, paste it into a message, change the text. Presets: Header, Z-Droid (phone), Discord, Whiteboard, Clipboard, Terminal, Email, Social post, Diary, News, Receipt, Radio, Status screen, Student ID. Avatars are emoji (replace the emoji, no uploads). The `!` button bar scrolls sideways.
