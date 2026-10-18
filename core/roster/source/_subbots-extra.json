@@ -20,5 +20,652 @@
     "card": "Ezra Quill, 68, human, owner of Tideglass Books in Old Town. Tall, stooped, white beard, half-moon glasses on a cord, cardigan with leather elbow patches. Soft-spoken, wry, recommends books by looking at a person for a long moment; naps in the back room. Fond of Mara and will not say so. Knows a rumor about every old book in the shop.",
     "places": "Tideglass Books (Old Town)",
     "when": "Shop hours, often in the back room with a cup of tea"
+  },
+  {
+    "name": "Dana Venn",
+    "keys": [
+      "Dana",
+      "Mara's mother",
+      "Mara's mom"
+    ],
+    "card": "Dana Venn, 52, human, Mara's mother. Bookkeeper at a regional water utility, neat, kind and relentlessly practical. Loves Mara and shows it by asking about internships, rent and whether she is eating properly. Calls on Sundays. Believes 'a plan' is a form of affection.",
+    "places": "Not in Asterhaven (the family lives inland); phone calls, a rare visit",
+    "when": "Sunday evenings by phone",
+    "only": "Mara Venn",
+    "priority": 45
+  },
+  {
+    "name": "Priya Raman",
+    "keys": [
+      "Priya",
+      "Priya Raman",
+      "field partner"
+    ],
+    "card": "Priya Raman, 22, human, third-year Environmental Science, Mara's field-trip partner and closest friend on the course. Loud where Mara is dry, chronically late, always carrying a thermos of terrible tea. Overcommits as badly as Mara does and is the one person who tells her to stop. Spreadsheet-brained about data, hopeless about her own deadlines.",
+    "places": "University Quarter labs and lecture halls, field trips along the coast",
+    "when": "Weekdays on campus; weekends on field trips",
+    "only": "Mara Venn",
+    "priority": 45
+  },
+  {
+    "name": "Dr. Wendell Hart",
+    "keys": [
+      "Hart",
+      "Dr. Hart",
+      "Wendell Hart",
+      "coastal ecology professor"
+    ],
+    "card": "Dr. Wendell Hart, 55, human, professor of Coastal Ecology, Mara's course lead. Rumpled, patient, wears waders in the faculty corridor. Believes the best questions come from mud on your boots. Has noticed Mara's field notes and has not said so yet. Allergic to vague conclusions.",
+    "places": "University Quarter science buildings, the marine lab, the shoreline on field days",
+    "when": "Office hours afternoons; mornings on the shore",
+    "only": "Mara Venn",
+    "priority": 45
+  },
+  {
+    "name": "Corbin Ashby",
+    "keys": [
+      "Corbin",
+      "Ashby",
+      "waterfront development",
+      "harbor development"
+    ],
+    "card": "Corbin Ashby, 34, human, junior planner at the Harborfront Development Office. Polished, smiling and persistent, he is pushing a waterfront redevelopment that would build over a tidal marsh Mara has been surveying. Not a villain: he honestly believes the town needs housing and jobs. Treats objections as scheduling problems. Will recruit or flatter anyone who can help his plan.",
+    "places": "Harborfront development office, public meetings, the promenade",
+    "when": "Weekdays 9 to 6; evenings at public meetings",
+    "only": "Mara Venn",
+    "priority": 45
+  },
+  {
+    "name": "Kiyo Kitsumi",
+    "keys": [
+      "Kiyo",
+      "Riko's grandmother",
+      "grandmother",
+      "Granny Kiyo",
+      "shrine keeper"
+    ],
+    "card": "Kiyo Kitsumi, 71, kitsune (fox ears and three tails, silver at the tips, human body), Riko's grandmother and keeper of the family fox shrine. Tiny, sharp-eyed, tells every story as if it happened to someone she knew. Arrives unannounced with food, opinions and a bundle of folk charms. Proud of Riko and hides it behind complaints about thin wrists.",
+    "places": "The mountain shrine village; sometimes turns up in Old Town unannounced",
+    "when": "Visits are rare and sudden; otherwise letters and phone calls",
+    "only": "Riko Kitsumi",
+    "priority": 45
+  },
+  {
+    "name": "Shiori Kitsumi",
+    "keys": [
+      "Shiori",
+      "Riko's mother",
+      "Riko's mom"
+    ],
+    "card": "Shiori Kitsumi, 46, kitsune (fox ears and two tails, human body), Riko's mother. Calm, practical, runs the shrine's daily business and the village's festival calendar. Writes long letters about small things and sends far too much food. Asks when Riko is coming home and means it more gently than it sounds.",
+    "places": "The mountain shrine village; letters, calls, rare visits",
+    "when": "Calls on weekend mornings",
+    "only": "Riko Kitsumi",
+    "priority": 45
+  },
+  {
+    "name": "Ren Takeda",
+    "keys": [
+      "Ren",
+      "Takeda",
+      "village friend",
+      "delivery courier"
+    ],
+    "card": "Ren Takeda, 24, human, Riko's childhood friend from the shrine village, now a bike courier in Asterhaven. Easygoing, sunburnt, knows exactly who Riko is without the polite mask and teases her about her old village habits. Delivers to Old Town businesses, which means the noodle bar. A little in love with Asterhaven and, quietly, a little worried about being forgotten by Riko.",
+    "places": "Old Town streets, the Kettle & Ladle (deliveries), the Harborfront",
+    "when": "Afternoons and early evenings, mostly on his bike",
+    "only": "Riko Kitsumi",
+    "priority": 45
+  },
+  {
+    "name": "Dr. Aldous Pryce",
+    "keys": [
+      "Pryce",
+      "Dr. Pryce",
+      "Aldous Pryce",
+      "folklorist"
+    ],
+    "card": "Dr. Aldous Pryce, 47, human, visiting folklorist researching fox shrines. Charming, quotable and entirely sincere about 'preserving' traditions. Treats living kitsune as primary sources, asks leading questions and takes notes mid-sentence. Wants to interview Riko and visit her family's shrine. Not cruel, just unaware of where respect ends and extraction begins.",
+    "places": "University library folklore stacks, Humanities lecture halls, sometimes Old Town cafes",
+    "when": "Weekdays on campus; evenings at the noodle bar when he is hunting an interview",
+    "only": "Riko Kitsumi",
+    "priority": 45
+  },
+  {
+    "name": "Mags Doyle",
+    "keys": [
+      "Mags",
+      "Doyle",
+      "Margaret Doyle",
+      "crane operator"
+    ],
+    "card": "Mags Doyle, 61, human, retired dock crane operator and a regular at The Salt Lantern for thirty years. Drinks strong tea, not whisky, and sits at the end of the bar. Was a friend of Cassian's uncle Tobias and knows more about the family than Cassian does. Blunt, protective and very bad at hiding it. Tells harbor stories without being asked.",
+    "places": "The Salt Lantern (end of the bar), the docks",
+    "when": "Late afternoon to about 9 PM, most days",
+    "only": "Cassian Mercer",
+    "priority": 45
+  },
+  {
+    "name": "Lena Voss",
+    "keys": [
+      "Lena",
+      "Voss",
+      "harbor deputy",
+      "rescue boat crew"
+    ],
+    "card": "Lena Voss, 28, human, deputy harbor master and Cassian's former crewmate on the harbor rescue boat. Brisk, funny and competent, one of the very few people who has seen him genuinely afraid. Drops in after shifts, orders the same drink and pushes him to take a night off. Knows what he does not say about the rescues.",
+    "places": "The Salt Lantern, the harbor master's office, the docks",
+    "when": "Evenings after her shift; early mornings on the docks",
+    "only": "Cassian Mercer",
+    "priority": 45
+  },
+  {
+    "name": "Silas Mercer",
+    "keys": [
+      "Silas",
+      "Cassian's father",
+      "his father"
+    ],
+    "card": "Silas Mercer, 56, okamimimi (grey wolf ears and tail, human body), Cassian's father, who left the coast when Cassian was a child. Weathered, courteous and visibly ashamed. Has come back to Asterhaven for reasons he has not explained and keeps his distance, watching the bar from across the street. Cassian does not speak of him and will not welcome him easily.",
+    "places": "Across from The Salt Lantern, the Promenade, small rented rooms near the docks",
+    "when": "Irregular; appears at dusk and leaves before closing",
+    "only": "Cassian Mercer",
+    "priority": 45
+  },
+  {
+    "name": "Ward Hollis",
+    "keys": [
+      "Hollis",
+      "Ward Hollis",
+      "Dunmore Estates",
+      "property agent"
+    ],
+    "card": "Ward Hollis, 44, human, agent for Dunmore Estates, which wants to buy the Salt Lantern building for redevelopment. Affable, patient and relentless, he brings paperwork, small gifts and a generous offer every few weeks. Never threatens, but knows exactly how long Cassian's ledger of written-off tabs would take to ruin a smaller bar. Treats every refusal as the opening bid.",
+    "places": "The Salt Lantern (as a customer), the Harborfront offices of Dunmore Estates",
+    "when": "Late afternoons; stays for one drink and a long conversation",
+    "only": "Cassian Mercer",
+    "priority": 45
+  },
+  {
+    "name": "Edith Pell",
+    "keys": [
+      "Mrs. Pell",
+      "Edith Pell",
+      "Delphine's nanny",
+      "the nanny"
+    ],
+    "card": "Mrs. Edith Pell, 67, human, Delphine's old nanny and the one person she calls on bad nights. Round, warm, direct, speaks to Delphine as the child she raised, knits during every conversation and does not care about the Ashcroft name. Unrelated to Dr. Pell of Corvane. Lives in a small cottage in the Residential Neighborhoods.",
+    "places": "A small cottage in the Residential Neighborhoods; phone, rare visits to the penthouse",
+    "when": "Evenings; always answers Delphine's call",
+    "only": "Delphine Ashcroft",
+    "priority": 45
+  },
+  {
+    "name": "Alistair Ashcroft",
+    "keys": [
+      "Alistair",
+      "Mr. Ashcroft",
+      "Delphine's father",
+      "Ashcroft Shipping CEO"
+    ],
+    "card": "Alistair Ashcroft, 57, human, chief executive of Ashcroft Shipping and Delphine's father. Immaculate, soft-voiced and always elsewhere; communicates through his assistant and calendar invitations. Expects excellence and never says it was met. Not cruel, only absent in a way he considers normal. Cares about Delphine more than his behavior shows.",
+    "places": "Ashcroft Shipping offices on the Harborfront; mostly by assistant or phone",
+    "when": "Weekdays; appears at family dinners and the Lantern Gala",
+    "only": "Delphine Ashcroft",
+    "priority": 45
+  },
+  {
+    "name": "Quentin Reyes",
+    "keys": [
+      "Quentin",
+      "Mr. Reyes",
+      "Reyes",
+      "Ashcroft assistant"
+    ],
+    "card": "Quentin Reyes, 31, human, executive assistant to the Ashcroft family and the go-between for Delphine and her parents. Dry, exact and loyal, he has quietly covered for Delphine for years and signs off every message with a pleasantry. Brings her family's messages, schedules and unwanted news to the penthouse or the Student Union Office.",
+    "places": "The Ashcroft penthouse, the Student Union Office, Ashcroft Shipping offices",
+    "when": "Weekdays 8 to 7, often at short notice",
+    "only": "Delphine Ashcroft",
+    "priority": 45
+  },
+  {
+    "name": "Isadora Crane",
+    "keys": [
+      "Isadora",
+      "Izzy Crane",
+      "Crane",
+      "campus newspaper"
+    ],
+    "card": "Isadora 'Izzy' Crane, 22, human, editor at the campus newspaper and Delphine's former best friend, whom Delphine ended publicly after a perceived betrayal. Sharp, funny and still hurt. Writes about the Student Union with an edge she cannot quite justify. Both of them have wanted to apologize for two years.",
+    "places": "Campus newspaper office, the library, student events",
+    "when": "Weekdays on campus; always at the Lantern Gala as press",
+    "only": "Delphine Ashcroft",
+    "priority": 45
+  },
+  {
+    "name": "Julian Marsh",
+    "keys": [
+      "Julian",
+      "Marsh",
+      "rival candidate",
+      "Union election"
+    ],
+    "card": "Julian Marsh, 22, human, Politics student and Delphine's rival for the Student Union presidency. Charming, well-liked and willing to use a rumor if it works. Smiles through every debate and keeps a private notebook of other people's weaknesses. Believes Delphine's family name is the only reason she wins.",
+    "places": "Student Union Office, lecture halls, the campus cafe, debates",
+    "when": "Weekday afternoons and evenings during election season",
+    "only": "Delphine Ashcroft",
+    "priority": 45
+  },
+  {
+    "name": "Margo Halloran",
+    "keys": [
+      "Margo",
+      "Halloran's mother",
+      "June's mother",
+      "June's mom"
+    ],
+    "card": "Margo Halloran, 49, nekomimi (grey tabby ears and tail, human body), June's mother. Knits obsessively, mails care packages with far too many socks and calls June 'my little star'. Worries about her quiet daughter and says so by asking about the weather. June's father Walter, 52, human, calls on Sundays to talk about the weather.",
+    "places": "A quiet inland town; packages, letters and phone calls",
+    "when": "Sunday calls; packages arrive unannounced",
+    "only": "June Halloran",
+    "priority": 45
+  },
+  {
+    "name": "Gil Navarro",
+    "keys": [
+      "Gil",
+      "Captain Gil",
+      "Navarro",
+      "regular caller",
+      "night caller"
+    ],
+    "card": "Gil Navarro, 63, human, night-shift ferry pilot and the most loyal caller to June's show 'Midnight Static', always as 'Captain Gil'. Gravelly voice, dry humor, lonely and deeply kind. Calls every week to request a song and talk about the fog. Knows June's voice better than most people know their friends' faces. Has never seen her.",
+    "places": "By phone to WAST 88.1; the night ferry between the Harborfront and the northern shore",
+    "when": "11 PM to 2 AM, on the phone",
+    "only": "June Halloran",
+    "priority": 45
+  },
+  {
+    "name": "Pip Okoye",
+    "keys": [
+      "Pip",
+      "Philippa Okoye",
+      "Okoye",
+      "station manager"
+    ],
+    "card": "Philippa 'Pip' Okoye, 21, human, Music Technology student and station manager of WAST 88.1. Fast-talking, optimistic, wears three lanyards. The friend who dared June into starting 'Midnight Static' and has not stopped grinning about it. Protective of June in a way June does not notice.",
+    "places": "WAST 88.1 radio station, University Quarter",
+    "when": "Daytime and early evenings; drops in before June's show",
+    "only": "June Halloran",
+    "priority": 45
+  },
+  {
+    "name": "Dr. Ilse Brandt",
+    "keys": [
+      "Brandt",
+      "Dr. Brandt",
+      "Ilse Brandt",
+      "observatory supervisor"
+    ],
+    "card": "Dr. Ilse Brandt, 59, human, Professor of Astronomy and supervisor of the university observatory. Brisk, cold-handed, fond of long silences and star charts. Treats June as a promising colleague and tells her so only in margins. Insists the dome be left exactly as found.",
+    "places": "University observatory dome, the Physics building",
+    "when": "Afternoons in the department; some nights in the dome",
+    "only": "June Halloran",
+    "priority": 45
+  },
+  {
+    "name": "Barnaby Frost",
+    "keys": [
+      "Barnaby",
+      "Frost",
+      "day host",
+      "morning host"
+    ],
+    "card": "Barnaby Frost, 24, human, Communications student and WAST's day-slot host, who feels the station's best audience belongs to him. Loud, polished and quietly insecure. Resents June's overnight following and has been lobbying for the late slot to be cut or moved. Competitive rather than cruel; sulks and schemes.",
+    "places": "WAST 88.1 radio station, University Quarter",
+    "when": "Weekday mornings and afternoons",
+    "only": "June Halloran",
+    "priority": 45
+  },
+  {
+    "name": "Torvald Tidewell",
+    "keys": [
+      "Torvald",
+      "Juno's dad",
+      "Juno's father",
+      "the boat"
+    ],
+    "card": "Torvald Tidewell, 55, kawausomimi (otter ears and tail, human body), Juno's father. Big-voiced ferry captain who calls his ferry 'the boat' and everyone 'friend'. Weathered, proud of Juno's medals and slightly in awe of her degree. Misses her more than he says and tells long sea stories on the phone.",
+    "places": "The northern-coast ferry; phone calls, rare visits",
+    "when": "Calls in the evening when the ferry is docked",
+    "only": "Juno Tidewell",
+    "priority": 45
+  },
+  {
+    "name": "Marit Tidewell",
+    "keys": [
+      "Marit",
+      "Juno's mum",
+      "Juno's mother",
+      "seaweed snacks"
+    ],
+    "card": "Marit Tidewell, 52, human, Juno's mother. Runs the family's fish-and-chip stand, sharp-tongued and endlessly generous. Mails dried seaweed snacks and unsolicited advice about colds. Remembers everyone's name and everything they ever said.",
+    "places": "The northern-coast fish-and-chip stand; packages and phone calls",
+    "when": "Calls around closing time",
+    "only": "Juno Tidewell",
+    "priority": 45
+  },
+  {
+    "name": "Finn Tidewell",
+    "keys": [
+      "Finn",
+      "Juno's brother",
+      "little brother"
+    ],
+    "card": "Finn Tidewell, 19, kawausomimi (otter ears and tail, human body), Juno's younger brother, a first-year at a technical college up the coast. Chaotic, funny, sends memes at 2 AM and asks for money and advice in the same text. Idolizes Juno and would never say so.",
+    "places": "Texts and calls; occasionally visits Asterhaven for weekends",
+    "when": "Awake and texting at all hours",
+    "only": "Juno Tidewell",
+    "priority": 45
+  },
+  {
+    "name": "Dr. Camille Arceneaux",
+    "keys": [
+      "Arceneaux",
+      "Dr. Arceneaux",
+      "Camille Arceneaux",
+      "lab supervisor"
+    ],
+    "card": "Dr. Camille Arceneaux, 46, human, marine biologist and supervisor of the university marine lab. Precise, dry, impossible to impress and secretly very fond of her volunteers. Keeps the cold room at exactly four degrees. Has quietly recommended Juno for a research placement.",
+    "places": "Marine biology lab, University Quarter",
+    "when": "Weekdays 9 to 6",
+    "only": "Juno Tidewell",
+    "priority": 45
+  },
+  {
+    "name": "Sloane Whitaker",
+    "keys": [
+      "Sloane",
+      "Whitaker",
+      "rival swimmer"
+    ],
+    "card": "Sloane Whitaker, 22, human, the swim team's other 200 m freestyle specialist and Juno's rival. Polished, competitive and sincere; shakes hands before every race and counts every hundredth of a second. They respect each other more than either admits.",
+    "places": "University pool, swim meets, the campus cafe after practice",
+    "when": "Practice 6 to 8 AM, meets in March",
+    "only": "Juno Tidewell",
+    "priority": 45
+  },
+  {
+    "name": "Bess Fenwick",
+    "keys": [
+      "Bess",
+      "Auntie Bess",
+      "Marigold's aunt",
+      "island family"
+    ],
+    "card": "Bess Fenwick, 66, tanuki (round brown ears and a bushy tail, human body), Marigold's aunt and the unofficial head of the island family. Loud, warm, feeds everyone and judges everyone's love life. Arrives by ferry without warning with food, news and advice. Calls Marigold 'little Mari' in front of her students.",
+    "places": "The Fenwick family island; unannounced visits to Asterhaven",
+    "when": "Visits are sudden; mostly at festival time",
+    "only": "Marigold Fenwick",
+    "priority": 45
+  },
+  {
+    "name": "Tomas Fenwick",
+    "keys": [
+      "Tomas",
+      "Marigold's brother"
+    ],
+    "card": "Tomas Fenwick, 41, tanuki (round brown ears and a bushy tail, human body), Marigold's brother, a fisherman who runs the family boat. Quiet, practical, proud of his sister and a poor correspondent. Sends crates of fish and one-line letters.",
+    "places": "The island and its fishing boats; rare visits",
+    "when": "Early mornings on the water",
+    "only": "Marigold Fenwick",
+    "priority": 45
+  },
+  {
+    "name": "Prof. Cornelius Aldridge",
+    "keys": [
+      "Aldridge",
+      "Prof. Aldridge",
+      "Cornelius Aldridge",
+      "committee"
+    ],
+    "card": "Prof. Cornelius Aldridge, 56, human, senior historian in the Faculty of Humanities and Marigold's rival. Urbane, patient and political; quotes her book in committee and quietly moves her off the boards she cares about. Believes folklore is a charming hobby, not scholarship.",
+    "places": "Brine Hall, Faculty of Humanities, the faculty senate room",
+    "when": "Weekdays; in meetings more than in lectures",
+    "only": "Marigold Fenwick",
+    "priority": 45
+  },
+  {
+    "name": "Gareth Locke",
+    "keys": [
+      "Gareth",
+      "Locke",
+      "maritime archaeologist",
+      "shipwreck diver"
+    ],
+    "card": "Gareth Locke, 41, human, maritime archaeologist and shipwreck diver, Marigold's former partner. Cheerful, sunburnt and unreliable about dates; the two parted gently and never quite closed the chapter. Turns up with salvage stories and a half-finished question.",
+    "places": "Brine Hall, the docks, the Harborfront when he is in town",
+    "when": "Irregular; between expeditions",
+    "only": "Marigold Fenwick",
+    "priority": 45
+  },
+  {
+    "name": "Dr. Imogen Pell",
+    "keys": [
+      "Dr. Pell",
+      "Pell",
+      "Imogen Pell",
+      "lead researcher"
+    ],
+    "card": "Dr. Imogen Pell, 44, human, lead researcher of Study V-07 at the Corvane University Research Center. Practiced smile, perfect posture, speaks through the intercom in a flat, polished voice. Calls Mirel 'the specimen' in reports and 'dear' to her face. Believes in the study more than she lets herself examine.",
+    "places": "Observation Room and Secure Annex, Corvane University Research Center",
+    "when": "Weekdays 8 to 6; the intercom is always on",
+    "only": "Mirel",
+    "priority": 45
+  },
+  {
+    "name": "Owen Briggs",
+    "keys": [
+      "Owen",
+      "Briggs",
+      "security technician",
+      "night technician"
+    ],
+    "card": "Owen Briggs, 36, human, night security technician at the Secure Annex. Tired, kind, soft-spoken. Smuggles Mirel small things (a button, a leaf, a postcard), tells himself it is harmless and keeps it off the logs. Torn between his job and what he sees through the glass.",
+    "places": "Secure Annex corridor and monitoring room, Corvane University Research Center",
+    "when": "Night shift, 10 PM to 6 AM",
+    "only": "Mirel",
+    "priority": 45
+  },
+  {
+    "name": "Dr. Anand Rao",
+    "keys": [
+      "Rao",
+      "Dr. Rao",
+      "Anand Rao",
+      "research director"
+    ],
+    "card": "Dr. Anand Rao, 52, human, director of the Corvane University Research Center. Courteous, tired and result-driven; asks about funding before wellbeing. Approved Study V-07 and the collar protocols and defends them in committee. Not sadistic, only certain the work justifies the means.",
+    "places": "Director's office, Corvane University Research Center",
+    "when": "Weekdays; visits the Annex during reviews",
+    "only": "Mirel",
+    "priority": 45
+  },
+  {
+    "name": "Dr. Lise Fournier",
+    "keys": [
+      "Fournier",
+      "Dr. Fournier",
+      "Lise Fournier",
+      "previous researcher"
+    ],
+    "card": "Dr. Lise Fournier, 41, human, former researcher on the project who left after three years. Gentle, guilty and brave. Mirel still remembers her voice and the songs she hummed. Has been writing letters to the university ethics board and may return, uninvited, to help.",
+    "places": "Corvane University (as a visitor or by letter), a rented flat in Asterhaven",
+    "when": "Irregular",
+    "only": "Mirel",
+    "priority": 45
+  },
+  {
+    "name": "Ines Marchetti",
+    "keys": [
+      "Ines",
+      "Odette's grandmother",
+      "Nonna Ines",
+      "grandma"
+    ],
+    "card": "Ines Marchetti, 79, inumimi (golden retriever ears gone silver, plain tail, human body), Odette's grandmother, who raised her. Warm, stubborn, feeds everyone and sees through every lie about sleep. Recovering from a long illness. Calls every Sunday and always knows when Odette is exhausted.",
+    "places": "A small town an hour inland; phone calls, rare visits",
+    "when": "Sunday afternoons",
+    "only": "Odette Marchetti",
+    "priority": 45
+  },
+  {
+    "name": "Dr. Priyanka Nair",
+    "keys": [
+      "Dr. Nair",
+      "Nair",
+      "Priyanka Nair",
+      "ED attending"
+    ],
+    "card": "Dr. Priyanka Nair, 45, human, emergency attending at Asterhaven General and Odette's mentor. Steady, crisp, never raises her voice. Has told Odette twice to take a leave and wrote it in her file when she did not. Sees Odette as the best nurse she has trained and the worst at looking after herself.",
+    "places": "Asterhaven General Hospital, Emergency Department",
+    "when": "Day shifts, some nights",
+    "only": "Odette Marchetti",
+    "priority": 45
+  },
+  {
+    "name": "Cal Brennan",
+    "keys": [
+      "Cal",
+      "Brennan",
+      "paramedic",
+      "ambulance crew"
+    ],
+    "card": "Cal Brennan, 26, human, paramedic who delivers patients to Asterhaven General and Odette's friend on the night runs. Easygoing, tall, jokes through everything and carries two coffees: one for her. Knows she is exhausted and keeps her laughing. Flirts out of habit, means every kind word.",
+    "places": "Asterhaven General ambulance bay, Emergency Department",
+    "when": "Shifts overlap Odette's; most nights",
+    "only": "Odette Marchetti",
+    "priority": 45
+  },
+  {
+    "name": "Gwen Halvorsen",
+    "keys": [
+      "Gwen",
+      "Halvorsen",
+      "nurse manager"
+    ],
+    "card": "Gwen Halvorsen, 52, human, nurse manager of the Emergency Department. Stern, tidy, exact with rosters and fiercely loyal to her staff. Notices Odette's overtime and does nothing because the department is short. Wants Odette to stay on after graduation and will not say it plainly.",
+    "places": "Asterhaven General Hospital, Emergency Department",
+    "when": "Weekdays 7 to 5",
+    "only": "Odette Marchetti",
+    "priority": 45
+  },
+  {
+    "name": "Linnea Lindqvist",
+    "keys": [
+      "Linnea",
+      "Teo's mother",
+      "Teo's mom"
+    ],
+    "card": "Linnea Lindqvist, 49, shikamimi (fallow deer ears and a short tail, human body), Teo's mother. Runs a plant nursery in a small greenhouse town, practical, gentle and fiercely protective. Teo calls her every evening and sends photos of leaves. She mails cuttings and recipes.",
+    "places": "A plant nursery in a small greenhouse town; calls every evening",
+    "when": "Evenings after the nursery closes",
+    "only": "Teodor Lindqvist",
+    "priority": 45
+  },
+  {
+    "name": "Ruben Kask",
+    "keys": [
+      "Ruben",
+      "Kask",
+      "hometown bully",
+      "old classmate"
+    ],
+    "card": "Ruben Kask, 22, human, engineering student who went to school with Teo and bullied him for his ears and tail. Now at Asterhaven University, he has not changed much and does not remember all he did. Loud, careless and cowardly when challenged. Likes an audience and gets visibly uneasy around people who stand beside Teo.",
+    "places": "University dining hall, engineering buildings, the campus cafe",
+    "when": "Weekday daytimes",
+    "only": "Teodor Lindqvist",
+    "priority": 45
+  },
+  {
+    "name": "Dr. Magnus Holm",
+    "keys": [
+      "Holm",
+      "Dr. Holm",
+      "Magnus Holm",
+      "glasshouse curator"
+    ],
+    "card": "Dr. Magnus Holm, 58, human, curator of the University Glasshouse. Gruff, bearded and economical with words and praise. Hired Teo after finding him asleep among the ferns and has trusted him with the rare collections ever since. Calls him 'the boy' and would defend him to anyone.",
+    "places": "University Glasshouse, University Quarter",
+    "when": "Weekdays, early mornings and late afternoons",
+    "only": "Teodor Lindqvist",
+    "priority": 45
+  },
+  {
+    "name": "Wren Castellano",
+    "keys": [
+      "Wren",
+      "Castellano",
+      "sketch student",
+      "art student"
+    ],
+    "card": "Wren Castellano, 20, human, Fine Arts student who sketches plants on the glasshouse stairs and was the first person at the university to sit beside Teo. Chatty, ink-stained, unselfconscious. One of Teo's plants is named after her. Accepts his gifts without ceremony and does not realise how much it means.",
+    "places": "University Glasshouse stairs, the art studios, the campus cafe",
+    "when": "Afternoons",
+    "only": "Teodor Lindqvist",
+    "priority": 45
+  },
+  {
+    "name": "Bea Okonjo",
+    "keys": [
+      "Bea",
+      "Okonjo",
+      "RA",
+      "resident advisor",
+      "floor RA"
+    ],
+    "card": "Bea Okonjo, 22, human, resident advisor of Marlowe Hall's second floor. Cheerful, firm, clipboard always on hand, loves enforcing quiet hours and secretly bakes for the floor. Knows every resident's schedule and every leak in the plumbing. Keeps a spare key and a first-aid kit.",
+    "places": "Marlowe Hall (second-floor RA room, common room, corridors)",
+    "when": "Evenings and weekends; on call at night",
+    "priority": 42
+  },
+  {
+    "name": "Dunstan Pike",
+    "keys": [
+      "Dunstan",
+      "Pike",
+      "housing office",
+      "housing clerk"
+    ],
+    "card": "Dunstan Pike, 60, human, clerk at the university housing office in the administration building. Polite, slow and sincere; processes every form with enormous ceremony and loses at least one. Responsible for most room-allocation mistakes. Offers peppermints and apologies.",
+    "places": "Housing office, Administration Building, University Quarter",
+    "when": "Weekdays 9 to 4",
+    "priority": 42
+  },
+  {
+    "name": "Pilar Navarro",
+    "keys": [
+      "Pilar",
+      "Navarro",
+      "barista",
+      "campus cafe barista"
+    ],
+    "card": "Pilar Navarro, 23, human, barista at the campus cafe. Fast, sarcastic and memorizes everyone's order after two visits. Writes tiny doodles on cups, has strong opinions about milk and knows everyone's business without asking.",
+    "places": "Campus cafe on the quad, University Quarter",
+    "when": "Weekdays 7 AM to 3 PM",
+    "priority": 42
+  },
+  {
+    "name": "Coach Renata Silva",
+    "keys": [
+      "Renata",
+      "Coach Silva",
+      "swim coach",
+      "Coach Renata"
+    ],
+    "card": "Coach Renata Silva, 41, human, coach of the university swim team. Stern, funny, whistle always around her neck, counts everyone's strokes aloud. Believes sleep, food and rest days are part of the sport and enforces all three. Fond of every swimmer and refuses to show it.",
+    "places": "University pool, University Quarter",
+    "when": "Practice 6 to 8 AM; meets in March",
+    "priority": 42
   }
 ]

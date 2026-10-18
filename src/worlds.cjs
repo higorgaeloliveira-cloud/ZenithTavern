@@ -40,6 +40,7 @@ function convert(src) {
       key: isAlways ? [] : [...(e.keys || [])],
       order: isAlways ? 100 - always.indexOf(e) * 5 : Number(e.activation?.priority ?? 50),
       ...(e.character_filter?.length ? { characterFilter: { isExclude: true, names: [...e.character_filter], tags: [] } } : {}),
+      ...(e.character_only?.length ? { characterFilter: { isExclude: false, names: [...e.character_only], tags: [] } } : {}),
       ...(e.prevent_recursion ? { preventRecursion: true, excludeRecursion: true } : {}),
     });
     uid++;

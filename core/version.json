@@ -1,5 +1,5 @@
 {
-  "version": "1.3.4",
+  "version": "1.4.4",
   "history": [
     {
       "version": "0.0.1",
@@ -315,6 +315,14 @@
         "ui"
       ],
       "note": "Spectrum: Length is now a real ceiling (bars are cut off), Audio Simulation lowers each band's volume",
+      "date": "2026-10-18"
+    },
+    {
+      "version": "1.4.4",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Sub-bots: 43 connected minor characters (family, friends, rivals, enemies) for every cast member, plus 4 residents",
       "date": "2026-10-18"
     }
   ],

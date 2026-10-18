@@ -47,9 +47,9 @@ Asterhaven is full of named residents who work, live and study in set places. Wh
 const bots = [{ id: 'subbot_rules', name: 'Sub-bot rules', category: 'rules', activation: { mode: 'always' }, keys: [], content: RULES, prevent_recursion: true }];
 const mkBot = (name, b, i, filter) => ({
   id: `subbot_${name.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`, name, category: 'sub-bots',
-  activation: { mode: 'keywords', priority: 50 - i },
-  keys: b.keys, character_filter: filter ? [name] : [], prevent_recursion: true,
-  content: `[SUB-BOT: ${name}]\n${b.card}\nFound at: ${b.places}. Usual hours: ${b.when}.\nIf the scene is at one of these places at a plausible time, ${first(name)} is there and takes part, played in the same reply as {{char}} with their own voice. Full profile: Characters lorebook.`,
+  activation: { mode: 'keywords', priority: b.priority ?? (50 - i) },
+  keys: b.keys, character_filter: filter ? [name] : [], ...(b.only ? { character_only: [b.only] } : {}), prevent_recursion: true,
+  content: `[SUB-BOT: ${name}${b.only ? ` - connected to ${b.only}` : ''}]\n${b.card}\nFound at: ${b.places}. Usual hours: ${b.when}.\n${b.only ? `${first(name)} is a minor character in ${first(b.only)}'s life, not a lead: appears only when the story brings them in (or by phone or message), played in the same reply as {{char}} with their own voice, and never replaces {{char}} as the lead. ` : `If the scene is at one of these places at a plausible time, ${first(name)} is there and takes part, played in the same reply as {{char}} with their own voice. `}${b.only ? 'Do not invent more history with {{user}} than the chat has established.' : 'Full profile: Characters lorebook.'}`,
 });
 let n = 0;
 for (const r of recs) if (r.sub_bot) bots.push(mkBot(r.name, r.sub_bot, n++, true));

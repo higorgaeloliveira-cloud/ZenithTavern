@@ -346,3 +346,6 @@ The layers button next to the `!` buttons lists every preset with a picture. Cli
 
 ## Messages app (Z-Droid)
 Phone app **Messages**. Every Z-Droid text block (`Texting¦Name`, `Incoming¦time¦Name¦text`, `Outgoing¦time¦text`) in the current chat becomes a conversation, and you can text from the app (bolt button = ask for a reply right away when you text the chat's character). Everything is per chat: a new chat starts with an empty phone. Texts you send are stored in that chat only and the model is told they are private between the two people; others only see public reactions.
+
+## Sub-bots (minor characters around the cast)
+The Sub-bots lorebook now holds people who are not roster characters: family, old friends, rivals, colleagues and enemies of each cast member (e.g. Riko's grandmother Kiyo, Cassian's father Silas, Delphine's rival Julian Marsh), plus a few residents (RA, housing clerk, barista, swim coach). They only appear in the chat of the character they belong to (or by `!Name`). Edit `core/roster/source/_subbots-extra.json` and run `node tools/lorebook-build.cjs`.
