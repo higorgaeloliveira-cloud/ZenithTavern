@@ -1,5 +1,5 @@
 {
-  "version": "1.4.5",
+  "version": "1.4.6",
   "history": [
     {
       "version": "0.0.1",
@@ -331,6 +331,14 @@
         "ui"
       ],
       "note": "Presets: classroom whiteboard, report clipboard, every preset grows with long text",
+      "date": "2026-10-18"
+    },
+    {
+      "version": "1.4.6",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Plain whiteboard preset (handwritten, no tray)",
       "date": "2026-10-18"
     }
   ],

@@ -103,6 +103,24 @@ ${msgs.map((m) => `<div class="zf-dmsg"><div class="zf-dav" style="background:hs
                 return `<div class="zf-card zf-whiteboard"><div class="zf-wsurface">${title ? `<div class="zf-wtitle">${esc(title)}</div>` : ''}${rows.join('')}</div><div class="zf-wtray"><i class="zf-mk zf-mk-k"></i><i class="zf-mk zf-mk-r"></i><i class="zf-mk zf-mk-b"></i><i class="zf-er"></i></div></div>`;
             },
         },
+        // ------------------------------------------------------------ Plain whiteboard
+        {
+            id: 'board',
+            name: 'Whiteboard (plain)',
+            example: 'Board¦Optional Title\nLine¦First thing written on the board goes here\nLine¦Second thing written on the board\nLine¦Anything else you want on the board',
+            starts: ['board'],
+            lines: ['board', 'line'],
+            render(lines) {
+                let title = '';
+                const rows = [];
+                lines.forEach((l, i) => {
+                    const p = parts(l), k = p[0].toLowerCase();
+                    if (k === 'board') title = p[1] || '';
+                    else rows.push(`<div class="zf-wline" style="--r:${((i * 7) % 5 - 2) * 0.25}deg">${esc(p.slice(1).join(' '))}</div>`);
+                });
+                return `<div class="zf-card zf-plainboard"><div class="zf-wsurface">${title ? `<div class="zf-wtitle">${esc(title)}</div>` : ''}${rows.join('')}</div></div>`;
+            },
+        },
         // ------------------------------------------------------------ Clipboard
         {
             id: 'clipboard',

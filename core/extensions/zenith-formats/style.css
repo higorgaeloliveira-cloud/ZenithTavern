@@ -142,3 +142,7 @@
 .zf-dyhead, .zf-nsrc, .zf-emeta { flex-wrap: wrap; }
 .zf-header, .zf-header *, .zf-phone, .zf-phone * { overflow-wrap: anywhere; min-width: 0; }
 .zf-phone { box-sizing: border-box; } .zf-bar { flex-wrap: wrap; gap: 4px 10px; } .zf-contact { overflow-wrap: anywhere; }
+
+/* ---- Whiteboard (plain) ---- */
+.zf-plainboard { background: #d3d5da; border-radius: 6px; padding: 7px; box-shadow: 0 4px 12px #0006; }
+.zf-plainboard .zf-wsurface { min-height: 90px; }
