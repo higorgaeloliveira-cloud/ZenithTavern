@@ -509,3 +509,60 @@ ${msgs.map((m) => `<div class="zf-dmsg"><div class="zf-dav" style="background:hs
     window.ZenithFormats = { FORMATS, process, all, preview };
     (window.SillyTavern?.getContext ? start : () => window.addEventListener('load', start))();
 })();
+
+// ---------------------------------------------------------------- let the characters use the presets too
+// A short guide is placed in the prompt so the model writes a preset whenever the scene has that object or interface.
+(() => {
+    const KEY = 'zenith_presets';
+    const GUIDE = {
+        zdroid: ['phone texting (appears in the Messages app)', 'Z-Droid¦Zenet - Name¦85% / Texting¦Name / Incoming¦time¦Name¦text / Outgoing¦time¦text'],
+        discord: ['a Discord-style chat', 'Discord¦channel / Message¦emoji¦Name¦time¦text[¦TAG[¦#color]]'],
+        whiteboard: ['a classroom or meeting whiteboard written in marker', 'Whiteboard¦Title / Write¦text[¦red|blue|green]'],
+        board: ['a plain handwritten whiteboard or sign', 'Board¦optional title / Line¦text'],
+        clipboard: ['a checklist, to-do list, directives or tests', 'Clipboard¦Title / Item¦x¦done item / Item¦ ¦open item'],
+        report: ['a form, report, briefing or notes with titled sections', 'Report¦Title / Field¦Label¦value / Section¦Label¦text'],
+        terminal: ['a computer console or monitoring screen', 'Terminal¦user@host / Run¦command / Out¦text / Warn¦text / Err¦text'],
+        email: ['an email', 'Email¦From¦To¦Subject¦Date / Body¦paragraph (one Body line per paragraph)'],
+        post: ['social media posts', 'Post¦emoji¦Name¦@handle¦time¦text¦likes¦replies¦reposts'],
+        diary: ['a diary page', 'Diary¦date¦mood / Entry¦paragraph'],
+        news: ['a news article', 'News¦Headline¦Source¦Date / Story¦paragraph'],
+        receipt: ['a receipt', 'Receipt¦Store¦Date / Buy¦item¦price / Total¦amount'],
+        radio: ['a radio broadcast', 'Radio¦Station¦Show / Say¦Speaker¦text / Song¦Title¦Artist'],
+        status: ['a status or stat screen', 'Status¦Name¦subtitle / Stat¦Label¦value¦max'],
+        idcard: ['a student ID card', 'ID¦Name¦year¦major¦dorm¦emoji'],
+        notify: ['phone notification banners', 'Notify¦App¦Title¦text¦time¦emoji'],
+        search: ['a web search', 'Search¦query / Result¦Title¦site¦snippet'],
+        stream: ['a livestream with chat', 'Stream¦Streamer¦Title¦viewers / Chat¦name¦text¦#color'],
+        call: ['a video call', 'Call¦Name¦duration¦emoji / Caption¦spoken line'],
+        music: ['a music player', 'Music¦Title¦Artist¦elapsed¦length / Queue¦Title¦Artist'],
+        dialog: ['a game-style dialogue box', 'Dialog¦Speaker¦text / Choice¦option'],
+        letter: ['a handwritten letter', 'Letter¦Dear Name,¦Date / Para¦paragraph / Sign¦From'],
+        menu: ['a restaurant menu', 'Menu¦Place¦tagline / Course¦Name / Dish¦Name¦price¦description'],
+        schedule: ['a schedule or timetable', 'Schedule¦Title / Slot¦time¦event¦place'],
+        alert: ['a system pop-up', 'Alert¦Title¦message¦Button1¦Button2¦info|warn|error'],
+    };
+    const ctx = () => SillyTavern.getContext();
+    let hints = {};
+    const on = () => { try { return localStorage.getItem('zenith_presets_off') !== '1'; } catch { return true; } };
+    function build() {
+        if (!on()) return '';
+        const list = Object.entries(GUIDE).map(([id, [use, syn]]) => `- ${use}: ${syn}`).join('\n');
+        let who = ''; try { const c = ctx(); who = c.characters?.[c.characterId]?.name || ''; } catch { /* no chat */ }
+        const hint = hints[who] ? `\nFor ${who}: ${hints[who]}` : '';
+        return '[PRESETS: the interface turns these text blocks into cards. Use one only when the scene naturally contains that object or interface (never force one, at most two per reply), and use whichever fits, including ones for {{user}}\'s phone or world. '
+            + 'Write the block on its own lines, outside any asterisks, one entry per line, parts separated by ¦, starting with the first word shown, exactly in this syntax (/ separates lines, [ ] optional). Text inside an entry can be as long as needed, but never contains ¦. The block adds to the narration; it does not replace it or count toward paragraph length.\n'
+            + list + hint + ']';
+    }
+    function apply() { try { ctx().setExtensionPrompt(KEY, build(), 1, 4, false, 0); } catch { /* not ready */ } }
+    window.ZenithFormats.guidePrompt = build;
+    const start = async () => {
+        try { hints = await (await fetch('/scripts/extensions/third-party/zenith-formats/hints.json', { cache: 'no-store' })).json(); } catch { hints = {}; }
+        const { eventSource, eventTypes, SlashCommandParser, SlashCommand } = ctx();
+        eventSource.on(eventTypes.CHAT_CHANGED, apply);
+        try {
+            SlashCommandParser.addCommandObject(SlashCommand.fromProps({ name: 'zenith-presets', helpString: 'Lets characters use the presets: /zenith-presets on|off', callback: (_a, v) => { try { localStorage.setItem('zenith_presets_off', /^off$/i.test(String(v).trim()) ? '1' : '0'); } catch { /* ignore */ } apply(); return on() ? 'Characters may use presets.' : 'Characters will not use presets.'; } }));
+        } catch { /* ignore */ }
+        apply();
+    };
+    (window.SillyTavern?.getContext ? start : () => window.addEventListener('load', start))();
+})();

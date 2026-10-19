@@ -349,3 +349,6 @@ Phone app **Messages**. Every Z-Droid text block (`Texting¦Name`, `Incoming¦ti
 
 ## Sub-bots (minor characters around the cast)
 The Sub-bots lorebook now holds people who are not roster characters: family, old friends, rivals, colleagues and enemies of each cast member (e.g. Riko's grandmother Kiyo, Cassian's father Silas, Delphine's rival Julian Marsh), plus a few residents (RA, housing clerk, barista, swim coach). They only appear in the chat of the character they belong to (or by `!Name`). Edit `core/roster/source/_subbots-extra.json` and run `node tools/lorebook-build.cjs`.
+
+## Characters use the presets too
+A compact guide (about 750 tokens) is added to every prompt so characters write presets (clipboard lists, reports, receipts, radio, texts...) when the scene calls for them, at most two per reply. Per-character suggestions live in `core/extensions/zenith-formats/hints.json` (e.g. Mirel gets the day's directives and tests as a checklist clipboard). Turn it off with `/zenith-presets off` (on again with `/zenith-presets on`).
