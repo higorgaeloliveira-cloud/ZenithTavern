@@ -81,25 +81,26 @@ ${msgs.map((m) => `<div class="zf-dmsg"><div class="zf-dav" style="background:hs
 </div>`;
             },
         },
-        // ------------------------------------------------------------ Whiteboard
+        // ------------------------------------------------------------ Whiteboard (classroom)
         {
             id: 'whiteboard',
-            name: 'Whiteboard (notes)',
-            example: 'Whiteboard¦Project Plan\nNote¦First idea goes here¦yellow\nNote¦Second idea goes here¦pink\nNote¦Third idea goes here¦blue\nNote¦Fourth idea goes here¦green\nScribble¦Marker text goes here',
+            name: 'Whiteboard (classroom)',
+            example: 'Whiteboard¦Lesson Title Here\nWrite¦First line the teacher writes goes here\nWrite¦Second line of the lesson goes here\nWrite¦Important point to remember¦red\nWrite¦A note in another color¦blue\nWrite¦Homework: text goes here',
             starts: ['whiteboard'],
-            lines: ['whiteboard', 'note', 'scribble'],
+            lines: ['whiteboard', 'write', 'note', 'scribble'],
             render(lines) {
                 let title = '';
-                const items = [];
-                const cyc = ['yellow', 'pink', 'blue', 'green'];
-                let n = 0;
-                for (const l of lines) {
+                const rows = [];
+                const cols = { red: 'red', blue: 'blue', green: 'green', black: '' };
+                lines.forEach((l, i) => {
                     const p = parts(l), k = p[0].toLowerCase();
-                    if (k === 'whiteboard') title = p[1] || '';
-                    else if (k === 'note') items.push(`<div class="zf-wnote zf-w-${cyc.includes((p[2] || '').toLowerCase()) ? p[2].toLowerCase() : cyc[n % 4]}">${esc(p[1] || '')}</div>`), n++;
-                    else items.push(`<div class="zf-wscr">${esc(p.slice(1).join(' '))}</div>`);
-                }
-                return `<div class="zf-card zf-whiteboard">${title ? `<div class="zf-wtitle">${esc(title)}</div>` : ''}<div class="zf-wgrid">${items.join('')}</div></div>`;
+                    if (k === 'whiteboard') { title = p[1] || ''; return; }
+                    const last = (p[p.length - 1] || '').toLowerCase();
+                    const hasCol = p.length >= 3 && last in cols;
+                    const text = (hasCol ? p.slice(1, -1) : p.slice(1)).join(' ');
+                    rows.push(`<div class="zf-wline${hasCol && cols[last] ? ' zf-wc-' + cols[last] : ''}" style="--r:${((i * 7) % 5 - 2) * 0.25}deg">${esc(text)}</div>`);
+                });
+                return `<div class="zf-card zf-whiteboard"><div class="zf-wsurface">${title ? `<div class="zf-wtitle">${esc(title)}</div>` : ''}${rows.join('')}</div><div class="zf-wtray"><i class="zf-mk zf-mk-k"></i><i class="zf-mk zf-mk-r"></i><i class="zf-mk zf-mk-b"></i><i class="zf-er"></i></div></div>`;
             },
         },
         // ------------------------------------------------------------ Clipboard
@@ -118,6 +119,26 @@ ${msgs.map((m) => `<div class="zf-dmsg"><div class="zf-dav" style="background:hs
                     else items.push({ done: /^(x|\[x\]|✓|yes|done)$/i.test(p[1] || ''), text: p.slice(2).join(' ') });
                 }
                 return `<div class="zf-card zf-clip"><div class="zf-cclip"></div><div class="zf-cpaper">${title ? `<div class="zf-ctitle">${esc(title)}</div>` : ''}${items.map((i) => `<div class="zf-citem${i.done ? ' zf-cdone' : ''}"><span class="zf-cbox">${i.done ? '✓' : ''}</span><span>${esc(i.text)}</span></div>`).join('')}</div></div>`;
+            },
+        },
+        // ------------------------------------------------------------ Clipboard (report)
+        {
+            id: 'report',
+            name: 'Clipboard (report / notes)',
+            example: 'Report¦Report Title Here\nField¦Date¦Mon, Sep 7th\nField¦Author¦Name Here\nSection¦Objective¦Text describing the objective goes here.\nSection¦Overview¦A longer overview of the situation goes here.\nSection¦Observations¦What was seen and noted goes here.\nSection¦Conclusion¦Closing remarks go here.',
+            starts: ['report'],
+            lines: ['report', 'field', 'section'],
+            render(lines) {
+                let title = '';
+                const fields = [], secs = [];
+                for (const l of lines) {
+                    const p = parts(l), k = p[0].toLowerCase();
+                    if (k === 'report') title = p[1] || '';
+                    else if (k === 'field') fields.push(`<div><b>${esc(p[1] || '')}</b><span>${esc(p.slice(2).join(' '))}</span></div>`);
+                    else if (p.length >= 3) secs.push(`<div class="zf-csec"><b>${esc(p[1])}</b><p>${esc(p.slice(2).join(' '))}</p></div>`);
+                    else secs.push(`<div class="zf-csec"><p>${esc(p[1] || '')}</p></div>`);
+                }
+                return `<div class="zf-card zf-clip zf-clip2"><div class="zf-cclip"></div><div class="zf-cpaper zf-cpaper2">${title ? `<div class="zf-ctitle">${esc(title)}</div>` : ''}${fields.length ? `<div class="zf-cfields">${fields.join('')}</div>` : ''}${secs.join('')}</div></div>`;
             },
         },
         // ------------------------------------------------------------ Terminal

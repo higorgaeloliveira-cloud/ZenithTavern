@@ -1,5 +1,5 @@
 {
-  "version": "1.4.4",
+  "version": "1.4.5",
   "history": [
     {
       "version": "0.0.1",
@@ -323,6 +323,14 @@
         "internal"
       ],
       "note": "Sub-bots: 43 connected minor characters (family, friends, rivals, enemies) for every cast member, plus 4 residents",
+      "date": "2026-10-18"
+    },
+    {
+      "version": "1.4.5",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Presets: classroom whiteboard, report clipboard, every preset grows with long text",
       "date": "2026-10-18"
     }
   ],

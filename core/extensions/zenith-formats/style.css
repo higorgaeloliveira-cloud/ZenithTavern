@@ -42,14 +42,16 @@
 .zf-dtime { color: #949ba4; font-size: 12px; font-weight: 500; }
 .zf-dtext { font-size: 16px; color: #dbdee1; word-break: break-word; }
 
-/* ---- Whiteboard ---- */
-.zf-whiteboard { background: #f6f7f4; color: #1c2430; border: 6px solid #b9bec7; border-radius: 6px; padding: 14px; box-shadow: inset 0 0 0 2px #fff, 0 3px 10px #0005; font-family: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive; }
-.zf-wtitle { font-size: 1.35em; font-weight: 700; color: #1f5fbf; margin-bottom: 10px; text-decoration: underline wavy #1f5fbf55; text-underline-offset: 5px; }
-.zf-wgrid { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
-.zf-wnote { width: calc(50% - 6px); box-sizing: border-box; min-height: 74px; padding: 10px 10px 12px; box-shadow: 2px 3px 6px #0004; font-size: .95em; transform: rotate(-1.6deg); }
-.zf-wnote:nth-child(even) { transform: rotate(1.8deg); }
-.zf-w-yellow { background: #fff27a; } .zf-w-pink { background: #ffb3c7; } .zf-w-blue { background: #a8d8ff; } .zf-w-green { background: #b8efb1; }
-.zf-wscr { width: 100%; color: #d13438; font-size: 1.15em; transform: rotate(-.8deg); }
+/* ---- Whiteboard (classroom) ---- */
+.zf-whiteboard { background: #c9ccd2; border-radius: 8px; padding: 10px 10px 0; box-shadow: 0 4px 12px #0006; }
+.zf-wsurface { background: linear-gradient(#fbfbfa, #f1f2f0); border-radius: 3px; padding: 16px 20px 22px; box-shadow: inset 0 0 0 2px #ffffff, inset 0 0 18px #0002; color: #111; font-family: 'Marker Felt', 'Segoe Print', 'Bradley Hand', 'Chalkboard SE', 'Comic Sans MS', cursive; position: relative; }
+.zf-wsurface::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(60% 30% at 70% 80%, #0000000a, transparent 70%), radial-gradient(40% 25% at 20% 30%, #00000008, transparent 70%); }
+.zf-wtitle { font-size: 1.45em; font-weight: 700; text-align: center; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 3px solid #111; letter-spacing: .02em; }
+.zf-wline { font-size: 1.12em; font-weight: 600; line-height: 1.5; margin: 6px 0; transform: rotate(var(--r, 0deg)); transform-origin: left; text-shadow: .4px .4px 0 #0006; }
+.zf-wc-red { color: #c4222f; } .zf-wc-blue { color: #1d4fb8; } .zf-wc-green { color: #1b7f3a; }
+.zf-wtray { display: flex; align-items: center; gap: 10px; height: 20px; margin: 10px -10px 0; padding: 0 16px; background: linear-gradient(#b0b4bb, #8d9199); border-radius: 0 0 8px 8px; }
+.zf-mk { display: block; width: 48px; height: 9px; border-radius: 5px; box-shadow: 0 1px 2px #0006; border-right: 9px solid #222; box-sizing: border-box; } .zf-mk-k { background: #333; } .zf-mk-r { background: #c4222f; } .zf-mk-b { background: #1d4fb8; }
+.zf-er { display: block; width: 38px; height: 12px; margin-left: auto; border-radius: 3px; background: linear-gradient(#e8e8ea 60%, #3a5a8a 60%); box-shadow: 0 1px 2px #0006; }
 
 /* ---- Clipboard ---- */
 .zf-clip { background: #8a5a2b; padding: 22px 12px 12px; border-radius: 10px; position: relative; box-shadow: 0 3px 10px #0006; color: #2a2a2a; }
@@ -121,3 +123,22 @@
 .zf-idmain { display: flex; gap: 14px; padding: 14px; } .zf-idpic { flex: none; width: 76px; height: 92px; border-radius: 8px; background: #dde6f7; border: 2px solid #1b3a7a; display: flex; align-items: center; justify-content: center; font-size: 40px; }
 .zf-idinfo { display: flex; flex-direction: column; gap: 3px; min-width: 0; } .zf-idinfo b { font-size: 1.15em; } .zf-idinfo span { font-size: .88em; opacity: .75; }
 .zf-idbar { height: 22px; background: repeating-linear-gradient(90deg, #1b2440 0 2px, #fff 2px 5px, #1b2440 5px 6px, #fff 6px 9px); margin: 0 14px 12px; opacity: .85; }
+
+/* ---- Clipboard (report) ---- */
+.zf-clip2 .zf-ctitle { font-size: 1.15em; }
+.zf-cpaper2 { background-image: none; padding-bottom: 14px; }
+.zf-cfields { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 4px 14px; margin-bottom: 10px; font-size: .9em; }
+.zf-cfields div { display: flex; flex-direction: column; } .zf-cfields b { font-size: .75em; text-transform: uppercase; letter-spacing: .08em; opacity: .6; }
+.zf-csec { margin: 10px 0; } .zf-csec b { display: block; font-size: .78em; text-transform: uppercase; letter-spacing: .1em; border-bottom: 1px solid #2a2a2a44; padding-bottom: 2px; margin-bottom: 4px; }
+.zf-csec p { margin: 0; white-space: pre-wrap; }
+
+/* ---- every preset grows with its text (no fixed heights, long words wrap) ---- */
+.zf-card, .zf-card * { overflow-wrap: anywhere; min-width: 0; }
+.zf-card { height: auto; }
+.zf-citem { align-items: flex-start; padding: 3px 0; } .zf-cbox { margin-top: 2px; }
+.zf-srow { grid-template-columns: minmax(72px, max-content) 1fr auto; }
+.zf-rrow span:first-child { flex: 1; } .zf-rrow span:last-child { flex: none; }
+.zf-idinfo { flex: 1; } .zf-idtop { flex-wrap: wrap; gap: 4px; }
+.zf-dyhead, .zf-nsrc, .zf-emeta { flex-wrap: wrap; }
+.zf-header, .zf-header *, .zf-phone, .zf-phone * { overflow-wrap: anywhere; min-width: 0; }
+.zf-phone { box-sizing: border-box; } .zf-bar { flex-wrap: wrap; gap: 4px 10px; } .zf-contact { overflow-wrap: anywhere; }
