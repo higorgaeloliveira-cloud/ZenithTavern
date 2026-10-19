@@ -1,5 +1,5 @@
 {
-  "version": "1.6.6",
+  "version": "1.6.7",
   "history": [
     {
       "version": "0.0.1",
@@ -356,7 +356,15 @@
       ],
       "note": "Characters can use every preset: prompt guide + per-character hints (Mirel: daily directives checklist)",
       "date": "2026-10-18"
+    },
+    {
+      "version": "1.6.7",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Mara: 9 expression sprites added",
+      "date": "2026-10-19"
     }
   ],
-  "released": "2026-10-18"
+  "released": "2026-10-19"
 }

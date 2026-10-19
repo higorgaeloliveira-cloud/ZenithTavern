@@ -13,10 +13,56 @@
         "slice of life",
         "coastal town"
       ],
-      "version": 1,
+      "version": 2,
       "card": "mara-venn/card.png",
-      "sha256": "ad7e15c0f680309f0d99f527cdf20d3c20617c125888b982ad9767554bfd233b",
-      "sprites": [],
+      "sha256": "950d68c3c28e24c97af308992dd4c5abdfc346e8b0597e1ef674645758fb3a28",
+      "sprites": [
+        {
+          "path": "mara-venn/sprites/amusement.png",
+          "as": "amusement.png",
+          "sha256": "bbdaf5ea0e32762789577495e56865284acda02761fb56c12b854a7525480037"
+        },
+        {
+          "path": "mara-venn/sprites/anger.png",
+          "as": "anger.png",
+          "sha256": "c0c3486b03c891afa799d3a8637be5dcc773d715c94f9a881707d82c355b4206"
+        },
+        {
+          "path": "mara-venn/sprites/annoyance.png",
+          "as": "annoyance.png",
+          "sha256": "f2222506f9029f38ad5a97b731c7739dcdc3919acb1e9b8cdc57a330183dee58"
+        },
+        {
+          "path": "mara-venn/sprites/caring.png",
+          "as": "caring.png",
+          "sha256": "7a4f9c14dc7b21573167e76a83faebbaf81e0c9c7d44581ae8500f3833ca4b34"
+        },
+        {
+          "path": "mara-venn/sprites/confusion.png",
+          "as": "confusion.png",
+          "sha256": "f810017741b333518886d490980761a0bf436d7437774e43e401271fac93de20"
+        },
+        {
+          "path": "mara-venn/sprites/curiosity.png",
+          "as": "curiosity.png",
+          "sha256": "a7fed4dd3e349bc72d95b0cc8fd277a578013f7439270384fb8adb20cd517d16"
+        },
+        {
+          "path": "mara-venn/sprites/excitement.png",
+          "as": "excitement.png",
+          "sha256": "0ca0ae4ff4f4723d77783c262cebe810a095f11530dfa53086042f4ef393c2ac"
+        },
+        {
+          "path": "mara-venn/sprites/joy.png",
+          "as": "joy.png",
+          "sha256": "c67faedd6c028a1d00fa65b4d18ddb00d335480008c193663a4632160f396ba9"
+        },
+        {
+          "path": "mara-venn/sprites/neutral.png",
+          "as": "neutral.png",
+          "sha256": "fb6149e5df8a17c6d0af8fbb6fd66dee59659cc4e3c75638d3a3a8949139f389"
+        }
+      ],
       "images": [
         {
           "path": "mara-venn/images/greeting.png",
