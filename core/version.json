@@ -1,5 +1,5 @@
 {
-  "version": "1.6.7",
+  "version": "1.6.8",
   "history": [
     {
       "version": "0.0.1",
@@ -363,6 +363,14 @@
         "ui"
       ],
       "note": "Mara: 9 expression sprites added",
+      "date": "2026-10-19"
+    },
+    {
+      "version": "1.6.8",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Mara: sprite names fixed (approval, amusement, admiration)",
       "date": "2026-10-19"
     }
   ],

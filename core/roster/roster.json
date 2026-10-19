@@ -13,14 +13,19 @@
         "slice of life",
         "coastal town"
       ],
-      "version": 2,
+      "version": 3,
       "card": "mara-venn/card.png",
-      "sha256": "950d68c3c28e24c97af308992dd4c5abdfc346e8b0597e1ef674645758fb3a28",
+      "sha256": "74b4788ee9fa5ff4489c51fff8a5273f1ec160a42416efc62472d0a8e82f4dc7",
       "sprites": [
+        {
+          "path": "mara-venn/sprites/admiration.png",
+          "as": "admiration.png",
+          "sha256": "0ca0ae4ff4f4723d77783c262cebe810a095f11530dfa53086042f4ef393c2ac"
+        },
         {
           "path": "mara-venn/sprites/amusement.png",
           "as": "amusement.png",
-          "sha256": "bbdaf5ea0e32762789577495e56865284acda02761fb56c12b854a7525480037"
+          "sha256": "c67faedd6c028a1d00fa65b4d18ddb00d335480008c193663a4632160f396ba9"
         },
         {
           "path": "mara-venn/sprites/anger.png",
@@ -31,6 +36,11 @@
           "path": "mara-venn/sprites/annoyance.png",
           "as": "annoyance.png",
           "sha256": "f2222506f9029f38ad5a97b731c7739dcdc3919acb1e9b8cdc57a330183dee58"
+        },
+        {
+          "path": "mara-venn/sprites/approval.png",
+          "as": "approval.png",
+          "sha256": "bbdaf5ea0e32762789577495e56865284acda02761fb56c12b854a7525480037"
         },
         {
           "path": "mara-venn/sprites/caring.png",
@@ -46,16 +56,6 @@
           "path": "mara-venn/sprites/curiosity.png",
           "as": "curiosity.png",
           "sha256": "a7fed4dd3e349bc72d95b0cc8fd277a578013f7439270384fb8adb20cd517d16"
-        },
-        {
-          "path": "mara-venn/sprites/excitement.png",
-          "as": "excitement.png",
-          "sha256": "0ca0ae4ff4f4723d77783c262cebe810a095f11530dfa53086042f4ef393c2ac"
-        },
-        {
-          "path": "mara-venn/sprites/joy.png",
-          "as": "joy.png",
-          "sha256": "c67faedd6c028a1d00fa65b4d18ddb00d335480008c193663a4632160f396ba9"
         },
         {
           "path": "mara-venn/sprites/neutral.png",
