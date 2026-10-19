@@ -1,5 +1,5 @@
 {
-  "version": "1.4.6",
+  "version": "1.5.6",
   "history": [
     {
       "version": "0.0.1",
@@ -339,6 +339,14 @@
         "ui"
       ],
       "note": "Plain whiteboard preset (handwritten, no tray)",
+      "date": "2026-10-18"
+    },
+    {
+      "version": "1.5.6",
+      "kinds": [
+        "internal"
+      ],
+      "note": "10 more presets: notifications, search, livestream, video call, music player, dialogue box, letter, menu, schedule, system alert",
       "date": "2026-10-18"
     }
   ],

@@ -159,6 +159,142 @@ ${msgs.map((m) => `<div class="zf-dmsg"><div class="zf-dav" style="background:hs
                 return `<div class="zf-card zf-clip zf-clip2"><div class="zf-cclip"></div><div class="zf-cpaper zf-cpaper2">${title ? `<div class="zf-ctitle">${esc(title)}</div>` : ''}${fields.length ? `<div class="zf-cfields">${fields.join('')}</div>` : ''}${secs.join('')}</div></div>`;
             },
         },
+        // ------------------------------------------------------------ Notifications
+        {
+            id: 'notify',
+            name: 'Phone notifications',
+            example: 'Notify¦Messages¦Sam¦Notification text goes here¦now¦💬\nNotify¦Calendar¦Reminder¦Another notification text goes here¦5m ago¦📅\nNotify¦Mail¦New email¦A third notification with a longer text that wraps onto more lines¦1h ago¦✉️',
+            starts: ['notify'],
+            lines: ['notify'],
+            render(lines) {
+                return `<div class="zf-card zf-notes">${lines.map((l) => { const p = parts(l); return `<div class="zf-note"><div class="zf-nico">${esc(p[5] || '🔔')}</div><div class="zf-nbod"><div class="zf-ntop"><span>${esc((p[1] || '').toUpperCase())}</span><span>${esc(p[4] || '')}</span></div><b>${esc(p[2] || '')}</b><div>${esc(p.slice(3, 4).join(' '))}</div></div></div>`; }).join('')}</div>`;
+            },
+        },
+        // ------------------------------------------------------------ Search results
+        {
+            id: 'search',
+            name: 'Search results',
+            example: 'Search¦search words go here\nResult¦First result title goes here¦www.example.com › page¦A short description of the first result goes here, with the words from the search shown in context.\nResult¦Second result title¦www.example.org › article¦A short description of the second result.\nResult¦Third result title¦www.example.net¦A short description of the third result.',
+            starts: ['search'],
+            lines: ['search', 'result'],
+            render(lines) {
+                let q = '';
+                const res = [];
+                for (const l of lines) { const p = parts(l); if (p[0].toLowerCase() === 'search') q = p.slice(1).join(' '); else res.push(`<div class="zf-sres"><small>${esc(p[2] || '')}</small><b>${esc(p[1] || '')}</b><p>${esc(p.slice(3).join(' '))}</p></div>`); }
+                return `<div class="zf-card zf-search"><div class="zf-sbar"><span>🔍</span><div>${esc(q)}</div></div>${res.join('')}</div>`;
+            },
+        },
+        // ------------------------------------------------------------ Livestream
+        {
+            id: 'stream',
+            name: 'Livestream chat',
+            example: 'Stream¦Streamer Name¦Stream title goes here¦1.2K watching\nChat¦viewer_one¦first chat message goes here¦#ff7ab2\nChat¦viewer_two¦second chat message goes here¦#5ec8ff\nChat¦viewer_three¦a third message, maybe with an emote 🎉¦#9bf56a',
+            starts: ['stream'],
+            lines: ['stream', 'chat'],
+            render(lines) {
+                let who = '', title = '', views = '';
+                const msgs = [];
+                for (const l of lines) { const p = parts(l); if (p[0].toLowerCase() === 'stream') [, who = '', title = '', views = ''] = p; else msgs.push(`<div class="zf-lchat"><b${/^#[0-9a-f]{3,8}$/i.test(p[3] || '') ? ` style="color:${p[3]}"` : ''}>${esc(p[1] || '')}</b> ${esc(p[2] || '')}</div>`); }
+                return `<div class="zf-card zf-stream"><div class="zf-lvid"><span class="zf-live">LIVE</span><span class="zf-lview">👁 ${esc(views)}</span></div><div class="zf-linfo"><b>${esc(who)}</b><span>${esc(title)}</span></div><div class="zf-lchatbox">${msgs.join('')}</div></div>`;
+            },
+        },
+        // ------------------------------------------------------------ Video call
+        {
+            id: 'call',
+            name: 'Video call',
+            example: 'Call¦Name Here¦12:34¦🦊\nCaption¦What the person on the call is saying appears here as a caption.\nCaption¦And another line of the conversation.',
+            starts: ['call'],
+            lines: ['call', 'caption'],
+            render(lines) {
+                let name = '', dur = '', av = '🙂';
+                const caps = [];
+                for (const l of lines) { const p = parts(l); if (p[0].toLowerCase() === 'call') [, name = '', dur = '', av = '🙂'] = p; else caps.push(`<div>${esc(p.slice(1).join(' '))}</div>`); }
+                return `<div class="zf-card zf-vcall"><div class="zf-vtop"><span>● ${esc(dur)}</span><b>${esc(name)}</b></div><div class="zf-vmain"><div class="zf-vav">${esc(av)}</div><div class="zf-vself">You</div></div><div class="zf-vcaps">${caps.join('')}</div><div class="zf-vbtns"><i>🎤</i><i>📷</i><i class="zf-vend">📞</i><i>🔊</i></div></div>`;
+            },
+        },
+        // ------------------------------------------------------------ Music player
+        {
+            id: 'music',
+            name: 'Music player',
+            example: 'Music¦Song Title Here¦Artist Name¦1:12¦3:45\nQueue¦Next Song Title¦Artist Name\nQueue¦Another Song¦Another Artist',
+            starts: ['music'],
+            lines: ['music', 'queue'],
+            render(lines) {
+                let t = '', a = '', e = '0:00', len = '3:00';
+                const q = [];
+                for (const l of lines) { const p = parts(l); if (p[0].toLowerCase() === 'music') [, t = '', a = '', e = '0:00', len = '3:00'] = p; else q.push(`<div class="zf-mq"><b>${esc(p[1] || '')}</b><span>${esc(p[2] || '')}</span></div>`); }
+                const sec = (x) => { const m = String(x).split(':').map(Number); return m.length === 2 ? m[0] * 60 + m[1] : 0; };
+                const pct = Math.max(0, Math.min(100, (sec(e) / (sec(len) || 1)) * 100));
+                return `<div class="zf-card zf-music"><div class="zf-mrow"><div class="zf-mart">♪</div><div class="zf-mt"><b>${esc(t)}</b><span>${esc(a)}</span></div></div><div class="zf-mbar"><i><b style="width:${pct}%"></b></i></div><div class="zf-mtime"><span>${esc(e)}</span><span>${esc(len)}</span></div><div class="zf-mctl"><span>⏮</span><span class="zf-mplay">⏸</span><span>⏭</span></div>${q.length ? `<div class="zf-mqueue"><small>UP NEXT</small>${q.join('')}</div>` : ''}</div>`;
+            },
+        },
+        // ------------------------------------------------------------ Dialogue box
+        {
+            id: 'dialog',
+            name: 'Dialogue box (game)',
+            example: 'Dialog¦Speaker Name¦What the character says goes here, shown in a game-style text box.\nDialog¦Another Speaker¦A reply from someone else.\nChoice¦First choice the player can pick\nChoice¦Second choice the player can pick',
+            starts: ['dialog'],
+            lines: ['dialog', 'choice'],
+            render(lines) {
+                return `<div class="zf-card zf-dlg">${lines.map((l) => { const p = parts(l); return p[0].toLowerCase() === 'dialog' ? `<div class="zf-dbox"><div class="zf-dname">${esc(p[1] || '')}</div><div class="zf-dtxt">${esc(p.slice(2).join(' '))}</div><span class="zf-dnext">▼</span></div>` : `<div class="zf-dchoice">▸ ${esc(p.slice(1).join(' '))}</div>`; }).join('')}</div>`;
+            },
+        },
+        // ------------------------------------------------------------ Letter
+        {
+            id: 'letter',
+            name: 'Handwritten letter',
+            example: 'Letter¦Dear Name,¦Mon, Sep 7th\nPara¦First paragraph of the letter goes here.\nPara¦Second paragraph of the letter goes here.\nSign¦With love, Sender',
+            starts: ['letter'],
+            lines: ['letter', 'para', 'sign'],
+            render(lines) {
+                let to = '', date = '';
+                const rows = [];
+                for (const l of lines) { const p = parts(l), k = p[0].toLowerCase(); if (k === 'letter') [, to = '', date = ''] = p; else if (k === 'sign') rows.push(`<div class="zf-lsign">${esc(p.slice(1).join(' '))}</div>`); else rows.push(`<p>${esc(p.slice(1).join(' '))}</p>`); }
+                return `<div class="zf-card zf-letter">${date ? `<div class="zf-ldate">${esc(date)}</div>` : ''}<div class="zf-lto">${esc(to)}</div>${rows.join('')}</div>`;
+            },
+        },
+        // ------------------------------------------------------------ Menu
+        {
+            id: 'menu',
+            name: 'Restaurant menu',
+            example: 'Menu¦Restaurant Name¦Tagline or opening hours\nCourse¦Starters\nDish¦First Dish Name¦6.50¦Short description of the dish goes here.\nDish¦Second Dish Name¦7.00¦Another short description.\nCourse¦Mains\nDish¦Third Dish Name¦12.00¦Description of the main dish goes here.',
+            starts: ['menu'],
+            lines: ['menu', 'course', 'dish'],
+            render(lines) {
+                let name = '', sub = '';
+                const rows = [];
+                for (const l of lines) { const p = parts(l), k = p[0].toLowerCase(); if (k === 'menu') [, name = '', sub = ''] = p; else if (k === 'course') rows.push(`<div class="zf-mcourse">${esc(p[1] || '')}</div>`); else rows.push(`<div class="zf-mdish"><div><b>${esc(p[1] || '')}</b><i></i><span>${esc(p[2] || '')}</span></div><small>${esc(p.slice(3).join(' '))}</small></div>`); }
+                return `<div class="zf-card zf-menu"><div class="zf-mname">${esc(name)}</div>${sub ? `<div class="zf-msub">${esc(sub)}</div>` : ''}${rows.join('')}</div>`;
+            },
+        },
+        // ------------------------------------------------------------ Schedule
+        {
+            id: 'schedule',
+            name: 'Schedule / timetable',
+            example: 'Schedule¦Monday Timetable\nSlot¦9:00 AM¦First class or event¦Room or place\nSlot¦11:00 AM¦Second class or event¦Room or place\nSlot¦1:00 PM¦Lunch or break¦Place\nSlot¦3:00 PM¦Third class or event¦Room or place',
+            starts: ['schedule'],
+            lines: ['schedule', 'slot'],
+            render(lines) {
+                let title = '';
+                const rows = [];
+                for (const l of lines) { const p = parts(l); if (p[0].toLowerCase() === 'schedule') title = p.slice(1).join(' '); else rows.push(`<div class="zf-slot"><span class="zf-stime">${esc(p[1] || '')}</span><div><b>${esc(p[2] || '')}</b>${p[3] ? `<small>${esc(p.slice(3).join(' '))}</small>` : ''}</div></div>`); }
+                return `<div class="zf-card zf-sched"><div class="zf-shead">${esc(title)}</div>${rows.join('')}</div>`;
+            },
+        },
+        // ------------------------------------------------------------ System alert
+        {
+            id: 'alert',
+            name: 'System alert (pop-up)',
+            example: 'Alert¦Alert Title¦The message of the alert goes here, explaining what happened or what the system wants.¦Cancel¦OK¦warn',
+            starts: ['alert'],
+            lines: ['alert'],
+            render(lines) {
+                const p = parts(lines[0]);
+                const kind = ['warn', 'error', 'info'].includes((p[5] || '').toLowerCase()) ? p[5].toLowerCase() : 'info';
+                const icon = { warn: '⚠', error: '✖', info: 'ℹ' }[kind];
+                return `<div class="zf-card zf-alert zf-al-${kind}"><div class="zf-atitle"><span>${icon}</span>${esc(p[1] || '')}</div><div class="zf-amsg">${esc(p[2] || '')}</div><div class="zf-abtns">${p[3] ? `<span>${esc(p[3])}</span>` : ''}<span class="zf-aprimary">${esc(p[4] || 'OK')}</span></div></div>`;
+            },
+        },
         // ------------------------------------------------------------ Terminal
         {
             id: 'terminal',
