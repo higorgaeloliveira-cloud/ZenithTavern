@@ -1,5 +1,5 @@
 {
-  "version": "1.6.8",
+  "version": "1.6.9",
   "history": [
     {
       "version": "0.0.1",
@@ -371,6 +371,14 @@
         "ui"
       ],
       "note": "Mara: sprite names fixed (approval, amusement, admiration)",
+      "date": "2026-10-19"
+    },
+    {
+      "version": "1.6.9",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Expressions: defaults so sprites show in chat",
       "date": "2026-10-19"
     }
   ],

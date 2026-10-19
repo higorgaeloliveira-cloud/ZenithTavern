@@ -1,0 +1,11 @@
+{
+    "display_name": "Zenith Expressions",
+    "loading_order": 998,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "author": "ZenithTavern",
+    "version": "0.1.0",
+    "homePage": "",
+    "auto_update": false
+}

@@ -352,3 +352,6 @@ The Sub-bots lorebook now holds people who are not roster characters: family, ol
 
 ## Characters use the presets too
 A compact guide (about 750 tokens) is added to every prompt so characters write presets (clipboard lists, reports, receipts, radio, texts...) when the scene calls for them, at most two per reply. Per-character suggestions live in `core/extensions/zenith-formats/hints.json` (e.g. Mirel gets the day's directives and tests as a checklist clipboard). Turn it off with `/zenith-presets off` (on again with `/zenith-presets on`).
+
+## Expressions
+Roster sprites install to `characters/<Name>/`, where SillyTavern's built-in Character Expressions reads them. `zenith-expressions` sets its defaults once (chat model as classifier, only existing sprites offered, fallback `neutral`); change them later in Extensions > Character Expressions. `/zenith-expressions reset` re-applies the defaults. Sprite file names = emotion names (`neutral.png`, `admiration.png`, ...).
