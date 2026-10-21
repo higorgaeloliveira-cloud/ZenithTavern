@@ -1,5 +1,5 @@
 {
-  "version": "1.6.10",
+  "version": "1.6.11",
   "history": [
     {
       "version": "0.0.1",
@@ -387,6 +387,14 @@
         "ui"
       ],
       "note": "Riko: long hair, teal fox-logo apron",
+      "date": "2026-10-21"
+    },
+    {
+      "version": "1.6.11",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Riko: neutral sprite",
       "date": "2026-10-21"
     }
   ],
