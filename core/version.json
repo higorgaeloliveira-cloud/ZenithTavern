@@ -1,5 +1,5 @@
 {
-  "version": "1.6.9",
+  "version": "1.6.10",
   "history": [
     {
       "version": "0.0.1",
@@ -380,7 +380,15 @@
       ],
       "note": "Expressions: defaults so sprites show in chat",
       "date": "2026-10-19"
+    },
+    {
+      "version": "1.6.10",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Riko: long hair, teal fox-logo apron",
+      "date": "2026-10-21"
     }
   ],
-  "released": "2026-10-19"
+  "released": "2026-10-21"
 }
