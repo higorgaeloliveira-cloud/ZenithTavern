@@ -108,10 +108,15 @@
         "slice of life",
         "coastal town"
       ],
-      "version": 9,
+      "version": 10,
       "card": "riko-kitsumi/card.png",
-      "sha256": "27cca167be21d5f7e845137a6334dc904064013288515eada6b6131a902e37c1",
+      "sha256": "1ade93253355c14a867bd8dbd8b532d4dbc3cce2151a3a7f566e65bc52b69a74",
       "sprites": [
+        {
+          "path": "riko-kitsumi/sprites/admiration.png",
+          "as": "admiration.png",
+          "sha256": "9ed91b15088ff63f60582bcbe0ba51b792b2c024bdaff3c0097582546184cbc6"
+        },
         {
           "path": "riko-kitsumi/sprites/neutral.png",
           "as": "neutral.png",
