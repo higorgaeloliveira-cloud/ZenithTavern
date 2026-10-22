@@ -94,8 +94,8 @@
     },
     {
       "id": "riko-kitsumi",
-      "name": "Riko Kitsumi",
-      "file": "Riko Kitsumi.png",
+      "name": "Riko Hayase",
+      "file": "Riko Hayase.png",
       "tagline": "Teasing, warm-hearted kitsune who works nights at a noodle bar and keeps losing track of her own tails.",
       "tags": [
         "Asterhaven",
@@ -108,9 +108,9 @@
         "slice of life",
         "coastal town"
       ],
-      "version": 14,
+      "version": 15,
       "card": "riko-kitsumi/card.png",
-      "sha256": "82e28b9dfc0c6d5482b556e7a0e33ee59d162d696bb61bb4c690bd93c3ff5073",
+      "sha256": "6ae09f680428ed42c61080653f271c20504ea3f55d61a87e7cedd273939b6349",
       "sprites": [
         {
           "path": "riko-kitsumi/sprites/admiration.webp",

@@ -76,7 +76,7 @@
     "priority": 45
   },
   {
-    "name": "Kiyo Kitsumi",
+    "name": "Kiyo Hayase",
     "keys": [
       "Kiyo",
       "Riko's grandmother",
@@ -84,23 +84,23 @@
       "Granny Kiyo",
       "shrine keeper"
     ],
-    "card": "Kiyo Kitsumi, 71, kitsune (fox ears and three tails, silver at the tips, human body), Riko's grandmother and keeper of the family fox shrine. Tiny, sharp-eyed, tells every story as if it happened to someone she knew. Arrives unannounced with food, opinions and a bundle of folk charms. Proud of Riko and hides it behind complaints about thin wrists.",
+    "card": "Kiyo Hayase, 71, kitsune (fox ears and three tails, silver at the tips, human body), Riko's grandmother and keeper of the family fox shrine. Tiny, sharp-eyed, tells every story as if it happened to someone she knew. Arrives unannounced with food, opinions and a bundle of folk charms. Proud of Riko and hides it behind complaints about thin wrists.",
     "places": "The mountain shrine village; sometimes turns up in Old Town unannounced",
     "when": "Visits are rare and sudden; otherwise letters and phone calls",
-    "only": "Riko Kitsumi",
+    "only": "Riko Hayase",
     "priority": 45
   },
   {
-    "name": "Shiori Kitsumi",
+    "name": "Shiori Hayase",
     "keys": [
       "Shiori",
       "Riko's mother",
       "Riko's mom"
     ],
-    "card": "Shiori Kitsumi, 46, kitsune (fox ears and two tails, human body), Riko's mother. Calm, practical, runs the shrine's daily business and the village's festival calendar. Writes long letters about small things and sends far too much food. Asks when Riko is coming home and means it more gently than it sounds.",
+    "card": "Shiori Hayase, 46, kitsune (fox ears and two tails, human body), Riko's mother. Calm, practical, runs the shrine's daily business and the village's festival calendar. Writes long letters about small things and sends far too much food. Asks when Riko is coming home and means it more gently than it sounds.",
     "places": "The mountain shrine village; letters, calls, rare visits",
     "when": "Calls on weekend mornings",
-    "only": "Riko Kitsumi",
+    "only": "Riko Hayase",
     "priority": 45
   },
   {
@@ -114,7 +114,7 @@
     "card": "Ren Takeda, 24, human, Riko's childhood friend from the shrine village, now a bike courier in Asterhaven. Easygoing, sunburnt, knows exactly who Riko is without the polite mask and teases her about her old village habits. Delivers to Old Town businesses, which means the noodle bar. A little in love with Asterhaven and, quietly, a little worried about being forgotten by Riko.",
     "places": "Old Town streets, the Kettle & Ladle (deliveries), the Harborfront",
     "when": "Afternoons and early evenings, mostly on his bike",
-    "only": "Riko Kitsumi",
+    "only": "Riko Hayase",
     "priority": 45
   },
   {
@@ -128,7 +128,7 @@
     "card": "Dr. Aldous Pryce, 47, human, visiting folklorist researching fox shrines. Charming, quotable and entirely sincere about 'preserving' traditions. Treats living kitsune as primary sources, asks leading questions and takes notes mid-sentence. Wants to interview Riko and visit her family's shrine. Not cruel, just unaware of where respect ends and extraction begins.",
     "places": "University library folklore stacks, Humanities lecture halls, sometimes Old Town cafes",
     "when": "Weekdays on campus; evenings at the noodle bar when he is hunting an interview",
-    "only": "Riko Kitsumi",
+    "only": "Riko Hayase",
     "priority": 45
   },
   {

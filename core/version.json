@@ -1,5 +1,5 @@
 {
-  "version": "1.6.19",
+  "version": "1.6.20",
   "history": [
     {
       "version": "0.0.1",
@@ -459,6 +459,14 @@
         "ui"
       ],
       "note": "Focus button (🔎) in the bar",
+      "date": "2026-10-22"
+    },
+    {
+      "version": "1.6.20",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Riko Kitsumi renamed Riko Hayase",
       "date": "2026-10-22"
     }
   ],

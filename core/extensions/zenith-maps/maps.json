@@ -32,7 +32,7 @@
         "text": "Used bookstore. Owner Ezra Quill. Closed around 7 PM.", "who": ["Mara Venn (works here)"] },
       { "id": "kettle", "name": "Kettle & Ladle Noodle Bar", "area": "old", "x": 525, "y": 360, "icon": "N",
         "text": "Eight stools, four tables, chalkboard menu. Owner Hanae Okabe. Riko rents a room above a shop on the same street.",
-        "who": ["Riko Kitsumi (evenings)", "Hanae Okabe"] },
+        "who": ["Riko Hayase (evenings)", "Hanae Okabe"] },
       { "id": "saltlantern", "name": "The Salt Lantern", "area": "hf", "x": 330, "y": 495, "icon": "L",
         "text": "Harbor bar with lanterns and a long counter. Open late afternoon to about 2 AM. Cassian lives in the flat above.",
         "who": ["Cassian Mercer"] },

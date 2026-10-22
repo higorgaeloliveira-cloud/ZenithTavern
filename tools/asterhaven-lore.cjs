@@ -134,7 +134,7 @@ add(P4, 'Tideglass Books', ['Tideglass Books', 'Tideglass', 'used bookstore', 'u
 An independent used bookstore in Old Town: narrow, dusty, floor-to-ceiling shelves, ladders, handwritten price tags, a back room with a kettle and a sleeping armchair. The owner, Ezra Quill (68, human), knows a rumour about every old book. Mara Venn works here part-time; shifts are not fixed, so afternoons and weekends are plausible. Closed by about 7 PM.`);
 
 add(P4, 'Kettle & Ladle Noodle Bar', ['Kettle & Ladle', 'Kettle and Ladle', 'noodle bar', 'noodle shop', 'ramen shop', 'ramen bar', 'Hanae Okabe', 'Okabe'], 30, `
-A small family-run noodle shop in Old Town: eight stools at the counter, four small tables, steamed windows, a lucky cat by the register and a menu written on a chalkboard. Owner and head cook Hanae Okabe (63, human) runs the kitchen; Riko Kitsumi works the floor and prep in the evenings, roughly 5 PM to close, and eats leftovers after hours. Riko rents a small room in the building above a shop on the same street. The bar fills with students at dinner time and with night-shift workers after ten.`);
+A small family-run noodle shop in Old Town: eight stools at the counter, four small tables, steamed windows, a lucky cat by the register and a menu written on a chalkboard. Owner and head cook Hanae Okabe (63, human) runs the kitchen; Riko Hayase works the floor and prep in the evenings, roughly 5 PM to close, and eats leftovers after hours. Riko rents a small room in the building above a shop on the same street. The bar fills with students at dinner time and with night-shift workers after ten.`);
 
 add(P4, 'The Salt Lantern', ['Salt Lantern', 'The Salt Lantern', 'harbor bar', 'harbour bar', 'bar on the harborfront', 'dockside bar', 'Cassian'], 30, `
 A harbor bar on the Harborfront: dark wood, a long counter, lanterns hanging from the beams, brass fittings, shelves of bottles, and a window onto the boats. Owner and head bartender Cassian Mercer (29, wolf demi-human) lives in the small flat above. Opens in the late afternoon and closes around 2 AM most days; dockworkers, students, couples and insomniacs mix. Calm, a little salty, and very well run.`);
@@ -231,7 +231,7 @@ Established residents (ages, places, usual hours); full profiles are in the Char
 - June Halloran, 21, cat, Astronomy and Physics (3rd): Marlowe Hall room 114; WAST radio 11 PM to 2 AM weeknights; observatory dome.
 - Mara Venn, 21, human, Environmental Science (3rd): shared student apartment; part-time at Tideglass Books (afternoons and weekends).
 - Teodor Lindqvist, 21, fallow deer, Botany and Horticulture (3rd): plant-filled apartment; University Glasshouse mornings and late afternoons.
-- Riko Kitsumi, 22, two-tailed kitsune, Folklore and Cultural Studies (4th): room above a shop in Old Town; Kettle & Ladle from about 5 PM to close.
+- Riko Hayase, 22, two-tailed kitsune, Folklore and Cultural Studies (4th): room above a shop in Old Town; Kettle & Ladle from about 5 PM to close.
 - Delphine Ashcroft, 22, lop-eared rabbit, Economics and Political Science (4th): Student Union president and Lantern Society founder; penthouse on the Harborfront; meetings afternoons and evenings.
 - Odette Marchetti, 24, golden retriever, Nursing (4th): small flat in the Residential Neighborhoods; Asterhaven General ED, long daytime shifts.
 - Cassian Mercer, 29, wolf: owner of The Salt Lantern; flat above the bar; open late afternoon to about 2 AM.
