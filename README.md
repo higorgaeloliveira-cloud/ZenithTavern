@@ -355,3 +355,6 @@ A compact guide (about 750 tokens) is added to every prompt so characters write 
 
 ## Expressions
 Roster sprites install to `characters/<Name>/`, where SillyTavern's built-in Character Expressions reads them. `zenith-expressions` sets its defaults once (chat model as classifier, only existing sprites offered, fallback `neutral`); change them later in Extensions > Character Expressions. `/zenith-expressions reset` re-applies the defaults. Sprite file names = emotion names (`neutral.png`, `admiration.png`, ...).
+
+## 🔎 Focus button
+Button in the `!` bar. Hides the chat for 3.5 s and shows only the character's current expression full screen (tap to close early). Uses the Expressions picture on screen, or the character's avatar if there is none; the screen takes the picture's corner colour so a solid-colour background blends in.

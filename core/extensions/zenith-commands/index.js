@@ -369,7 +369,7 @@ const COMMANDS = {
     state: { icon: 'fa-face-smile', title: '!state', run: () => cmdState() },
     cast: { icon: 'fa-user-plus', title: '!Name (call a character into the scene)', run: (a) => cmdCast(a) },
 };
-const EXTRA_BUTTONS = { formats: { icon: 'fa-layer-group', title: 'Presets (click one to copy it)', run: () => cmdFormats() } };
+const EXTRA_BUTTONS = { focus: { emoji: '🔎', title: 'Focus: hide the chat for 3.5 seconds and show only the character', run: () => cmdFocus() }, formats: { icon: 'fa-layer-group', title: 'Presets (click one to copy it)', run: () => cmdFormats() } };
 
 /** Pop-up with every text format: click one to copy it to the clipboard. */
 async function copyText(text) {
@@ -392,6 +392,38 @@ function cmdFormats() {
     });
 }
 
+/** 🔎 Focus: the chat is hidden for 3.5 s and only the character's current expression fills the screen (tap to close early). */
+const FOCUS_MS = 3500;
+function currentSprite() {
+    const imgs = [...document.querySelectorAll('#expression-image, #expression-wrapper img, .expression-holder img')]
+        .filter((i) => i.src && !/\/img\/(?:default-expressions|ai4|logo)/.test(i.src) && i.naturalWidth > 0 && i.offsetParent !== null);
+    if (imgs.length) return imgs[imgs.length - 1].src;
+    try { const c = SillyTavern.getContext(); const a = c.characters?.[c.characterId]?.avatar; if (a) return `/characters/${encodeURIComponent(a)}`; } catch { /* none */ }
+    return '';
+}
+function cmdFocus() {
+    if (document.getElementById('zc-focus')) return;
+    const src = currentSprite();
+    if (!src) { try { toastr.info('No character picture to show here.'); } catch { /* ignore */ } return; }
+    const img = h('img', { class: 'zc-focus-img', alt: '' });
+    const ov = h('div', { id: 'zc-focus', title: 'Tap to close' }, img);
+    let done = false;
+    const close = () => { if (done) return; done = true; ov.classList.remove('zc-on'); setTimeout(() => ov.remove(), 260); };
+    ov.addEventListener('click', close);
+    img.addEventListener('load', () => {
+        try { // blend the screen with the picture's own background colour
+            const c = document.createElement('canvas'); c.width = c.height = 1;
+            const x = c.getContext('2d', { willReadFrequently: true });
+            x.drawImage(img, 0, 0, 1, 1); const d = x.getImageData(0, 0, 1, 1).data;
+            ov.style.background = `rgb(${d[0]},${d[1]},${d[2]})`;
+        } catch { /* cross-origin: keep the dark default */ }
+    });
+    img.src = src;
+    document.body.append(ov);
+    requestAnimationFrame(() => ov.classList.add('zc-on'));
+    setTimeout(close, FOCUS_MS);
+}
+
 const TYPED = new RegExp(`^\\s*!(${Object.keys(COMMANDS).join('|')})(?![\\w-])\\s*(.*)$`, 'is');
 
 function refreshButtons() {
@@ -410,7 +442,7 @@ function mountButtons() {
     for (const [id, c] of Object.entries({ ...COMMANDS, ...EXTRA_BUTTONS })) {
         if (bar.querySelector(`[data-zc="${id}"]`)) continue;
         const b = h('button', { type: 'button', class: 'zph-fab zc-fab', 'data-zc': id, title: c.title, onclick: () => c.run() });
-        b.innerHTML = `<i class="fa-solid ${c.icon}"></i>`;
+        if (c.emoji) b.textContent = c.emoji; else b.innerHTML = `<i class="fa-solid ${c.icon}"></i>`;
         bar.append(b);
     }
     refreshButtons();

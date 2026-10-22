@@ -1,5 +1,5 @@
 {
-  "version": "1.6.18",
+  "version": "1.6.19",
   "history": [
     {
       "version": "0.0.1",
@@ -451,6 +451,14 @@
         "ui"
       ],
       "note": "Riko: anger sprite (full 28)",
+      "date": "2026-10-22"
+    },
+    {
+      "version": "1.6.19",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Focus button (🔎) in the bar",
       "date": "2026-10-22"
     }
   ],

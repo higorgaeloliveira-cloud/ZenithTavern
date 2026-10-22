@@ -48,3 +48,8 @@
 .zc-fmt strong { display: block; margin-bottom: 8px; }
 .zc-prev { pointer-events: none; margin-bottom: 6px; } .zc-prev .zf-card { max-width: 100%; margin: 0; }
 .zc-modal:has(.zc-formats) { width: min(560px, 100%); }
+
+.zc-fab { font-size: 16px; line-height: 1; }
+#zc-focus { position: fixed; inset: 0; z-index: 99999; background: #0b0b0e; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .25s ease; cursor: pointer; }
+#zc-focus.zc-on { opacity: 1; }
+#zc-focus .zc-focus-img { height: 100%; width: 100%; max-height: 100dvh; object-fit: contain; }
