@@ -1,5 +1,5 @@
 {
-  "version": "1.6.16",
+  "version": "1.6.17",
   "history": [
     {
       "version": "0.0.1",
@@ -435,6 +435,14 @@
         "ui"
       ],
       "note": "Riko: remaining 15 expression sprites (full set)",
+      "date": "2026-10-22"
+    },
+    {
+      "version": "1.6.17",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Sprites shrunk to webp (same look, ~8x smaller)",
       "date": "2026-10-22"
     }
   ],
