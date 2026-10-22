@@ -1,5 +1,5 @@
 {
-  "version": "1.6.14",
+  "version": "1.6.15",
   "history": [
     {
       "version": "0.0.1",
@@ -420,7 +420,15 @@
       ],
       "note": "Riko: admiration sprite",
       "date": "2026-10-21"
+    },
+    {
+      "version": "1.6.15",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Riko: 10 expression sprites",
+      "date": "2026-10-22"
     }
   ],
-  "released": "2026-10-21"
+  "released": "2026-10-22"
 }

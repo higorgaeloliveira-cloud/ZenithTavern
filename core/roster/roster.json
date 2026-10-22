@@ -108,9 +108,9 @@
         "slice of life",
         "coastal town"
       ],
-      "version": 10,
+      "version": 11,
       "card": "riko-kitsumi/card.png",
-      "sha256": "1ade93253355c14a867bd8dbd8b532d4dbc3cce2151a3a7f566e65bc52b69a74",
+      "sha256": "5aa53dab18de67034089874f873653d988f39a5d0d5f94e3250923ac2cef3901",
       "sprites": [
         {
           "path": "riko-kitsumi/sprites/admiration.png",
@@ -118,9 +118,59 @@
           "sha256": "9ed91b15088ff63f60582bcbe0ba51b792b2c024bdaff3c0097582546184cbc6"
         },
         {
+          "path": "riko-kitsumi/sprites/joy.png",
+          "as": "joy.png",
+          "sha256": "9d98f0c44cab205efead18762d394d091d1fdf07527d6b12a0b428de0187a341"
+        },
+        {
+          "path": "riko-kitsumi/sprites/love.png",
+          "as": "love.png",
+          "sha256": "4ccd3e184e195c6179e9596556e2c82eef96717b71fb96063ebc77bbc4a94973"
+        },
+        {
+          "path": "riko-kitsumi/sprites/nervousness.png",
+          "as": "nervousness.png",
+          "sha256": "0aae3eb428748db398e2844217c9a591aac8fb8f2b1b79c513430caa2c6ec9ac"
+        },
+        {
           "path": "riko-kitsumi/sprites/neutral.png",
           "as": "neutral.png",
           "sha256": "3a1be97b6386693912edceb1f7f879b06c747e3c3d2cca7b64c7232082be9123"
+        },
+        {
+          "path": "riko-kitsumi/sprites/optimism.png",
+          "as": "optimism.png",
+          "sha256": "595f7298e6ac3637c7f6d10e218908be9eba08fb6aaff0a8cd70b9828ca6983d"
+        },
+        {
+          "path": "riko-kitsumi/sprites/pride.png",
+          "as": "pride.png",
+          "sha256": "79de07fc3bfc2c4077b6da231c97548220f9ecaea806b2c3beed192df7322f20"
+        },
+        {
+          "path": "riko-kitsumi/sprites/realization.png",
+          "as": "realization.png",
+          "sha256": "178c75a7617eac9bce18301bbd96774b0e648ef24665e63870c9f589684feaec"
+        },
+        {
+          "path": "riko-kitsumi/sprites/relief.png",
+          "as": "relief.png",
+          "sha256": "7c4e446700895b38b53f72f43231c350438bd46467a8c8b702cd7485d6cb5a4d"
+        },
+        {
+          "path": "riko-kitsumi/sprites/remorse.png",
+          "as": "remorse.png",
+          "sha256": "d1db454983b8e9916e374feb3f2b2b400526d1391f7a75e2c7a32ed16a4039fb"
+        },
+        {
+          "path": "riko-kitsumi/sprites/sadness.png",
+          "as": "sadness.png",
+          "sha256": "d23ac838f78cd9c574ab39ce0a6bab6525aa459c3b44a2864b3f2b5f9f66d66a"
+        },
+        {
+          "path": "riko-kitsumi/sprites/surprise.png",
+          "as": "surprise.png",
+          "sha256": "9b3e71805cafc08446eba86e8eb8542abca7790f86106d6a3fb926b6b5c08da9"
         }
       ],
       "images": [
