@@ -108,14 +108,89 @@
         "slice of life",
         "coastal town"
       ],
-      "version": 11,
+      "version": 12,
       "card": "riko-kitsumi/card.png",
-      "sha256": "5aa53dab18de67034089874f873653d988f39a5d0d5f94e3250923ac2cef3901",
+      "sha256": "4d18db90f94d846e27472d387ae1fffd317037f34e14e83f2cbad8eceab904e1",
       "sprites": [
         {
           "path": "riko-kitsumi/sprites/admiration.png",
           "as": "admiration.png",
           "sha256": "9ed91b15088ff63f60582bcbe0ba51b792b2c024bdaff3c0097582546184cbc6"
+        },
+        {
+          "path": "riko-kitsumi/sprites/amusement.png",
+          "as": "amusement.png",
+          "sha256": "b02da6dcbe7a299e28734db79c6a6583c5477a69a835938cee5b96dac3bf0eec"
+        },
+        {
+          "path": "riko-kitsumi/sprites/annoyance.png",
+          "as": "annoyance.png",
+          "sha256": "cd6a4f96bdb4b7033132e1e42c0b9145af99fd3b294618e1f31861dc59e735cb"
+        },
+        {
+          "path": "riko-kitsumi/sprites/approval.png",
+          "as": "approval.png",
+          "sha256": "1d63f41db99573438531651feb9eea4c3f1fb425381eec65190f02255a26d875"
+        },
+        {
+          "path": "riko-kitsumi/sprites/caring.png",
+          "as": "caring.png",
+          "sha256": "18954939ad66a4927cad7039b905d32579b6f47bdb1dfe7f16dfc0baa696e2b8"
+        },
+        {
+          "path": "riko-kitsumi/sprites/confusion.png",
+          "as": "confusion.png",
+          "sha256": "0a626f361bffa14b988c33ccf6648751db53f2916d3e470c19f8cc60e27622e2"
+        },
+        {
+          "path": "riko-kitsumi/sprites/curiosity.png",
+          "as": "curiosity.png",
+          "sha256": "db64a5960909d87c7dc941c13a5818d864d1dd8ece0239959f75236f9fad5456"
+        },
+        {
+          "path": "riko-kitsumi/sprites/desire.png",
+          "as": "desire.png",
+          "sha256": "827e0e1120243d18a4d5ed1823485919ffd152588b9a0cb0940d1cd727af996d"
+        },
+        {
+          "path": "riko-kitsumi/sprites/disappointment.png",
+          "as": "disappointment.png",
+          "sha256": "df8abec9573f3cd1b01f313d64b656feeb6d08f2ebe8fed31707c10f9bc8bf21"
+        },
+        {
+          "path": "riko-kitsumi/sprites/disapproval.png",
+          "as": "disapproval.png",
+          "sha256": "d93aac9bb55494d30a69669026b71612711cf814f93e61081564f58cfa9ad5a7"
+        },
+        {
+          "path": "riko-kitsumi/sprites/disgust.png",
+          "as": "disgust.png",
+          "sha256": "baff2799a6fcc4fabcfe80662165a8c572eb7dc23be4868a03a14eb4907fa9eb"
+        },
+        {
+          "path": "riko-kitsumi/sprites/embarrassment.png",
+          "as": "embarrassment.png",
+          "sha256": "89c03ca003eb5ca81d87d316c745d825c7d58a99702bc6921558e704d4884b5b"
+        },
+        {
+          "path": "riko-kitsumi/sprites/excitement.png",
+          "as": "excitement.png",
+          "sha256": "3d55777b975c97f61a4968f1ebd229e34ee86ac0bfeb5ba188dad1f2a0c17ea4"
+        },
+        {
+          "path": "riko-kitsumi/sprites/fear.png",
+          "as": "fear.png",
+          "sha256": "359dfcd6bed36f4b87a4894984df4b9adbeafe476a1547cfc4e83c35ebafd9b5"
+        },
+        {
+          "path": "riko-kitsumi/sprites/gratitude.png",
+          "as": "gratitude.png",
+          "sha256": "b96450a840d5fdd25871243a7a37a83e38f0256e06870eeeed408ac46100eba6"
+        },
+        {
+          "path": "riko-kitsumi/sprites/grief.png",
+          "as": "grief.png",
+          "sha256": "ca8e0820ecdbfcfac37eb72b37714bc643b504d44ad37f08b5d838c199491f46"
         },
         {
           "path": "riko-kitsumi/sprites/joy.png",
