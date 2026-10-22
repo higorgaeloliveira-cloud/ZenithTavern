@@ -1,5 +1,5 @@
 {
-  "version": "1.6.17",
+  "version": "1.6.18",
   "history": [
     {
       "version": "0.0.1",
@@ -443,6 +443,14 @@
         "ui"
       ],
       "note": "Sprites shrunk to webp (same look, ~8x smaller)",
+      "date": "2026-10-22"
+    },
+    {
+      "version": "1.6.18",
+      "kinds": [
+        "ui"
+      ],
+      "note": "Riko: anger sprite (full 28)",
       "date": "2026-10-22"
     }
   ],
