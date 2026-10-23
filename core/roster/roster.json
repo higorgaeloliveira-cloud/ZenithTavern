@@ -108,149 +108,149 @@
         "slice of life",
         "coastal town"
       ],
-      "version": 15,
+      "version": 16,
       "card": "riko-kitsumi/card.png",
-      "sha256": "6ae09f680428ed42c61080653f271c20504ea3f55d61a87e7cedd273939b6349",
+      "sha256": "37edf871d97fd2f0029f520f283be757ee9db70b27057dcff1628db8423e7be7",
       "sprites": [
         {
           "path": "riko-kitsumi/sprites/admiration.webp",
           "as": "admiration.webp",
-          "sha256": "e9e203fe6d00b8e9325135de8bf51360776f6bff33bc289d12e08f4e3870136c"
+          "sha256": "3898ced353e4fd7f0400d3e87a6e662d865737bcd52be87ea140a9e7c8a31507"
         },
         {
           "path": "riko-kitsumi/sprites/amusement.webp",
           "as": "amusement.webp",
-          "sha256": "bf752903c283f549fbf181eac4dcb013e864e08ee4bcdf64ecc8f0e59fd62f02"
+          "sha256": "0a8c1010ebb7ed51417b17e41f56aa35dc3bbc497e21855313dd78d3c26aecbf"
         },
         {
           "path": "riko-kitsumi/sprites/anger.webp",
           "as": "anger.webp",
-          "sha256": "cb77aaa2d422d3e76383a34eaab8d6213e5fb94efde37af4fd3129f8f91967e7"
+          "sha256": "035ba318525049554c7a20299b630f6bd8a22317254b39e9ba35699b806096e2"
         },
         {
           "path": "riko-kitsumi/sprites/annoyance.webp",
           "as": "annoyance.webp",
-          "sha256": "20a6ad6fd9dbece03ecd949523d7c0639519ae0ff42f26d39a43b53150e4b959"
+          "sha256": "bffd072f9c49b21910d5d11bdf0df5d99d7209ff92f08201dd51e946682f457a"
         },
         {
           "path": "riko-kitsumi/sprites/approval.webp",
           "as": "approval.webp",
-          "sha256": "3a0c5a2dfeb650dcbd78939225465d8d7746f55c078d0b69da368a1bf159f2c4"
+          "sha256": "2cb197a86acd46c208594b4e27561d41d9b89dd69575f46fce6d6db8e2b70213"
         },
         {
           "path": "riko-kitsumi/sprites/caring.webp",
           "as": "caring.webp",
-          "sha256": "dc53ad2880009978d9ecb47a1d52d394d962cf857e216fc3faa8f1223e338e61"
+          "sha256": "9f582e3399f5fcd2382b55508037cc5c615841515ec8036a78c196a31a2175af"
         },
         {
           "path": "riko-kitsumi/sprites/confusion.webp",
           "as": "confusion.webp",
-          "sha256": "d8e25ca590cf16819774109d38fc87d8f75bd9361b4e2f1dd56576cd0cc38c08"
+          "sha256": "e05d94c720a0572f4cfb0ddcb04bbfdbe99e49f84f94f67e7abc0f2cf36d3ab9"
         },
         {
           "path": "riko-kitsumi/sprites/curiosity.webp",
           "as": "curiosity.webp",
-          "sha256": "24a13576360bdf146823159b89a1267b4e5c6087b44139a0f24c6f643b89b0f6"
+          "sha256": "628e9c2ff693166720fefe49cf2dc69071d7b1601043635975cfb69dc4563bf1"
         },
         {
           "path": "riko-kitsumi/sprites/desire.webp",
           "as": "desire.webp",
-          "sha256": "5e0bdc9a1322e1f983a07fc2c4f398152bd2316193cd9061c0a94d6b4d97c32b"
+          "sha256": "e7966d430b45cd50163d60bbde99400f176220c4e234d745ed295e4bd17055a9"
         },
         {
           "path": "riko-kitsumi/sprites/disappointment.webp",
           "as": "disappointment.webp",
-          "sha256": "bea95fbf60b0b26cd60a7da4d90d6d92aeea5260a549789cfde7c21891d87564"
+          "sha256": "a56008365fb50883bc2ef5669bc98270f7d54d2329b520f736e06b18cd847687"
         },
         {
           "path": "riko-kitsumi/sprites/disapproval.webp",
           "as": "disapproval.webp",
-          "sha256": "cd8bb9ee7ac77b0f889225dc9f032e6ef6ee6f635a93014be1f05e2a785895a4"
+          "sha256": "55571cc8b012c29ccdfbdf7665c6d9939c9e6be41b350a14f46974a0d3f9816f"
         },
         {
           "path": "riko-kitsumi/sprites/disgust.webp",
           "as": "disgust.webp",
-          "sha256": "f2770da5fca70498fe85f508e23b1de6400667e1f2f3a534ceaf969eb4e467b5"
+          "sha256": "0d9741dcd1db7f5df6afea36f41797c7a8b120ea59d8e1852d60006357aa1d3f"
         },
         {
           "path": "riko-kitsumi/sprites/embarrassment.webp",
           "as": "embarrassment.webp",
-          "sha256": "ca52eb089ea5937e37cbbed25688c79990c380888b65a2a202edf31350a4cc70"
+          "sha256": "83060f7df7d649e79ed16b72ba021525005981bc67b3fc0088a581c1fe8e5b5a"
         },
         {
           "path": "riko-kitsumi/sprites/excitement.webp",
           "as": "excitement.webp",
-          "sha256": "2571c46dd52f61ab6c957c74af36b5ddb3dd12f554bb23dbf861c4d86c02a0e4"
+          "sha256": "32ed3f3ef787a1cf686b42c02e6813307c49bbc5df861dc5c687d14c1d5d4f65"
         },
         {
           "path": "riko-kitsumi/sprites/fear.webp",
           "as": "fear.webp",
-          "sha256": "e3f0496c4ca759f5978db1cdef5a28d8776660385aee1898bb5706298ce022e8"
+          "sha256": "f465123c89ab85b63770569990ead66429e164aba823d2f544b921502b11de2f"
         },
         {
           "path": "riko-kitsumi/sprites/gratitude.webp",
           "as": "gratitude.webp",
-          "sha256": "db1049fa0b718cd41f4630103da223dff57c0fe4589549bf94d6bd3567894156"
+          "sha256": "460af2db896cf49091c03f42ecab1639fb093eb956c1170ce080aeec679a5b1d"
         },
         {
           "path": "riko-kitsumi/sprites/grief.webp",
           "as": "grief.webp",
-          "sha256": "bd692a8123151008369ba9ed70c90938cb77c57bcaf52634d0199426340fdef3"
+          "sha256": "7944fda07678a57658b3a3361645995b92e4e5b45a65c19ce3829ee1486dceb1"
         },
         {
           "path": "riko-kitsumi/sprites/joy.webp",
           "as": "joy.webp",
-          "sha256": "ee674defa0e3642555b857033925b46a6000403981c9ec5e24f773bd56038360"
+          "sha256": "dbf5705c9ebf04362b98c823e952103266f5e0d9fa0c345bace99fe2560701f2"
         },
         {
           "path": "riko-kitsumi/sprites/love.webp",
           "as": "love.webp",
-          "sha256": "5156d662402683a479e0f343b42292b24333e570ff921e98dd3d8cfb0a0e908b"
+          "sha256": "c82f2ab7a1faf7ec40cbe5e1dcaffbd0f479ffda5e8747c92cbbb18cc2747fec"
         },
         {
           "path": "riko-kitsumi/sprites/nervousness.webp",
           "as": "nervousness.webp",
-          "sha256": "32897aaf41007c9fecbc36ef8ab554b6afb7d31dc4c849e56a7be20ee0b06ba6"
+          "sha256": "c36a708aa2a8443dac28b39ab1bcb4aa9fbedf24bbc7e4beabc1a9c7aec66ee1"
         },
         {
           "path": "riko-kitsumi/sprites/neutral.webp",
           "as": "neutral.webp",
-          "sha256": "7486a1be52a23cfe6a4671eab55377b42f95373f4ba251bf91bf01bf2d887fcc"
+          "sha256": "dd2487cc02d582407571e2f8610d4ab0bbc9e4d46fb955179c4aed5c9fc5483b"
         },
         {
           "path": "riko-kitsumi/sprites/optimism.webp",
           "as": "optimism.webp",
-          "sha256": "f7cabaf5fc779df190c0c207836af02e9ca5a2454f04880c782c29f77cec92af"
+          "sha256": "6ae6ffe214db25eb252af0e60a4b297e7d13ef0f297ef187acd1ca720a73dc4d"
         },
         {
           "path": "riko-kitsumi/sprites/pride.webp",
           "as": "pride.webp",
-          "sha256": "a9969d02d3e5ab097496ac5ce717f135d5297a7be7b0f8c6c836f06bdf58bb81"
+          "sha256": "e809f21d2005a474a35ab4f4aa5c903f2c584c34ddcdaf52379a1c84af4326ee"
         },
         {
           "path": "riko-kitsumi/sprites/realization.webp",
           "as": "realization.webp",
-          "sha256": "e792663716a3cb577dc62e743fbfe913ac2d066375b8526cb912f207e2ae3952"
+          "sha256": "da49d0d9988b022b47c4a7ce1e4430d69e08f0d43717600811394fb14de94d4a"
         },
         {
           "path": "riko-kitsumi/sprites/relief.webp",
           "as": "relief.webp",
-          "sha256": "c3275306baf53fd43fb146c659e3ddbd2d9e58b5fc3ac12d0ab8444951b785f7"
+          "sha256": "bb4e4f16696e92c93d0ad480633096df308743199731754c655a30c696ae09ed"
         },
         {
           "path": "riko-kitsumi/sprites/remorse.webp",
           "as": "remorse.webp",
-          "sha256": "a1488efbd6665f640bb5c930c111bf164dd5929c1cbb3c52bf9fba40078dbf04"
+          "sha256": "47e0c0f2dedfab570cbb2acaa8196019562cf312c9b21128a59c6a59f3e4755f"
         },
         {
           "path": "riko-kitsumi/sprites/sadness.webp",
           "as": "sadness.webp",
-          "sha256": "e0f1fd8979f742712c805c6a17d1939f56f5b77b892c50a673dac99399c1e206"
+          "sha256": "da86f5776e0d8a59b6f0fdcdadfdd19f48b7a9be6400c16dbe2b2512704b1512"
         },
         {
           "path": "riko-kitsumi/sprites/surprise.webp",
           "as": "surprise.webp",
-          "sha256": "639be21f6eff966aa0a00e0644a26693d2dbebcee534b596f42e7d4c53e48596"
+          "sha256": "7cd65044a5c86743a59d91f0966a650bda0911c366252493772dfaf277bd7438"
         }
       ],
       "images": [
