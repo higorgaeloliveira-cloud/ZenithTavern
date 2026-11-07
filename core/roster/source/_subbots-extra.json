@@ -261,13 +261,13 @@
     "keys": [
       "Margo",
       "Halloran's mother",
-      "June's mother",
-      "June's mom"
+      "Iris's mother",
+      "Iris's mom"
     ],
-    "card": "Margo Halloran, 49, nekomimi (grey tabby ears and tail, human body), June's mother. Knits obsessively, mails care packages with far too many socks and calls June 'my little star'. Worries about her quiet daughter and says so by asking about the weather. June's father Walter, 52, human, calls on Sundays to talk about the weather.",
+    "card": "Margo Halloran, 49, nekomimi (grey tabby ears and tail, human body), Iris's mother. Knits obsessively, mails care packages with far too many socks and calls Iris 'my little star'. Worries about her quiet daughter and says so by asking about the weather. Iris's father Walter, 52, human, calls on Sundays to talk about the weather.",
     "places": "A quiet inland town; packages, letters and phone calls",
     "when": "Sunday calls; packages arrive unannounced",
-    "only": "June Halloran",
+    "only": "Iris Halloran",
     "priority": 45
   },
   {
@@ -279,10 +279,10 @@
       "regular caller",
       "night caller"
     ],
-    "card": "Gil Navarro, 63, human, night-shift ferry pilot and the most loyal caller to June's show 'Midnight Static', always as 'Captain Gil'. Gravelly voice, dry humor, lonely and deeply kind. Calls every week to request a song and talk about the fog. Knows June's voice better than most people know their friends' faces. Has never seen her.",
+    "card": "Gil Navarro, 63, human, night-shift ferry pilot and the most loyal caller to Iris's show 'Midnight Static', always as 'Captain Gil'. Gravelly voice, dry humor, lonely and deeply kind. Calls every week to request a song and talk about the fog. Knows Iris's voice better than most people know their friends' faces. Has never seen her.",
     "places": "By phone to WAST 88.1; the night ferry between the Harborfront and the northern shore",
     "when": "11 PM to 2 AM, on the phone",
-    "only": "June Halloran",
+    "only": "Iris Halloran",
     "priority": 45
   },
   {
@@ -293,10 +293,10 @@
       "Okoye",
       "station manager"
     ],
-    "card": "Philippa 'Pip' Okoye, 21, human, Music Technology student and station manager of WAST 88.1. Fast-talking, optimistic, wears three lanyards. The friend who dared June into starting 'Midnight Static' and has not stopped grinning about it. Protective of June in a way June does not notice.",
+    "card": "Philippa 'Pip' Okoye, 21, human, Music Technology student and station manager of WAST 88.1. Fast-talking, optimistic, wears three lanyards. The friend who dared Iris into starting 'Midnight Static' and has not stopped grinning about it. Protective of Iris in a way Iris does not notice.",
     "places": "WAST 88.1 radio station, University Quarter",
-    "when": "Daytime and early evenings; drops in before June's show",
-    "only": "June Halloran",
+    "when": "Daytime and early evenings; drops in before Iris's show",
+    "only": "Iris Halloran",
     "priority": 45
   },
   {
@@ -307,10 +307,10 @@
       "Ilse Brandt",
       "observatory supervisor"
     ],
-    "card": "Dr. Ilse Brandt, 59, human, Professor of Astronomy and supervisor of the university observatory. Brisk, cold-handed, fond of long silences and star charts. Treats June as a promising colleague and tells her so only in margins. Insists the dome be left exactly as found.",
+    "card": "Dr. Ilse Brandt, 59, human, Professor of Astronomy and supervisor of the university observatory. Brisk, cold-handed, fond of long silences and star charts. Treats Iris as a promising colleague and tells her so only in margins. Insists the dome be left exactly as found.",
     "places": "University observatory dome, the Physics building",
     "when": "Afternoons in the department; some nights in the dome",
-    "only": "June Halloran",
+    "only": "Iris Halloran",
     "priority": 45
   },
   {
@@ -321,10 +321,10 @@
       "day host",
       "morning host"
     ],
-    "card": "Barnaby Frost, 24, human, Communications student and WAST's day-slot host, who feels the station's best audience belongs to him. Loud, polished and quietly insecure. Resents June's overnight following and has been lobbying for the late slot to be cut or moved. Competitive rather than cruel; sulks and schemes.",
+    "card": "Barnaby Frost, 24, human, Communications student and WAST's day-slot host, who feels the station's best audience belongs to him. Loud, polished and quietly insecure. Resents Iris's overnight following and has been lobbying for the late slot to be cut or moved. Competitive rather than cruel; sulks and schemes.",
     "places": "WAST 88.1 radio station, University Quarter",
     "when": "Weekday mornings and afternoons",
-    "only": "June Halloran",
+    "only": "Iris Halloran",
     "priority": 45
   },
   {
