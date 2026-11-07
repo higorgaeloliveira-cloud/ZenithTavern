@@ -17,7 +17,7 @@
     "places": [
       { "id": "marlowe", "name": "Marlowe Hall", "area": "res", "x": 150, "y": 215, "icon": "H", "dorm": "marlowe",
         "text": "Main dorm: five floors, basement laundry, common room on the ground floor. {{user}} lives in room 218 with Juno.",
-        "who": ["You (218)", "Juno Tidewell (218)", "June Halloran (114)"] },
+        "who": ["You (218)", "Juno Tidewell (218)", "Iris Halloran (114)"] },
       { "id": "b2", "name": "Dorm Building 2", "area": "res", "x": 95, "y": 320, "icon": "2", "dorm": "b2",
         "text": "Second residence block (name to be decided).", "who": [] },
       { "id": "b3", "name": "Dorm Building 3", "area": "res", "x": 235, "y": 335, "icon": "3", "dorm": "b3",
@@ -27,7 +27,7 @@
         "who": ["Mara Venn", "Teodor Lindqvist"] },
       { "id": "campus", "name": "Asterhaven University (campus)", "area": "uq", "x": 475, "y": 150, "icon": "U", "campus": true,
         "text": "Lecture halls, labs, library, Student Union, glasshouse, pool, radio. Ten minutes on foot from Marlowe Hall.",
-        "who": ["Marigold Fenwick", "Delphine Ashcroft", "June Halloran", "Teodor Lindqvist", "Juno Tidewell"] },
+        "who": ["Marigold Fenwick", "Delphine Ashcroft", "Iris Halloran", "Teodor Lindqvist", "Juno Tidewell"] },
       { "id": "tideglass", "name": "Tideglass Books", "area": "old", "x": 395, "y": 350, "icon": "B",
         "text": "Used bookstore. Owner Ezra Quill. Closed around 7 PM.", "who": ["Mara Venn (works here)"] },
       { "id": "kettle", "name": "Kettle & Ladle Noodle Bar", "area": "old", "x": 525, "y": 360, "icon": "N",
@@ -67,13 +67,13 @@
       { "id": "library", "name": "University Library", "x": 390, "y": 70, "w": 220, "h": 100, "type": "library",
         "text": "Reading rooms, silent floors, rare-books room, folklore stacks. Open late in exam periods.", "who": [] },
       { "id": "physics", "name": "Physics Building & Observatory Dome", "x": 650, "y": 70, "w": 170, "h": 100, "type": "science",
-        "text": "Dome on the roof (key from the physics department). Open nights on clear Fridays.", "who": ["June Halloran (thesis)"] },
+        "text": "Dome on the roof (key from the physics department). Open nights on clear Fridays.", "who": ["Iris Halloran (thesis)"] },
       { "id": "glasshouse", "name": "University Glasshouse", "x": 845, "y": 70, "w": 125, "h": 120, "type": "green",
         "text": "Victorian glass-and-iron botanical garden behind the science buildings.", "who": ["Teodor Lindqvist (assistant)"] },
       { "id": "brine", "name": "Brine Hall (Humanities)", "x": 120, "y": 230, "w": 180, "h": 130, "type": "hall",
         "text": "Stone faculty building with ship models in the corridors. Goldie's office is on the third floor.", "who": ["Marigold Fenwick (3rd floor)"] },
       { "id": "union", "name": "Student Union, Lantern Lounge & WAST", "x": 700, "y": 230, "w": 190, "h": 130, "type": "union",
-        "text": "Student Union Office (first floor), Lantern Society lounge (invitation only), WAST 88.1 radio in the basement.", "who": ["Delphine Ashcroft", "June Halloran (radio, 11 PM-2 AM)"] },
+        "text": "Student Union Office (first floor), Lantern Society lounge (invitation only), WAST 88.1 radio in the basement.", "who": ["Delphine Ashcroft", "Iris Halloran (radio, 11 PM-2 AM)"] },
       { "id": "cafe", "name": "Campus Cafe", "x": 440, "y": 385, "w": 120, "h": 50, "type": "cafe",
         "text": "On the quad. Strong coffee, pastries, lunch queue.", "who": [] },
       { "id": "labs", "name": "Science & Lecture Halls", "x": 120, "y": 410, "w": 180, "h": 110, "type": "science",
@@ -108,7 +108,7 @@
         "residents": [
           { "name": "You", "room": "218", "note": "with Juno", "user": true },
           { "name": "Juno Tidewell", "room": "218", "note": "with you" },
-          { "name": "June Halloran", "room": "114", "note": "single room" }
+          { "name": "Iris Halloran", "room": "114", "note": "single room" }
         ] },
       { "id": "b2", "name": "Dorm Building 2", "sub": "Student Residential District, name to be decided",
         "text": "Placeholder building. Add residents in maps.json.",
