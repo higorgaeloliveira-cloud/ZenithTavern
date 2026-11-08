@@ -5,8 +5,9 @@
  *     you picked (or, with LunaRouter on, the SMALLEST model on the route list, because a fallback
  *     must not receive more than it can take). Big models get a huge context and long, rich replies;
  *     weaker ones get less so they stay clear of errors.
- *  2. RESPONSE FORMAT. Every reply starts with one header line and then 4 or 5 descriptive paragraphs
- *     (large and medium models; smaller models get 3 to 4 or 3). The AI picks 4 or 5 by how much the next message needs:
+ *  2. RESPONSE FORMAT. Every reply starts with one header line and then a fixed number of paragraphs by model size:
+ *     Large 4 or 5 (the AI picks by how much the next message needs), Medium 4, Small 3, Tiny 2 or 3.
+ *     Paragraphs are detailed, not big: each has a sentence and word ceiling, and a reply that breaks it is corrected on the next turn.
  *         ¦¦ Monday, Aug 24th ~ 2:26 PM ~ Place ~ (SAPH) ¦¦
  *  3. MODES. OPAL, SAPHIRE ("SAPH"), ONYX and RUBY. The AI names the one it is writing in inside the header;
  *     the detailed rules of the mode in play are added to the prompt. You can also lock one.
@@ -75,13 +76,16 @@ const save = () => ctx().saveSettingsDebounced();
 const rerender = () => document.dispatchEvent(new Event('zenith-panel-render'));
 
 // ---------------------------------------------------------------- 1. model profile
+// para = paragraphs per reply, words = words per paragraph (the second number is a hard ceiling), sent = sentences per paragraph.
 const TIERS = {
-    large:  { label: 'Large',  window: 200000, out: 1600, para: [4, 5], words: [110, 170], temp: 1.0 },
-    medium: { label: 'Medium', window: 64000,  out: 1300, para: [4, 5], words: [90, 140],  temp: 0.95 },
-    small:  { label: 'Small',  window: 24000,  out: 900,  para: [3, 4], words: [80, 120],  temp: 0.85 },
-    tiny:   { label: 'Tiny',   window: 12000,  out: 650,  para: [3, 3], words: [70, 100],   temp: 0.8 },
+    large:  { label: 'Large',  window: 200000, out: 1600, para: [4, 5], words: [110, 170], sent: [5, 7], temp: 1.0 },
+    medium: { label: 'Medium', window: 64000,  out: 1300, para: [4, 4], words: [90, 140],  sent: [5, 6], temp: 0.95 },
+    small:  { label: 'Small',  window: 24000,  out: 900,  para: [3, 3], words: [80, 120],  sent: [5, 6], temp: 0.85 },
+    tiny:   { label: 'Tiny',   window: 12000,  out: 650,  para: [2, 3], words: [70, 100],  sent: [5, 5], temp: 0.8 },
 };
 const tierOfWindow = (w) => (w >= 128000 ? 'large' : w >= 48000 ? 'medium' : w >= 16000 ? 'small' : 'tiny');
+const THINKING_EXTRA = 1250;   // extra reply tokens for a thinking model
+const WINDOW_SHARE = 0.88;     // share of the model's window used as context
 
 function sizeB(id) {
     const m = id.match(/(?:^|[^a-z0-9.])e?(\d+(?:\.\d+)?)b(?![a-z])/);
@@ -160,11 +164,11 @@ function profile(presets = null) {
     const window = s.tier !== 'auto' && TIERS[s.tier] ? TIERS[s.tier].window : limiting.window;
     const t = TIERS[tierKey];
     const cap = Number(s.cap) > 0 ? Number(s.cap) : Number(presets?.maxContext) > 0 ? Number(presets.maxContext) : 200000;
-    const maxContext = Math.max(4096, Math.min(cap, Math.floor((window * 0.92) / 500) * 500));
-    const maxResponse = t.out + (limiting.reasoning ? 2000 : 0);
+    const maxContext = Math.max(4096, Math.min(cap, Math.floor((window * WINDOW_SHARE) / 500) * 500));
+    const maxResponse = t.out + (limiting.reasoning ? THINKING_EXTRA : 0);
     return {
         model: limiting.id, models: ids, router, tier: tierKey, tierLabel: t.label, window, reported: limiting.reported, guessed: !limiting.known,
-        reasoning: limiting.reasoning, maxContext, maxResponse, para: t.para, words: t.words, temp: t.temp, cap,
+        reasoning: limiting.reasoning, maxContext, maxResponse, para: t.para, words: t.words, sent: t.sent, temp: t.temp, cap,
     };
 }
 
@@ -202,16 +206,22 @@ function lastHeader(chat) {
 }
 
 /** Looks at the last AI reply (below the header) and says what was wrong with its shape, or ''. */
-function shapeProblem(chat) {
+function shapeProblem(chat, p = null) {
     for (let i = chat.length - 1; i >= 0; i--) {
         const m = chat[i];
         if (!m || m.is_user || m.is_system) continue;
+        if (!chat.slice(0, i).some((x) => x?.is_user)) return ''; // the opening greeting is the author's text, not the model's
         const body = String(m.mes || '').replace(HEADER_RE, '').trim();
         if (!body) return '';
         const paras = body.split(/\n\s*\n|\n/).map((x) => x.trim()).filter(Boolean);
+        const words = (t) => t.split(/\s+/).filter(Boolean).length;
         const sentences = (t) => (t.match(/[^.!?…]+[.!?…]+["'”’)*_]*/g) || [t]).length;
-        const thin = paras.filter((t) => sentences(t) < 4 || t.split(/\s+/).length < 45).length;
+        const thin = paras.filter((t) => sentences(t) < 4 || words(t) < 45).length;
         if (paras.length > 7 || thin >= Math.ceil(paras.length / 2)) return `Your last reply was broken into ${paras.length} short pieces. Do not repeat that: write full paragraphs of at least 5 descriptive sentences each, with no line breaks inside a paragraph.`;
+        if (p) {
+            const longest = Math.max(...paras.map(words));
+            if (longest > Math.ceil(p.words[1] * 1.3)) return `Your last reply had a paragraph of about ${longest} words, which is far too long. Do not repeat that: every paragraph stays within ${p.sent[1]} sentences and ${p.words[1]} words. Spread the scene over the paragraphs you are allowed instead of packing it into one, and keep paragraphs detailed rather than long.`;
+        }
         return '';
     }
     return '';
@@ -221,7 +231,8 @@ function formatPrompt(p, prev) {
     const s = settings();
     const month = s.month === 'long' ? 'August' : 'Aug';
     const fixed = p.para[0] === p.para[1];
-    const wk = fixed ? `${p.para[0]}` : `${p.para[0]} or ${p.para[1]}`;
+    const wk = fixed ? `exactly ${p.para[0]}` : `${p.para[0]} or ${p.para[1]}`;
+    const sentTxt = p.sent[0] === p.sent[1] ? `exactly ${p.sent[0]}` : `${p.sent[0]} to ${p.sent[1]}`;
     const lines = [
         'RESPONSE FORMAT (follow it exactly, every reply):',
         `Start with ONE header line, then a blank line, then the scene:`,
@@ -232,11 +243,12 @@ function formatPrompt(p, prev) {
         '- Location: the specific place the characters are in right now. Update it when they move.',
         '- MODE: exactly one of OPAL, SAPH, ONYX, RUBY (see MODES). The header is the only place the mode is named.',
         `Then write ${wk} paragraphs separated by blank lines${fixed ? '' : `, never fewer than ${p.para[0]} and never more than ${p.para[1]}`}. A blank line appears ONLY between paragraphs, never inside one and never after a single sentence.`,
-        `PARAGRAPH RULE: every paragraph is one solid block of at least 5 full, descriptive sentences (roughly ${p.words[0]} to ${p.words[1]} words). Sentences flow into each other with connecting detail: setting, light, sound, smell, touch, body language, what the character thinks and holds back, and spoken lines placed inside the paragraph.`,
-        'FORBIDDEN: one-line paragraphs; a line break after each sentence; staccato strings of tiny sentences ("She froze. She looked around. Just slightly."); repeating the same beat in different words ("Her mouth opened. Then closed. Then opened."); stretching a single beat over many short lines. A short sentence is fine as a punch inside a long paragraph, never as its own paragraph.',
+        `PARAGRAPH RULE: every paragraph is one block of ${sentTxt} full sentences, roughly ${p.words[0]} to ${p.words[1]} words. HARD LIMIT: a paragraph never goes past ${p.sent[1]} sentences or ${p.words[1]} words. "Full" means detailed, not big: every sentence carries a specific, concrete detail (setting, light, sound, smell, touch, body language, what the character thinks and holds back, a spoken line placed inside the paragraph), and nothing is padded, repeated or stretched to fill space.`,
+        `LENGTH DISCIPLINE: the paragraph count above is a limit, not a starting point. One beat per paragraph. Never pack the whole scene into one huge paragraph, never write a wall of text that runs on for many lines, and never add paragraphs beyond the limit. If there is more to tell than fits, keep the most important beats, trim the rest and leave it for the next reply.`,
+        'FORBIDDEN: one-line paragraphs; a line break after each sentence; staccato strings of tiny sentences ("She froze. She looked around. Just slightly."); repeating the same beat in different words ("Her mouth opened. Then closed. Then opened."); stretching a single beat over many short lines; a single paragraph past the hard limit. A short sentence is fine as a punch inside a paragraph, never as its own paragraph.',
         fixed
-            ? 'Adapt to the moment: a quiet exchange can sit at the low end of the length, a charged or important scene should use the high end. Keep every paragraph full of new detail, not padding.'
-            : `Choose the paragraph count by how much the next message needs: ${p.para[0]} paragraphs when the moment is quiet, brief or has little to show, ${p.para[1]} paragraphs when it is charged, important or full of things to describe. Alternate naturally between the two instead of always using the same count, and never go outside that range. Keep every paragraph full of new detail, not padding.`,
+            ? 'Adapt to the moment: a quiet exchange can sit at the low end of the length, a charged or important scene should use the high end, never beyond the hard limit.'
+            : `Choose the paragraph count by how much the next message needs: ${p.para[0]} paragraphs when the moment is quiet, brief or has little to show, ${p.para[1]} paragraphs when it is charged, important or full of things to describe. Alternate naturally between the two instead of always using the same count, and never go outside that range.`,
         'Never write actions, speech, thoughts or choices for {{user}}. End on a beat that leaves {{user}} room to answer. No lists, no headings, no notes, no footer.',
     ];
     if (prev) lines.push(`The previous header was: ¦¦ ${prev.when} ~ ${prev.time} ~ ${prev.place} ~ (${(MODE_INFO[prev.mode]?.tag) || '?'}) ¦¦. Continue from it.`);
@@ -320,7 +332,7 @@ globalThis.zenithStyleInterceptor = async function (chat, _contextSize, _abort, 
     const p = profile(presets);
     const prev = lastHeader(chat);
     const working = workingMode(chat, prev);
-    const fix = shapeProblem(chat);
+    const fix = shapeProblem(chat, p);
     const text = `[${formatPrompt(p, prev)}${fix ? '\nCORRECTION: ' + fix : ''}\n\n${modesPrompt(p, working)}]`;
     lastBuilt = { text, working, prev, profile: p };
     setExtensionPrompt(PROMPT_KEY, text, IN_CHAT, 1, false, SYSTEM);
@@ -356,7 +368,7 @@ function screen() {
             h('span', {}, 'Model'), h('span', {}, p.model ? p.model + (p.router ? ` (+${p.models.length - 1} on LunaRouter, smallest counts)` : '') : 'none connected yet'),
             h('span', {}, 'Context'), h('span', {}, `${num(p.maxContext)} tokens`),
             h('span', {}, 'Reply up to'), h('span', {}, `${num(p.maxResponse)} tokens${p.reasoning ? ' (includes room for thinking)' : ''}`),
-            h('span', {}, 'Paragraphs'), h('span', {}, p.para[0] === p.para[1] ? `${p.para[0]}` : `${p.para[0]} or ${p.para[1]}, ~${p.words[0]}-${p.words[1]} words each`)),
+            h('span', {}, 'Paragraphs'), h('span', {}, `${p.para[0] === p.para[1] ? p.para[0] : `${p.para[0]} or ${p.para[1]}`}, ${p.sent[0] === p.sent[1] ? p.sent[0] : `${p.sent[0]}-${p.sent[1]}`} sentences and ${p.words[0]}-${p.words[1]} words each`)),
         note(p.reported ? `The API says this model's window is ${num(p.reported)} tokens.` : p.guessed ? 'This model is not on the list of known models, so a careful size was assumed. Pick a size below if you know better.' : 'Sizes come from the model name. Pick a size below to override.'),
         seg([['auto', 'Auto'], ['large', 'Large'], ['medium', 'Medium'], ['small', 'Small'], ['tiny', 'Tiny']], s.tier, (id) => { s.tier = id; save(); globalThis.ZenithStyle.apply(); rerender(); }));
 
