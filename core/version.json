@@ -1,5 +1,5 @@
 {
-  "version": "1.7.0",
+  "version": "1.8.1",
   "history": [
     {
       "version": "0.0.1",
@@ -476,7 +476,16 @@
       ],
       "note": "Riko: all 28 sprites with transparent background",
       "date": "2026-10-23"
+    },
+    {
+      "version": "1.8.1",
+      "kinds": [
+        "ui",
+        "internal"
+      ],
+      "note": "Riko: sprites removed (background to be re-edited); June Halloran renamed Iris Halloran (character, lorebooks source, sub-bots, Maps, format hints, README)",
+      "date": "2026-11-08"
     }
   ],
-  "released": "2026-10-23"
+  "released": "2026-11-08"
 }
