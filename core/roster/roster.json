@@ -108,9 +108,9 @@
         "slice of life",
         "coastal town"
       ],
-      "version": 17,
+      "version": 18,
       "card": "riko-kitsumi/card.png",
-      "sha256": "37edf871d97fd2f0029f520f283be757ee9db70b27057dcff1628db8423e7be7",
+      "sha256": "e421fb2235ac696889158404481951614c6088ced8c835a06d474e572ae9ee68",
       "sprites": [],
       "images": [
         {
@@ -122,8 +122,8 @@
     },
     {
       "id": "june-halloran",
-      "name": "June Halloran",
-      "file": "June Halloran.png",
+      "name": "Iris Halloran",
+      "file": "Iris Halloran.png",
       "tagline": "Shy tuxedo-cat astronomy student who is a confident late-night radio voice and a mumbling mess in daylight.",
       "tags": [
         "Asterhaven",
@@ -137,9 +137,9 @@
         "slice of life",
         "coastal town"
       ],
-      "version": 4,
+      "version": 5,
       "card": "june-halloran/card.png",
-      "sha256": "0b28eb5f818a2fe2e44bc5e6fbece22589b49c3cc41edf1a56be1dc4a4114747",
+      "sha256": "90bfd642bd16477bc929826f60693fa25929683013d1a2ce4194eab0cb5d1279",
       "sprites": []
     },
     {
