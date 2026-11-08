@@ -9,6 +9,7 @@ on:
     branches: [main]
     paths-ignore:
       - 'dist/**'
+      - '.github/**'
   workflow_dispatch:
     inputs:
       force:
@@ -41,25 +42,26 @@ jobs:
           FORCE: ${{ inputs.force }}
         run: |
           set -euo pipefail
+          LIST="$RUNNER_TEMP/changed.txt"
 
           # Everything since the last commit that touched dist/ counts as "not built yet".
           BASE=$(git log -1 --format=%H -- dist/zenith-version.json || true)
           echo "Last build commit: ${BASE:-none}"
           if [ -n "$BASE" ]; then
-            git diff --name-only "$BASE" HEAD | grep -v '^dist/' > changed.txt || true
+            git diff --name-only "$BASE" HEAD | grep -v -e '^dist/' -e '^\.github/' -e '^changed\.txt$' > "$LIST" || true
           else
-            : > changed.txt
+            : > "$LIST"
           fi
-          if [ -z "$BASE" ] || [ -s changed.txt ] || [ "${FORCE:-false}" = "true" ]; then
+          if [ -z "$BASE" ] || [ -s "$LIST" ] || [ "${FORCE:-false}" = "true" ]; then
             echo "Changed since the last build:"
-            cat changed.txt
+            cat "$LIST"
           else
             echo "Nothing changed since the last build."
             exit 0
           fi
 
           # Character cards: only the characters whose source folder changed.
-          for name in $(sed -n 's#^core/roster/source/\([^/_][^/]*\)/.*#\1#p' changed.txt | sort -u); do
+          for name in $(sed -n 's#^core/roster/source/\([^/_][^/]*\)/.*#\1#p' "$LIST" | sort -u); do
             if [ -f "core/roster/source/$name/character.json" ]; then
               echo "== Rebuilding character: $name"
               node tools/character-build.cjs "core/roster/source/$name"
@@ -67,13 +69,13 @@ jobs:
           done
 
           # Lorebooks (Characters, Sub-bots) when any character record or the sub-bot list changed.
-          if grep -qE '^core/roster/source/([^/]+/(character|lorebook)\.json|_subbots-extra\.json)$' changed.txt; then
+          if grep -qE '^core/roster/source/([^/]+/(character|lorebook)\.json|_subbots-extra\.json)$' "$LIST"; then
             echo "== Rebuilding the Characters and Sub-bots lorebooks"
             node tools/lorebook-build.cjs
           fi
 
           # Asterhaven world lorebook and its document.
-          if grep -q '^tools/asterhaven-lore.cjs$' changed.txt; then
+          if grep -q '^tools/asterhaven-lore.cjs$' "$LIST"; then
             echo "== Rebuilding the Asterhaven lorebook"
             node tools/asterhaven-lore.cjs
           fi
