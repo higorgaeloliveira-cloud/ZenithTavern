@@ -1,0 +1,92 @@
+name: Build launcher
+
+# Whenever source files are pushed to main, rebuild what is generated from them
+# (character cards, lorebooks, dist/ZenithTavern.cjs) and commit the result.
+# The Start files then offer the update on the next start. Nothing to run by hand.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'dist/**'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Rebuild the launcher even if nothing changed'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-launcher
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Rebuild what changed, then the launcher
+        env:
+          FORCE: ${{ inputs.force }}
+        run: |
+          set -euo pipefail
+
+          # Everything since the last commit that touched dist/ counts as "not built yet".
+          BASE=$(git log -1 --format=%H -- dist/zenith-version.json || true)
+          echo "Last build commit: ${BASE:-none}"
+          if [ -n "$BASE" ]; then
+            git diff --name-only "$BASE" HEAD | grep -v '^dist/' > changed.txt || true
+          else
+            : > changed.txt
+          fi
+          if [ -z "$BASE" ] || [ -s changed.txt ] || [ "${FORCE:-false}" = "true" ]; then
+            echo "Changed since the last build:"
+            cat changed.txt
+          else
+            echo "Nothing changed since the last build."
+            exit 0
+          fi
+
+          # Character cards: only the characters whose source folder changed.
+          for name in $(sed -n 's#^core/roster/source/\([^/_][^/]*\)/.*#\1#p' changed.txt | sort -u); do
+            if [ -f "core/roster/source/$name/character.json" ]; then
+              echo "== Rebuilding character: $name"
+              node tools/character-build.cjs "core/roster/source/$name"
+            fi
+          done
+
+          # Lorebooks (Characters, Sub-bots) when any character record or the sub-bot list changed.
+          if grep -qE '^core/roster/source/([^/]+/(character|lorebook)\.json|_subbots-extra\.json)$' changed.txt; then
+            echo "== Rebuilding the Characters and Sub-bots lorebooks"
+            node tools/lorebook-build.cjs
+          fi
+
+          # Asterhaven world lorebook and its document.
+          if grep -q '^tools/asterhaven-lore.cjs$' changed.txt; then
+            echo "== Rebuilding the Asterhaven lorebook"
+            node tools/asterhaven-lore.cjs
+          fi
+
+          echo "== Building the launcher"
+          node tools/build.cjs
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No file changes to commit."
+            exit 0
+          fi
+          git commit -m "Auto-build launcher, cards and lorebooks [skip ci]"
+          git push origin HEAD:main
