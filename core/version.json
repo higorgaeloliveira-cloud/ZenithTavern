@@ -1,5 +1,5 @@
 {
-  "version": "1.8.1",
+  "version": "1.9.1",
   "history": [
     {
       "version": "0.0.1",
@@ -484,6 +484,14 @@
         "internal"
       ],
       "note": "Riko: sprites removed (background to be re-edited); June Halloran renamed Iris Halloran (character, lorebooks source, sub-bots, Maps, format hints, README)",
+      "date": "2026-11-08"
+    },
+    {
+      "version": "1.9.1",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Writing rules by model size: Large 4-5 paragraphs, Medium 4, Small 3, Tiny 2-3; stricter paragraph limits (sentence and word ceiling, correction when a paragraph runs too long); thinking models +1,250 reply tokens; context 88% of the model's window",
       "date": "2026-11-08"
     }
   ],
