@@ -221,17 +221,24 @@ async function routed(realFetch, input, init) {
             failCount[routeKey(route)] = 0;
             lastUsed = routeLabel(s, route);
             if (i > 0) toastr.success(`Answered by ${routeLabel(s, route)}`, 'LunaRouter');
-            if (carry && result.data) { const m = mergeContinuation(carry, result.text); return finishedResponse(result.data, m.restarted ? m.text : join(carry, m.text)); }
+            if (carry && result.data) { const m = mergeContinuation(carry, result.text); return finishedResponse(result.data, tidy(m.restarted ? m.text : join(carry, m.text, m.newPara))); }
             return result.res;
         }
         if (result.ok || (result.cut && s.continueCut !== false)) {
-            // a model stopped before the reply was finished: keep what it wrote and let the next model continue from there
+            // a model stopped before the reply was finished: keep what it wrote and let the next call continue from there
             const m = mergeContinuation(carry, result.text);
-            const kept = result.text ? cutAtSentence(carry && !m.restarted ? join(carry, m.text) : m.text) : carry;
+            const kept = result.text ? cutAtSentence(carry && !m.restarted ? join(carry, m.text, m.newPara) : m.text) : carry;
             template ??= result.data;
             carry = kept;
             console.warn(`[LunaRouter] ${routeLabel(s, route)} stopped before the reply was finished (${carry.length} characters kept)`);
             lastFail = result;
+            // enough was already written: send it as it is instead of asking for more (more calls were what made replies grow)
+            const L = limits();
+            if (L && template && isComplete(carry, L)) {
+                lastUsed = routeLabel(s, route);
+                toastr.info('The reply already had enough paragraphs when the model stopped, so it was sent as it is.', 'LunaRouter');
+                return finishedResponse(template, tidy(carry, L));
+            }
             if (next) toastr.warning(`${routeLabel(s, route)} stopped before finishing. ${nextText} will continue from there…`, 'LunaRouter');
             continue;
         }
@@ -258,11 +265,56 @@ async function routed(realFetch, input, init) {
     }
     if (carry && template) {
         toastr.warning('Every model stopped early. The reply was sent as far as it got.', 'LunaRouter');
-        return finishedResponse(template, carry);
+        return finishedResponse(template, tidy(carry));
     }
     toastr.error('Every model in LunaRouter failed. The last error is shown by SillyTavern.', 'LunaRouter');
     if (lastFail?.res) return lastFail.res;      // let SillyTavern show its usual error
     throw new TypeError(lastFail?.error || 'LunaRouter: no model answered');
+}
+
+// ---------------------------------------------------------------- paragraph rules (taken from Zenith Style, so a continued reply keeps its shape)
+const HEAD_LINE = /^\s*¦¦[^\n]*¦¦[ \t]*\n+/;
+const wc = (t) => String(t).split(/\s+/).filter(Boolean).length;
+const stripHead = (t) => String(t).replace(HEAD_LINE, '');
+const bodyParas = (t) => stripHead(t).split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean);
+
+/** The paragraph limits of the current model size, or null when Zenith Style is off or the chat is out of character. */
+function limits() {
+    try {
+        if (ctx().extensionSettings?.zenith_panel?.oocOn) return null;
+        const z = globalThis.ZenithStyle;
+        if (!z?.live?.()) return null;
+        const p = z.profile();
+        if (!p?.para || !p?.words) return null;
+        return { minP: p.para[0], maxP: p.para[1], minW: p.words[0], maxW: p.words[1], maxS: p.sent?.[1] || 7 };
+    } catch { return null; }
+}
+
+/** True when what was written already has the paragraphs it needs, so no further call should add more. */
+function isComplete(text, L) {
+    const paras = bodyParas(text);
+    return paras.length >= L.minP && wc(paras[paras.length - 1]) >= Math.round(L.minW * 0.6);
+}
+
+/** Last safety net for a reply built from several calls: no paragraph past the word ceiling, never more paragraphs than allowed. */
+function tidy(text, L = limits()) {
+    if (!L) return text;
+    const raw = String(text);
+    const m = raw.match(HEAD_LINE);
+    const head = m ? m[0].trim() : '';
+    const out = [];
+    for (const para of bodyParas(raw)) {
+        if (wc(para) <= Math.ceil(L.maxW * 1.15)) { out.push(para); continue; }
+        // a paragraph that grew too long (calls glued together) is cut into paragraphs at sentence ends
+        const sentences = para.match(/[^.!?…]+[.!?…]+["'”’*)\]~]*\s*|[^.!?…]+$/g) || [para];
+        let cur = '';
+        for (const sentence of sentences) {
+            if (cur && wc(cur + sentence) > L.maxW) { out.push(cur.trim()); cur = sentence; } else cur += sentence;
+        }
+        if (cur.trim()) out.push(cur.trim());
+    }
+    const kept = out.slice(0, L.maxP);
+    return (head ? `${head}\n\n` : '') + kept.join('\n\n');
 }
 
 /** Keeps the text up to the last finished sentence, so the next model starts on a clean boundary (never mid-word). */
@@ -272,22 +324,35 @@ function cutAtSentence(text) {
     if (m) return t.slice(0, m.index + m[0].length);
     return t.length >= 200 ? t.replace(/\s+\S*$/, '') : ''; // no finished sentence: only keep a long start, without its half-written last word
 }
-const join = (a, b) => (!b ? a : !a ? b : (/\s$/.test(a) || /^[\s.,;:!?)]/.test(b) ? a + b : `${a} ${b}`));
+/** Puts the continuation after what was kept. If the model started a new paragraph, it stays a new paragraph. */
+const join = (a, b, newPara = false) => (!b ? a : !a ? b : (newPara ? `${a}\n\n${b}` : (/\s$/.test(a) || /^[\s.,;:!?)]/.test(b) ? a + b : `${a} ${b}`)));
 
 /** The same request, plus what has been written so far and a note to carry on from it. */
 function continuationBody(body, carry) {
     if (!Array.isArray(body.messages)) return body;
-    const paras = carry.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-    const words = (p) => p.split(/\s+/).length;
-    const longest = Math.max(...paras.map(words), 1);
-    const avg = Math.round(paras.reduce((n, p) => n + words(p), 0) / Math.max(paras.length, 1));
+    const L = limits();
+    const paras = bodyParas(carry);
+    const longest = Math.max(...paras.map(wc), 1);
+    const avg = Math.round(paras.reduce((n, p) => n + wc(p), 0) / Math.max(paras.length, 1)) || 1;
     const first = carry.split('\n').find((l) => l.trim()) || '';
     const rules = [
         'The reply above was cut off before it was finished. Continue it from exactly the last word. It is ONE reply, not a new one.',
         'Do not repeat anything already written. Do not start over. Do not write any header, title, date, time or scene line again' + (first.length < 160 ? ` (the reply already began with: "${first.trim()}")` : '') + '.',
-        `Keep the same paragraph size as above (about ${avg} words per paragraph, never more than ${longest}). Do not write longer paragraphs than the ones already there.`,
-        'Finish the reply in roughly one or two more short paragraphs, then stop. No note about the cut.',
     ];
+    if (L) {
+        const open = wc(paras[paras.length - 1] || '') < L.minW * 0.8;   // the last paragraph is still short: it was cut in the middle
+        const left = Math.max(0, L.minP - paras.length);
+        const total = L.minP === L.maxP ? `exactly ${L.minP}` : `${L.minP} to ${L.maxP}`;
+        rules.push(`The whole reply is ${total} paragraphs and ${paras.length} ${paras.length === 1 ? 'is' : 'are'} already written${open ? ', the last one unfinished' : ''}.`);
+        rules.push(open
+            ? `First finish the last paragraph (it must stay under ${L.maxW} words in total)${left ? `, then write only ${left} more paragraph${left > 1 ? 's' : ''}` : ''}, then stop.`
+            : `Write only ${left} more paragraph${left > 1 ? 's' : ''}, then stop.`);
+        rules.push(`Every paragraph stays within ${L.maxS} sentences and ${L.maxW} words (about ${Math.min(avg, L.maxW)} words like the ones above), and a new paragraph starts with a blank line only after the previous one is finished.`);
+    } else {
+        rules.push(`Keep the same paragraph size as above (about ${avg} words per paragraph, never more than ${longest}). Do not write longer paragraphs than the ones already there.`);
+        rules.push('Finish the reply in at most two more short paragraphs, then stop.');
+    }
+    rules.push('Do not add a note about the cut.');
     return { ...body, messages: [...body.messages,
         { role: 'assistant', content: carry },
         { role: 'user', content: `[${rules.join(' ')}]` }] };
@@ -297,24 +362,28 @@ const norm = (t) => String(t).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').tri
 
 /** Joins what was kept with the next model's text, and removes a restart: repeated header or repeated opening paragraphs. */
 function mergeContinuation(carry, text) {
-    let t = String(text || '').replace(/^\s+/, '');
-    if (!carry || !t) return { text: t, restarted: false };
+    const raw = String(text || '');
+    let newPara = /^[ \t]*\r?\n/.test(raw);   // the model began on a new line: join() must not glue it onto the last paragraph
+    let t = raw.replace(/^\s+/, '');
+    if (!carry || !t) return { text: t, restarted: false, newPara };
     const cn = norm(carry);
     // the model wrote the whole reply again: its own text replaces the kept one
-    if (cn.length > 30 && norm(t).startsWith(cn.slice(0, 40))) return { text: t, restarted: true };
+    if (cn.length > 30 && norm(t).startsWith(cn.slice(0, 40))) return { text: t, restarted: true, newPara };
     // drop leading paragraphs / lines that already exist in the kept text
     const parts = t.split(/(\n\s*\n)/);
+    let dropped = false;
     while (parts.length) {
         const n = norm(parts[0]);
-        if (!n || (n.length > 8 && cn.includes(n))) { parts.shift(); continue; }
+        if (!n || (n.length > 8 && cn.includes(n))) { if (n) dropped = true; parts.shift(); continue; }
         break;
     }
     t = parts.join('').replace(/^\s+/, '');
     // a repeated first line (header, date, scene line) at the start
     const firstLine = norm((carry.split('\n').find((l) => l.trim()) || ''));
     const lines = t.split('\n');
-    if (firstLine.length > 6 && norm(lines[0]) === firstLine) t = lines.slice(1).join('\n').replace(/^\s+/, '');
-    return { text: t, restarted: false };
+    if (firstLine.length > 6 && norm(lines[0]) === firstLine) { t = lines.slice(1).join('\n').replace(/^\s+/, ''); dropped = true; }
+    if (dropped) newPara = true;   // something whole was removed in front, so what is left starts a new paragraph
+    return { text: t, restarted: false, newPara };
 }
 
 /** Builds the answer SillyTavern expects, holding the finished text. */
