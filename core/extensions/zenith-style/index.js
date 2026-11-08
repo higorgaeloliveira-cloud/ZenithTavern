@@ -5,7 +5,8 @@
  *     you picked (or, with LunaRouter on, the SMALLEST model on the route list, because a fallback
  *     must not receive more than it can take). Big models get a huge context and long, rich replies;
  *     weaker ones get less so they stay clear of errors.
- *  2. RESPONSE FORMAT. Every reply starts with one header line and then 3 to 5/6 descriptive paragraphs:
+ *  2. RESPONSE FORMAT. Every reply starts with one header line and then 4 or 5 descriptive paragraphs
+ *     (large and medium models; smaller models get 3 to 4 or 3). The AI picks 4 or 5 by how much the next message needs:
  *         ¦¦ Monday, Aug 24th ~ 2:26 PM ~ Place ~ (SAPH) ¦¦
  *  3. MODES. OPAL, SAPHIRE ("SAPH"), ONYX and RUBY. The AI names the one it is writing in inside the header;
  *     the detailed rules of the mode in play are added to the prompt. You can also lock one.
@@ -75,7 +76,7 @@ const rerender = () => document.dispatchEvent(new Event('zenith-panel-render'));
 
 // ---------------------------------------------------------------- 1. model profile
 const TIERS = {
-    large:  { label: 'Large',  window: 200000, out: 1600, para: [5, 6], words: [110, 170], temp: 1.0 },
+    large:  { label: 'Large',  window: 200000, out: 1600, para: [4, 5], words: [110, 170], temp: 1.0 },
     medium: { label: 'Medium', window: 64000,  out: 1300, para: [4, 5], words: [90, 140],  temp: 0.95 },
     small:  { label: 'Small',  window: 24000,  out: 900,  para: [3, 4], words: [80, 120],  temp: 0.85 },
     tiny:   { label: 'Tiny',   window: 12000,  out: 650,  para: [3, 3], words: [70, 100],   temp: 0.8 },
@@ -219,7 +220,8 @@ function shapeProblem(chat) {
 function formatPrompt(p, prev) {
     const s = settings();
     const month = s.month === 'long' ? 'August' : 'Aug';
-    const wk = p.para[0] === p.para[1] ? `${p.para[0]}` : `${p.para[0]} to ${p.para[1]}`;
+    const fixed = p.para[0] === p.para[1];
+    const wk = fixed ? `${p.para[0]}` : `${p.para[0]} or ${p.para[1]}`;
     const lines = [
         'RESPONSE FORMAT (follow it exactly, every reply):',
         `Start with ONE header line, then a blank line, then the scene:`,
@@ -229,10 +231,12 @@ function formatPrompt(p, prev) {
         '- Time: the in-story clock. Continue from the previous header and move it only as far as the scene really goes: a few minutes for talk, longer after a time skip. It never runs backwards, except in a flashback you clearly mark.',
         '- Location: the specific place the characters are in right now. Update it when they move.',
         '- MODE: exactly one of OPAL, SAPH, ONYX, RUBY (see MODES). The header is the only place the mode is named.',
-        `Then write ${wk} paragraphs separated by blank lines, never fewer than 3. A blank line appears ONLY between paragraphs, never inside one and never after a single sentence.`,
+        `Then write ${wk} paragraphs separated by blank lines${fixed ? '' : `, never fewer than ${p.para[0]} and never more than ${p.para[1]}`}. A blank line appears ONLY between paragraphs, never inside one and never after a single sentence.`,
         `PARAGRAPH RULE: every paragraph is one solid block of at least 5 full, descriptive sentences (roughly ${p.words[0]} to ${p.words[1]} words). Sentences flow into each other with connecting detail: setting, light, sound, smell, touch, body language, what the character thinks and holds back, and spoken lines placed inside the paragraph.`,
         'FORBIDDEN: one-line paragraphs; a line break after each sentence; staccato strings of tiny sentences ("She froze. She looked around. Just slightly."); repeating the same beat in different words ("Her mouth opened. Then closed. Then opened."); stretching a single beat over many short lines. A short sentence is fine as a punch inside a long paragraph, never as its own paragraph.',
-        'Adapt to the moment: a quiet exchange can sit at the low end of the length and paragraph count, a charged or important scene should use the high end. Keep every paragraph full of new detail, not padding.',
+        fixed
+            ? 'Adapt to the moment: a quiet exchange can sit at the low end of the length, a charged or important scene should use the high end. Keep every paragraph full of new detail, not padding.'
+            : `Choose the paragraph count by how much the next message needs: ${p.para[0]} paragraphs when the moment is quiet, brief or has little to show, ${p.para[1]} paragraphs when it is charged, important or full of things to describe. Alternate naturally between the two instead of always using the same count, and never go outside that range. Keep every paragraph full of new detail, not padding.`,
         'Never write actions, speech, thoughts or choices for {{user}}. End on a beat that leaves {{user}} room to answer. No lists, no headings, no notes, no footer.',
     ];
     if (prev) lines.push(`The previous header was: ¦¦ ${prev.when} ~ ${prev.time} ~ ${prev.place} ~ (${(MODE_INFO[prev.mode]?.tag) || '?'}) ¦¦. Continue from it.`);
@@ -352,7 +356,7 @@ function screen() {
             h('span', {}, 'Model'), h('span', {}, p.model ? p.model + (p.router ? ` (+${p.models.length - 1} on LunaRouter, smallest counts)` : '') : 'none connected yet'),
             h('span', {}, 'Context'), h('span', {}, `${num(p.maxContext)} tokens`),
             h('span', {}, 'Reply up to'), h('span', {}, `${num(p.maxResponse)} tokens${p.reasoning ? ' (includes room for thinking)' : ''}`),
-            h('span', {}, 'Paragraphs'), h('span', {}, p.para[0] === p.para[1] ? `${p.para[0]}` : `${p.para[0]} to ${p.para[1]}, ~${p.words[0]}-${p.words[1]} words each`)),
+            h('span', {}, 'Paragraphs'), h('span', {}, p.para[0] === p.para[1] ? `${p.para[0]}` : `${p.para[0]} or ${p.para[1]}, ~${p.words[0]}-${p.words[1]} words each`)),
         note(p.reported ? `The API says this model's window is ${num(p.reported)} tokens.` : p.guessed ? 'This model is not on the list of known models, so a careful size was assumed. Pick a size below if you know better.' : 'Sizes come from the model name. Pick a size below to override.'),
         seg([['auto', 'Auto'], ['large', 'Large'], ['medium', 'Medium'], ['small', 'Small'], ['tiny', 'Tiny']], s.tier, (id) => { s.tier = id; save(); globalThis.ZenithStyle.apply(); rerender(); }));
 
