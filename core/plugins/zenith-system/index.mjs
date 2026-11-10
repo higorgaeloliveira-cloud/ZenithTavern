@@ -24,7 +24,6 @@ import net from 'node:net';
 import express from 'express';
 import ipMatching from 'ip-matching';
 import { installStrictGuards, setupRoster } from './roster.mjs';
-import { setupExRoster } from './exroster.mjs';
 
 // ROOT/SillyTavern/plugins/zenith-system/index.mjs -> ROOT/tavern.config.json
 const CONFIG_PATH = new URL('../../../tavern.config.json', import.meta.url);
@@ -117,7 +116,6 @@ export const info = {
 export async function init(router) {
     const guardState = { ok: await installStrictGuards() };
     setupRoster(router, guardState);
-    setupExRoster(router);
     router.get('/ping', (_request, response) => {
         response.json({ ok: true, message: 'pong' });
     });
