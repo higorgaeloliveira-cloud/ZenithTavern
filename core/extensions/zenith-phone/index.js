@@ -200,8 +200,6 @@ const APPS = [
       render: panelScreen('copycat'), live: panelLive('copycat') },
     { id: 'ooc', name: 'OOC', title: 'OOC Mode', icon: 'fa-comments', color: 'linear-gradient(160deg,#5be37d,#1fa141)',
       render: panelScreen('ooc'), live: panelLive('ooc') },
-    { id: 'exroster', name: 'EX-Roster', title: 'EX-Roster', icon: 'fa-user-plus', color: 'linear-gradient(160deg,#f5c451,#b9770e)',
-      launch: () => (globalThis.ZenithEx ? globalThis.ZenithEx.open() : globalThis.toastr?.warning('EX-Roster is not loaded.')) },
     { id: 'messages', name: 'Messages', title: 'Messages', icon: 'fa-comment-dots', color: 'linear-gradient(160deg,#5be37d,#1fa141)',
       render: () => globalThis.ZenithMessages?.screen?.() || soon('Zenith Messages is not loaded.'), live: () => !!globalThis.ZenithMessages?.live?.() },
     { id: 'maps', name: 'Maps', title: 'Maps', icon: 'fa-map-location-dot', color: 'linear-gradient(160deg,#5be3b5,#14876a)',
