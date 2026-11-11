@@ -15,11 +15,16 @@
  *  tavern.config.json -> roster.remote (an https base URL) makes the catalogue come from the web
  *  instead; every remote file must then carry a sha256 in roster.json.
  *
+ *  UPDATES: every download records which files it wrote. When a newer version no longer has some of
+ *  them (a removed sprite, a renamed card), they are listed as "outdated" and removed by /roster/cleanup.
+ *  Only files this roster itself wrote are ever removed.
+ *
  * Routes (under /api/plugins/zenith-system/):
  *   GET  /strict                    { strict, allowCreate, guard }
  *   GET  /roster                    the catalogue + which entries are already in the Character List
  *   GET  /roster/thumb/:id          the card picture of an entry
  *   POST /roster/download           { ids: [...] }  -> per-character results
+ *   POST /roster/cleanup            { ids: [...] }  -> removes outdated files left by an update -> { removed }
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -266,10 +271,50 @@ async function installOne(request, entry, remote) {
         for (const s of images) fs.writeFileSync(path.join(imageDir, s.name), s.buf);
     }
 
-    ledger.items[entry.id] = { avatar: entry.file, name: cardName, version: entry.version, sprites: written, images: images.map((i) => i.name), installedAt: new Date().toISOString() };
+    // What an older version wrote and this one no longer has (a removed sprite, a renamed character): remembered here, removed by /roster/cleanup.
+    const prev = ledger.items[entry.id] || {};
+    const imageNames = images.map((i) => i.name);
+    const prevFolder = prev.name ? sanitize(prev.name) : '';
+    const nowFolder = sanitize(cardName);
+    const stale = Array.isArray(prev.stale) ? prev.stale.filter((s) => !(s.kind !== 'card' && s.folder === nowFolder && (s.kind === 'sprites' ? written : imageNames).includes(s.file))) : [];
+    const keep = (kind, folder, file) => !stale.some((s) => s.kind === kind && s.folder === folder && s.file === file);
+    for (const file of prev.sprites || []) if ((prevFolder !== nowFolder || !written.includes(file)) && keep('sprites', prevFolder, file)) stale.push({ kind: 'sprites', folder: prevFolder, file });
+    for (const file of prev.images || []) if ((prevFolder !== nowFolder || !imageNames.includes(file)) && keep('images', prevFolder, file)) stale.push({ kind: 'images', folder: prevFolder, file });
+    if (prev.avatar && prev.avatar !== entry.file && !stale.some((s) => s.kind === 'card' && s.file === prev.avatar)) stale.push({ kind: 'card', folder: '', file: prev.avatar });
+
+    ledger.items[entry.id] = { avatar: entry.file, name: cardName, version: entry.version, sprites: written, images: imageNames, stale, installedAt: new Date().toISOString() };
     writeLedger(request, ledger);
     dropStaleThumbs(request, true);
     return { id: entry.id, ok: true, avatar: entry.file, name: cardName, sprites: written.length };
+}
+
+/** Removes the outdated files recorded by installOne for the given ids. Returns how many files were removed. */
+function cleanupOutdated(request, ids) {
+    const ledger = readLedger(request);
+    const dirs = request.user.directories;
+    let removed = 0;
+    for (const id of ids) {
+        const rec = ledger.items[id];
+        if (!rec || !Array.isArray(rec.stale) || !rec.stale.length) continue;
+        for (const s of rec.stale) {
+            try {
+                if (!s || typeof s.file !== 'string' || !s.file) continue;
+                let target = null;
+                if (s.kind === 'card') target = s.file === rec.avatar ? null : path.join(dirs.characters, sanitize(s.file));
+                else if (s.kind === 'sprites' && s.folder) target = path.join(dirs.characters, sanitize(s.folder), sanitize(s.file));
+                else if (s.kind === 'images' && s.folder) target = path.join(dirs.userImages, sanitize(s.folder), sanitize(s.file));
+                if (!target) continue;
+                if (fs.existsSync(target)) { fs.rmSync(target, { force: true }); removed++; }
+                if (s.kind !== 'card') {
+                    const folder = path.dirname(target);
+                    if (fs.existsSync(folder) && !fs.readdirSync(folder).length) fs.rmdirSync(folder);
+                }
+            } catch (e) { console.warn('[Zenith] could not remove an outdated file', e?.message || e); }
+        }
+        rec.stale = [];
+    }
+    writeLedger(request, ledger);
+    return removed;
 }
 
 // ------------------------------------------------------------------ strict guards
@@ -366,7 +411,9 @@ export function setupRoster(router, guardState) {
                 const installed = !!rec && rec.avatar === c.file && fs.existsSync(path.join(charsDir, c.file));
                 return {
                     id: c.id, name: c.name, tagline: c.tagline, tags: c.tags, sprites: c.sprites.length,
+                    version: c.version, installedVersion: installed ? (rec.version ?? 0) : null,
                     installed, updateAvailable: installed && (rec.version ?? 0) < c.version,
+                    outdatedFiles: Array.isArray(rec?.stale) ? rec.stale.length : 0,
                 };
             });
             response.json({ source: manifest.source, characters });
@@ -409,6 +456,20 @@ export function setupRoster(router, guardState) {
         busy = run.catch(() => { /* keep the queue alive */ });
         try { response.json({ results: await run }); } catch (e) {
             response.status(502).json({ error: true, message: 'Download failed: ' + (e?.message || e) });
+        }
+    });
+
+    router.post('/roster/cleanup', express.json({ limit: '64kb' }), async (request, response) => {
+        const ids = Array.isArray(request.body?.ids) ? request.body.ids.filter((x) => typeof x === 'string' && ID_RE.test(x)).slice(0, 500) : Object.keys(readLedger(request).items);
+        try {
+            const run = busy.then(() => cleanupOutdated(request, ids));
+            busy = run.catch(() => { /* keep the queue alive */ });
+            const removed = await run;
+            if (removed) dropStaleThumbs(request, true);
+            response.json({ ok: true, removed });
+        } catch (e) {
+            console.error('[Zenith] roster cleanup failed', e);
+            response.status(500).json({ error: true, message: 'Cleanup failed: ' + (e?.message || e) });
         }
     });
 }
