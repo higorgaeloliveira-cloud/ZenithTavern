@@ -1,5 +1,5 @@
 {
-  "version": "1.10.1",
+  "version": "1.11.2",
   "history": [
     {
       "version": "0.0.1",
@@ -501,7 +501,16 @@
       ],
       "note": "LunaRouter: continued replies keep their paragraph breaks instead of growing one huge paragraph; no more calls once the reply has enough paragraphs; continuation follows the model size's paragraph limits and is tidied at the end",
       "date": "2026-11-08"
+    },
+    {
+      "version": "1.11.2",
+      "kinds": [
+        "ui",
+        "internal"
+      ],
+      "note": "EX-Roster removed. Roster-Downloader redesigned: Grid and List layouts, Stored and Local tabs, HAS UPDATE badges, transfer terminal with progress and error codes, and removal of outdated files after an update",
+      "date": "2026-11-11"
     }
   ],
-  "released": "2026-11-08"
+  "released": "2026-11-11"
 }
