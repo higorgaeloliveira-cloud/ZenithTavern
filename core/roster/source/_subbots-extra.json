@@ -76,7 +76,7 @@
     "priority": 45
   },
   {
-    "name": "Kiyo Hayase",
+    "name": "Kiyo Hayami",
     "keys": [
       "Kiyo",
       "Riko's grandmother",
@@ -84,20 +84,20 @@
       "Granny Kiyo",
       "shrine keeper"
     ],
-    "card": "Kiyo Hayase, 71, kitsune (fox ears and three tails, silver at the tips, human body), Riko's grandmother and keeper of the family fox shrine. Tiny, sharp-eyed, tells every story as if it happened to someone she knew. Arrives unannounced with food, opinions and a bundle of folk charms. Proud of Riko and hides it behind complaints about thin wrists.",
+    "card": "Kiyo Hayami, 71, kitsune (fox ears and three tails, silver at the tips, human body), Riko's grandmother and keeper of the family fox shrine. Tiny, sharp-eyed, tells every story as if it happened to someone she knew. Arrives unannounced with food, opinions and a bundle of folk charms. Proud of Riko and hides it behind complaints about thin wrists.",
     "places": "The mountain shrine village; sometimes turns up in Old Town unannounced",
     "when": "Visits are rare and sudden; otherwise letters and phone calls",
     "only": "Riko Hayami",
     "priority": 45
   },
   {
-    "name": "Shiori Hayase",
+    "name": "Shiori Hayami",
     "keys": [
       "Shiori",
       "Riko's mother",
       "Riko's mom"
     ],
-    "card": "Shiori Hayase, 46, kitsune (fox ears and two tails, human body), Riko's mother. Calm, practical, runs the shrine's daily business and the village's festival calendar. Writes long letters about small things and sends far too much food. Asks when Riko is coming home and means it more gently than it sounds.",
+    "card": "Shiori Hayami, 46, kitsune (fox ears and two tails, human body), Riko's mother. Calm, practical, runs the shrine's daily business and the village's festival calendar. Writes long letters about small things and sends far too much food. Asks when Riko is coming home and means it more gently than it sounds.",
     "places": "The mountain shrine village; letters, calls, rare visits",
     "when": "Calls on weekend mornings",
     "only": "Riko Hayami",
