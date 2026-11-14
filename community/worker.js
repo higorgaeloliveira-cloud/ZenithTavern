@@ -1,223 +1,264 @@
 /*
- * ZenithTavern EX-Roster server (Cloudflare Worker + Workers KV).
+ * ZenithTavern storage (Cloudflare Worker + Workers KV). Replaces the old EX-Roster server.
  *
- * Bindings needed:   STORE      (KV namespace)
- *                    ADMIN_KEY  (Secret - only you know it; lets you remove uploads)
+ * Bindings needed (the same two the old Worker used):
+ *   STORE      KV namespace
+ *   ADMIN_KEY  Secret text. Only you know it. Every write needs it.
  *
- *   GET  /                 status
- *   GET  /api/list         ?kind=character|location &q=text      public items (no private ones)
- *   GET  /api/item/:id     the whole bundle (public or private - the id is the share code)
- *   GET  /api/img/:id/:n   a picture of an item ("card", "banner" or an expression name)
- *   POST /api/publish      { bundle }                            -> { id, token }
- *   POST /api/delete       { id, token }   or header X-Admin-Key  -> { ok }
- *   GET  /admin            small page to look at and remove public uploads (asks for ADMIN_KEY)
+ * Public (anyone, read only; this is what ZenithTavern's Roster-Downloader reads):
+ *   GET /roster.json      the catalogue (built by "Rebuild roster", see below)
+ *   GET /<path>           a stored file, for example  /riko-hayami/card.png  or  /riko-hayami/sprites/neutral.webp
+ *
+ * Admin (header  x-admin-key: <ADMIN_KEY>):
+ *   GET    /admin                    a small page to do all of this from a browser (phone friendly)
+ *   GET    /api/ping                 checks the key
+ *   GET    /api/list                 every stored file: path, size, sha256
+ *   PUT    /api/put?path=<path>      body = the file (up to 25 MiB). The sha256 is computed here.
+ *   DELETE /api/file?path=<path>
+ *   PUT    /api/meta                 JSON { id, name, file, tagline, tags, version, card?, thumb? }  one per character
+ *   GET    /api/metas                every character record
+ *   DELETE /api/meta?id=<id>
+ *   POST   /api/rebuild              builds /roster.json from the character records and the stored files:
+ *                                      card  = <id>/card.png (or meta.card)
+ *                                      sprites = every file directly inside <id>/sprites/
+ *                                      images  = every file directly inside <id>/images/
+ *                                    Run it once after a batch of uploads.
+ *   POST   /api/purge-old            removes the leftovers of the old EX-Roster (keys "pub:" and "prv:")
+ *
+ * Free plan limits to keep in mind: 1 GB of KV storage, 100,000 reads a day, 1,000 writes/lists/deletes a day, 25 MiB per file.
  */
-const MAX_BODY = 2_400_000;       // bytes of JSON per upload
-const MAX_IMG = 420_000;          // characters per picture (data URL)
-const MAX_EXPR = 16;
-const HOUR = 3600_000;
-const memo = { items: null, t: 0 };
-const hits = new Map();           // per-isolate, best effort rate limit: ip -> [timestamps]
+const MAX_FILE = 25 * 1024 * 1024;
+const PATH_RE = /^(?!.*\.\.)[A-Za-z0-9 _.()'&+-]+(\/[A-Za-z0-9 _.()'&+-]+)*$/;
+const ID_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+const IMAGE_RE = /\.(png|webp|gif|jpe?g)$/i;
+const TYPES = { png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', json: 'application/json', zip: 'application/zip' };
+const FILE = 'roster:file:';
+const META = 'roster:meta:';
+const MANIFEST = 'roster:manifest';
 
-const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET,POST,OPTIONS', 'access-control-allow-headers': 'content-type,x-admin-key' };
-const json = (data, status = 200, extra = {}) => new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', ...CORS, ...extra } });
+const json = (data, status = 200, extra = {}) => new Response(JSON.stringify(data), {
+  status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...extra },
+});
 const fail = (status, error) => json({ error }, status);
+const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+
+function sameKey(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || !a.length || a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
+}
+const isAdmin = (request, env) => !!env.ADMIN_KEY && sameKey(request.headers.get('x-admin-key') || '', env.ADMIN_KEY);
+
+async function listAll(env, prefix) {
+  const out = [];
+  let cursor;
+  do {
+    const r = await env.STORE.list({ prefix, cursor, limit: 1000 });
+    out.push(...r.keys);
+    cursor = r.list_complete ? undefined : r.cursor;
+  } while (cursor);
+  return out;
+}
 
 const str = (v, max) => (typeof v === 'string' ? v.replace(/\u0000/g, '').trim().slice(0, max) : '');
-const list = (v, n, len) => (Array.isArray(v) ? v.map((x) => str(x, len)).filter(Boolean).slice(0, n) : []);
-const IMG_RE = /^data:image\/(webp|jpeg|png);base64,[A-Za-z0-9+/=]+$/;
-const sha256 = async (t) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map((b) => b.toString(16).padStart(2, '0')).join('');
-const newId = (kind) => {
-  const abc = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-  const r = crypto.getRandomValues(new Uint8Array(12));
-  return `${kind === 'location' ? 'L' : 'C'}-${[...r].map((b) => abc[b % abc.length]).join('')}`;
-};
 
-/** Rebuilds a clean bundle from untrusted input. Returns { bundle } or { error }. */
-function clean(input) {
-  if (!input || typeof input !== 'object') return { error: 'No data.' };
-  const kind = input.kind;
-  if (kind !== 'character' && kind !== 'location') return { error: 'Unknown kind.' };
-  if (input.adult !== true) return { error: 'You must confirm that everything you share is for adults (18+).' };
-  const name = str(input.name, 60);
-  if (name.length < 2) return { error: 'The name is too short.' };
-  const d = input.data && typeof input.data === 'object' ? input.data : {};
-  const data = kind === 'character' ? {
-    age: Math.floor(Number(d.age)),
-    species: str(d.species, 120),
-    description: str(d.description, 6000),
-    personality: str(d.personality, 4000),
-    prompt: str(d.prompt, 4000),
-    restrictions: str(d.restrictions, 4000),
-    summary: str(d.summary, 400),
-    places: str(d.places, 300),
-    when: str(d.when, 100),
-    keys: list(d.keys, 20, 40),
-  } : {
-    description: str(d.description, 6000),
-    prompt: str(d.prompt, 4000),
-    summary: str(d.summary, 400),
-    hours: str(d.hours, 120),
-    residents: str(d.residents, 300),
-    keys: list(d.keys, 20, 40),
-  };
-  if (kind === 'character') {
-    if (!(data.age >= 18 && data.age <= 9999)) return { error: 'Every character must be 18 or older.' };
-    if (data.description.length < 20) return { error: 'The description is too short.' };
-    if (!data.summary) return { error: 'The short summary is required.' };
-  } else if (data.description.length < 20) return { error: 'The description is too short.' };
-
-  const images = {};
-  const im = input.images && typeof input.images === 'object' ? input.images : {};
-  for (const slot of ['card', 'banner']) {
-    if (im[slot] == null || im[slot] === '') continue;
-    if (typeof im[slot] !== 'string' || im[slot].length > MAX_IMG || !IMG_RE.test(im[slot])) return { error: `The ${slot} picture is not valid or too big.` };
-    images[slot] = im[slot];
+/** Builds roster.json from the character records and the stored files. */
+async function rebuild(env) {
+  const files = new Map();
+  for (const k of await listAll(env, FILE)) files.set(k.name.slice(FILE.length), k.metadata || {});
+  const characters = [];
+  const skipped = [];
+  let spriteCount = 0;
+  for (const k of await listAll(env, META)) {
+    const m = await env.STORE.get(k.name, 'json');
+    if (!m || !ID_RE.test(m.id)) continue;
+    const cardPath = m.card || `${m.id}/card.png`;
+    const cardInfo = files.get(cardPath);
+    if (!cardInfo || !cardInfo.sha256) { skipped.push(`${m.id} (no card at ${cardPath})`); continue; }
+    const under = (folder) => [...files.entries()]
+      .filter(([p, info]) => p.startsWith(`${m.id}/${folder}/`) && !p.slice(m.id.length + folder.length + 2).includes('/') && IMAGE_RE.test(p) && info.sha256)
+      .map(([p, info]) => ({ path: p, as: p.slice(p.lastIndexOf('/') + 1), sha256: info.sha256 }))
+      .sort((a, b) => a.as.localeCompare(b.as));
+    const sprites = under('sprites');
+    const images = under('images');
+    spriteCount += sprites.length;
+    characters.push({
+      id: m.id, name: m.name, file: m.file, tagline: m.tagline || '', tags: m.tags || [], version: m.version || 1,
+      card: cardPath, ...(m.thumb && files.has(m.thumb) ? { thumb: m.thumb } : {}), sha256: cardInfo.sha256, sprites, images,
+    });
   }
-  const expressions = {};
-  const ex = im.expressions && typeof im.expressions === 'object' ? Object.entries(im.expressions) : [];
-  if (ex.length > MAX_EXPR) return { error: `At most ${MAX_EXPR} expressions.` };
-  for (const [n, v] of ex) {
-    if (!/^[a-z0-9][a-z0-9 _-]{0,23}$/i.test(n)) return { error: `Bad expression name "${n}".` };
-    if (typeof v !== 'string' || v.length > MAX_IMG || !IMG_RE.test(v)) return { error: `Expression "${n}" is not valid or too big.` };
-    expressions[n.toLowerCase()] = v;
-  }
-  if (Object.keys(expressions).length) images.expressions = expressions;
-
-  return {
-    bundle: {
-      format: 'zenith-ex', v: 1, kind, name, author: str(input.author, 40) || 'Anonymous',
-      visibility: input.visibility === 'private' ? 'private' : 'public', adult: true, data, images, created: new Date().toISOString(),
-    },
-  };
+  characters.sort((a, b) => a.name.localeCompare(b.name));
+  const manifest = { version: 1, generatedAt: new Date().toISOString(), characters };
+  await env.STORE.put(MANIFEST, JSON.stringify(manifest));
+  return { characters: characters.length, sprites: spriteCount, skipped };
 }
 
-const meta = (id, b) => ({
-  id, kind: b.kind, name: b.name, author: b.author, summary: (b.data.summary || b.data.description || '').slice(0, 220),
-  age: b.data.age || null, species: (b.data.species || '').slice(0, 60), card: !!(b.images.card || b.images.banner),
-  expr: Object.keys(b.images.expressions || {}).length, t: Date.now(),
-});
+const ADMIN_HTML = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ZenithTavern storage</title>
+<style>
+:root{color-scheme:dark}body{font:15px/1.45 system-ui,sans-serif;background:#0e0e11;color:#eaeaea;margin:0;padding:14px;max-width:760px;margin-inline:auto}
+h1{font-size:1.2em;color:#f5c451}h2{font-size:1em;margin:22px 0 8px;color:#f5c451;border-bottom:1px solid #333;padding-bottom:4px}
+input,button,textarea{font:inherit;padding:9px 10px;border-radius:8px;border:1px solid #555;background:#1a1a1f;color:#eee;max-width:100%;box-sizing:border-box}
+input[type=text],input[type=password],input[type=number]{width:100%;margin:3px 0}button{cursor:pointer}button.go{background:#5a4510;border-color:#f5c451}button.del{background:#6e1d28;padding:5px 9px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}.f{display:flex;gap:8px;align-items:center;border-bottom:1px solid #26262b;padding:6px 0;font-size:.86em}
+.f b{flex:1;word-break:break-all;font-weight:400}.f small{opacity:.6;white-space:nowrap}#msg{margin:10px 0;padding:8px 10px;border-radius:8px;background:#1a1a1f;white-space:pre-wrap}
+.ok{border-left:3px solid #4cd964}.bad{border-left:3px solid #ff5a5a}label{display:block;margin-top:6px;font-size:.85em;opacity:.8}
+</style></head><body>
+<h1>ZenithTavern storage</h1>
+<div id="msg">Enter your ADMIN_KEY, then press Check key.</div>
+<input id="key" type="password" placeholder="ADMIN_KEY" autocomplete="off">
+<div class="row"><button class="go" onclick="check()">Check key</button><a href="/roster.json" target="_blank" style="color:#9ecbff">Open roster.json</a></div>
 
-function rateLimited(ip) {
-  const now = Date.now();
-  const arr = (hits.get(ip) || []).filter((t) => now - t < HOUR);
-  if (arr.length >= 12) { hits.set(ip, arr); return true; }
-  arr.push(now); hits.set(ip, arr);
-  if (hits.size > 5000) hits.clear();
-  return false;
-}
+<h2>1. Character record</h2>
+<label>Id (letters, digits, dash. Example: riko-kitsumi)</label><input id="m_id" type="text">
+<label>Name (as on the card)</label><input id="m_name" type="text">
+<label>Card file name (shown in the Character List, ends in .png)</label><input id="m_file" type="text" placeholder="Riko Hayami.png">
+<label>Tagline</label><input id="m_tag" type="text">
+<label>Tags (comma separated)</label><input id="m_tags" type="text">
+<label>Version (a whole number; raise it to show HAS UPDATE)</label><input id="m_ver" type="number" min="1" value="1">
+<div class="row"><button onclick="saveMeta()">Save record</button><button onclick="loadMetas()">Show saved records</button></div>
+<div id="metas"></div>
 
-async function load(env, id) {
-  if (!/^[CL]-[A-Z0-9]{12}$/.test(id)) return null;
-  for (const p of ['pub:', 'prv:']) {
-    const raw = await env.STORE.get(p + id);
-    if (raw) { try { return JSON.parse(raw); } catch { return null; } }
-  }
-  return null;
-}
+<h2>2. Upload files</h2>
+<label>Folder in storage (example: riko-kitsumi/sprites). The card goes in riko-kitsumi (as card.png), pictures in riko-kitsumi/images.</label>
+<input id="prefix" type="text" placeholder="riko-kitsumi/sprites">
+<div class="row"><input id="files" type="file" multiple> <button class="go" onclick="upload()">Upload</button></div>
 
-const ADMIN_HTML = `<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>EX-Roster admin</title>
-<style>body{font:15px system-ui;background:#111;color:#eee;margin:0;padding:14px}input,button{font:inherit;padding:8px;border-radius:8px;border:1px solid #555;background:#222;color:#eee}
-.r{display:flex;gap:8px;align-items:center;border-bottom:1px solid #333;padding:8px 0}.r b{flex:1}.r small{opacity:.6;display:block}button.d{background:#7a1f2b}</style>
-<h3>EX-Roster admin</h3><input id=k type=password placeholder="ADMIN_KEY"> <button onclick="go()">Load</button><div id=o></div>
+<h2>3. Publish</h2>
+<div class="row"><button class="go" onclick="rebuild()">Rebuild roster</button><button onclick="loadFiles()">Show stored files</button></div>
+<div id="files_out"></div>
+
+<h2>Cleanup</h2>
+<div class="row"><button class="del" onclick="purge()">Remove old EX-Roster data</button></div>
+
 <script>
-const o=document.getElementById('o');
-async function go(){const k=document.getElementById('k').value;o.textContent='...';
- const r=await fetch('/api/list?all=1').then(r=>r.json());o.innerHTML='';
- for(const i of r.items){const d=document.createElement('div');d.className='r';
-  d.innerHTML='<b></b><button class=d>Delete</button>';d.firstChild.innerHTML=i.name+' <small>'+i.kind+' · '+i.author+' · '+i.id+'</small>';
-  d.lastChild.onclick=async()=>{if(!confirm('Delete '+i.name+'?'))return;
-   const x=await fetch('/api/delete',{method:'POST',headers:{'content-type':'application/json','x-admin-key':k},body:JSON.stringify({id:i.id})});
-   if(x.ok)d.remove();else alert('Refused (wrong key?)')};o.append(d)}
- if(!r.items.length)o.textContent='Nothing uploaded yet.'}
-</script>`;
+var $=function(s){return document.getElementById(s)};
+$('key').value=localStorage.getItem('zk')||'';
+function say(t,bad){var m=$('msg');m.textContent=t;m.className=bad?'bad':'ok'}
+async function api(path,opt){opt=opt||{};localStorage.setItem('zk',$('key').value);
+  var h=Object.assign({},opt.headers||{},{'x-admin-key':$('key').value});
+  var r=await fetch(path,Object.assign({},opt,{headers:h}));var j=await r.json().catch(function(){return{}});
+  if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j}
+async function check(){try{await api('/api/ping');say('Key accepted. Storage is reachable.')}catch(e){say('Failed: '+e.message,1)}}
+async function saveMeta(){try{
+  var tags=$('m_tags').value.split(',').map(function(x){return x.trim()}).filter(Boolean);
+  var j=await api('/api/meta',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({id:$('m_id').value.trim(),name:$('m_name').value.trim(),file:$('m_file').value.trim(),tagline:$('m_tag').value.trim(),tags:tags,version:Number($('m_ver').value)||1})});
+  say('Saved the record for '+j.id+'. Upload its files, then press Rebuild roster.');loadMetas()}catch(e){say('Failed: '+e.message,1)}}
+async function loadMetas(){try{var j=await api('/api/metas');var o=$('metas');o.textContent='';
+  j.items.forEach(function(m){var d=document.createElement('div');d.className='f';var b=document.createElement('b');b.textContent=m.id+' - '+m.name+' (v'+m.version+')';
+    var u=document.createElement('button');u.textContent='Edit';u.onclick=function(){$('m_id').value=m.id;$('m_name').value=m.name;$('m_file').value=m.file;$('m_tag').value=m.tagline||'';$('m_tags').value=(m.tags||[]).join(', ');$('m_ver').value=m.version||1};
+    var x=document.createElement('button');x.className='del';x.textContent='Delete';x.onclick=async function(){if(!confirm('Delete the record '+m.id+'?'))return;try{await api('/api/meta?id='+encodeURIComponent(m.id),{method:'DELETE'});d.remove()}catch(e){say('Failed: '+e.message,1)}};
+    d.append(b,u,x);o.append(d)});if(!j.items.length)o.textContent='No records yet.'}catch(e){say('Failed: '+e.message,1)}}
+async function upload(){var prefix=$('prefix').value.trim().replace(/^\\/+|\\/+$/g,'');var list=Array.prototype.slice.call($('files').files);
+  if(!list.length)return say('Pick files first.',1);var done=0;
+  for(var i=0;i<list.length;i++){var f=list[i];var path=(prefix?prefix+'/':'')+f.name;say('Uploading '+(i+1)+'/'+list.length+': '+path);
+    try{await api('/api/put?path='+encodeURIComponent(path),{method:'PUT',body:f});done++}catch(e){return say('Stopped at '+path+': '+e.message+'\\nUploaded before that: '+done,1)}}
+  say('Uploaded '+done+' file(s). When everything is up, press Rebuild roster.')}
+async function rebuild(){try{say('Building...');var j=await api('/api/rebuild',{method:'POST'});
+  say('Roster built: '+j.characters+' character(s), '+j.sprites+' sprite(s).'+(j.skipped.length?'\\nSkipped: '+j.skipped.join('; '):''),j.skipped.length>0)}catch(e){say('Failed: '+e.message,1)}}
+async function loadFiles(){try{var j=await api('/api/list');var o=$('files_out');o.textContent='';
+  j.files.forEach(function(f){var d=document.createElement('div');d.className='f';var b=document.createElement('b');b.textContent=f.path;var s=document.createElement('small');s.textContent=Math.round(f.size/1024)+' KB';
+    var x=document.createElement('button');x.className='del';x.textContent='Delete';x.onclick=async function(){if(!confirm('Delete '+f.path+'?'))return;try{await api('/api/file?path='+encodeURIComponent(f.path),{method:'DELETE'});d.remove()}catch(e){say('Failed: '+e.message,1)}};
+    d.append(b,s,x);o.append(d)});say(j.files.length+' stored file(s).');if(!j.files.length)o.textContent='Nothing stored yet.'}catch(e){say('Failed: '+e.message,1)}}
+async function purge(){if(!confirm('Remove all old EX-Roster uploads? This cannot be undone.'))return;try{var j=await api('/api/purge-old',{method:'POST'});say('Removed '+j.removed+' old item(s).')}catch(e){say('Failed: '+e.message,1)}}
+</script></body></html>`;
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const path = url.pathname.replace(/\/+$/, '') || '/';
-    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+    const path = decodeURIComponent(url.pathname).replace(/^\/+|\/+$/g, '');
     if (!env.STORE) return fail(500, 'The STORE binding (KV namespace) is missing.');
-
     try {
-      if (path === '/') return json({ ok: true, service: 'zenith-exroster', v: 1 });
-      if (path === '/admin') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8' } });
+      // ---------------- admin API
+      if (path.startsWith('api/')) {
+        if (!isAdmin(request, env)) return fail(403, 'Wrong or missing key.');
+        const route = path.slice(4);
+        const p = url.searchParams.get('path') || '';
 
-      if (path === '/api/list' && request.method === 'GET') {
-        // The listing is kept in memory for 20 seconds (KV allows 1000 list calls a day on the free plan).
-        let items;
-        if (memo.items && Date.now() - memo.t < 20_000) items = memo.items;
-        else {
-          items = [];
-          let cursor;
-          for (let i = 0; i < 5; i++) {
-            const r = await env.STORE.list({ prefix: 'pub:', cursor, limit: 1000 });
-            for (const k of r.keys) if (k.metadata) items.push(k.metadata);
-            if (r.list_complete) break;
-            cursor = r.cursor;
-          }
-          items.sort((a, b) => b.t - a.t);
-          memo.items = items; memo.t = Date.now();
+        if (route === 'ping') return json({ ok: true });
+
+        if (route === 'list' && request.method === 'GET') {
+          const files = (await listAll(env, FILE)).map((k) => ({ path: k.name.slice(FILE.length), size: k.metadata?.size || 0, sha256: k.metadata?.sha256 || '' }));
+          files.sort((a, b) => a.path.localeCompare(b.path));
+          return json({ files });
         }
-        const kind = url.searchParams.get('kind');
-        const q = (url.searchParams.get('q') || '').toLowerCase().trim();
-        let out = items;
-        if (kind) out = out.filter((i) => i.kind === kind);
-        if (q) out = out.filter((i) => `${i.name} ${i.author} ${i.summary} ${i.species}`.toLowerCase().includes(q));
-        return json({ items: out.slice(0, 200) }, 200, { 'cache-control': 'no-store' });
+
+        if (route === 'put' && request.method === 'PUT') {
+          if (!PATH_RE.test(p)) return fail(400, 'Bad path. Use letters, digits, spaces and - _ . ( ) only, with / between folders.');
+          const buf = await request.arrayBuffer();
+          if (!buf.byteLength) return fail(400, 'Empty file.');
+          if (buf.byteLength > MAX_FILE) return fail(413, 'That file is over the 25 MiB limit.');
+          const sha256 = hex(await crypto.subtle.digest('SHA-256', buf));
+          await env.STORE.put(FILE + p, buf, { metadata: { size: buf.byteLength, sha256 } });
+          return json({ ok: true, path: p, size: buf.byteLength, sha256 });
+        }
+
+        if (route === 'file' && request.method === 'DELETE') {
+          if (!PATH_RE.test(p)) return fail(400, 'Bad path.');
+          await env.STORE.delete(FILE + p);
+          return json({ ok: true });
+        }
+
+        if (route === 'meta' && request.method === 'PUT') {
+          let b; try { b = await request.json(); } catch { return fail(400, 'Bad JSON.'); }
+          const id = str(b.id, 64);
+          if (!ID_RE.test(id)) return fail(400, 'The id must be lowercase letters, digits, - or _.');
+          const name = str(b.name, 80);
+          if (name.length < 2) return fail(400, 'The name is too short.');
+          const file = str(b.file, 100);
+          if (!/\.png$/i.test(file)) return fail(400, 'The card file name must end in .png.');
+          const version = Math.max(1, Math.floor(Number(b.version)) || 1);
+          const rec = {
+            id, name, file, tagline: str(b.tagline, 240), version,
+            tags: Array.isArray(b.tags) ? b.tags.map((t) => str(t, 40)).filter(Boolean).slice(0, 8) : [],
+          };
+          if (typeof b.card === 'string' && PATH_RE.test(b.card)) rec.card = b.card;
+          if (typeof b.thumb === 'string' && PATH_RE.test(b.thumb)) rec.thumb = b.thumb;
+          await env.STORE.put(META + id, JSON.stringify(rec));
+          return json({ ok: true, id });
+        }
+
+        if (route === 'metas' && request.method === 'GET') {
+          const items = [];
+          for (const k of await listAll(env, META)) { const m = await env.STORE.get(k.name, 'json'); if (m) items.push(m); }
+          items.sort((a, b) => a.name.localeCompare(b.name));
+          return json({ items });
+        }
+
+        if (route === 'meta' && request.method === 'DELETE') {
+          const id = url.searchParams.get('id') || '';
+          if (!ID_RE.test(id)) return fail(400, 'Bad id.');
+          await env.STORE.delete(META + id);
+          return json({ ok: true });
+        }
+
+        if (route === 'rebuild' && request.method === 'POST') return json({ ok: true, ...(await rebuild(env)) });
+
+        if (route === 'purge-old' && request.method === 'POST') {
+          let removed = 0;
+          for (const prefix of ['pub:', 'prv:']) for (const k of await listAll(env, prefix)) { await env.STORE.delete(k.name); removed++; }
+          return json({ ok: true, removed });
+        }
+        return fail(404, 'Unknown admin route.');
       }
 
-      let m;
-      if ((m = path.match(/^\/api\/item\/([A-Z0-9-]+)$/)) && request.method === 'GET') {
-        const b = await load(env, m[1]);
-        if (!b) return fail(404, 'Not found. Check the code.');
-        const { _th, ...pub } = b;
-        return json({ id: m[1], bundle: pub }, 200, { 'cache-control': 'no-store' });
-      }
+      // ---------------- admin page and status
+      if (path === 'admin') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
+      if (path === '') return json({ ok: true, service: 'zenithtavern-storage', v: 2 });
+      if (request.method !== 'GET' && request.method !== 'HEAD') return fail(405, 'Read only.');
 
-      if ((m = path.match(/^\/api\/img\/([A-Z0-9-]+)\/([A-Za-z0-9 _-]{1,24})$/)) && request.method === 'GET') {
-        const b = await load(env, m[1]);
-        const n = decodeURIComponent(m[2]).toLowerCase();
-        const src = b && (n === 'card' ? (b.images.card || b.images.banner) : n === 'banner' ? b.images.banner : b.images.expressions?.[n]);
-        if (!src) return new Response('', { status: 404, headers: CORS });
-        const mt = src.match(/^data:(image\/[a-z]+);base64,(.*)$/);
-        const bin = Uint8Array.from(atob(mt[2]), (c) => c.charCodeAt(0));
-        return new Response(bin, { headers: { 'content-type': mt[1], 'cache-control': 'public, max-age=3600', ...CORS } });
+      // ---------------- public: the catalogue and the stored files
+      if (path === 'roster.json') {
+        const text = await env.STORE.get(MANIFEST);
+        return new Response(text || JSON.stringify({ version: 1, characters: [] }), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=30' } });
       }
-
-      if (path === '/api/publish' && request.method === 'POST') {
-        const ip = request.headers.get('cf-connecting-ip') || 'x';
-        if (rateLimited(ip)) return fail(429, 'Too many uploads. Try again in a while.');
-        const text = await request.text();
-        if (text.length > MAX_BODY) return fail(413, 'The upload is too big (limit about 2 MB). Use fewer or smaller pictures.');
-        let input;
-        try { input = JSON.parse(text).bundle; } catch { return fail(400, 'Bad JSON.'); }
-        const r = clean(input);
-        if (r.error) return fail(400, r.error);
-        const b = r.bundle;
-        const id = newId(b.kind);
-        const token = [...crypto.getRandomValues(new Uint8Array(16))].map((x) => x.toString(16).padStart(2, '0')).join('');
-        b._th = await sha256(token);
-        if (b.visibility === 'public') await env.STORE.put(`pub:${id}`, JSON.stringify(b), { metadata: meta(id, b) });
-        else await env.STORE.put(`prv:${id}`, JSON.stringify(b));
-        memo.items = null;
-        return json({ id, token, visibility: b.visibility });
-      }
-
-      if (path === '/api/delete' && request.method === 'POST') {
-        let body; try { body = await request.json(); } catch { return fail(400, 'Bad JSON.'); }
-        const id = String(body.id || '');
-        const b = await load(env, id);
-        if (!b) return fail(404, 'Not found.');
-        const admin = env.ADMIN_KEY && request.headers.get('x-admin-key') === env.ADMIN_KEY;
-        const owner = body.token && b._th && (await sha256(String(body.token))) === b._th;
-        if (!admin && !owner) return fail(403, 'Not allowed.');
-        await env.STORE.delete(`pub:${id}`); await env.STORE.delete(`prv:${id}`);
-        memo.items = null;
-        return json({ ok: true });
-      }
-
-      return fail(404, 'Not found.');
+      if (!PATH_RE.test(path)) return fail(404, 'Not found.');
+      const buf = await env.STORE.get(FILE + path, { type: 'arrayBuffer', cacheTtl: 60 });
+      if (!buf) return fail(404, 'Not found.');
+      const ext = path.slice(path.lastIndexOf('.') + 1).toLowerCase();
+      return new Response(request.method === 'HEAD' ? null : buf, {
+        headers: { 'content-type': TYPES[ext] || 'application/octet-stream', 'cache-control': 'public, max-age=60', 'x-content-type-options': 'nosniff' },
+      });
     } catch (e) {
       return fail(500, 'Server error: ' + (e && e.message ? e.message : e));
     }
