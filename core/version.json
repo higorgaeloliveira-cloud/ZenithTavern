@@ -1,5 +1,5 @@
 {
-  "version": "1.11.2",
+  "version": "1.12.2",
   "history": [
     {
       "version": "0.0.1",
@@ -510,7 +510,15 @@
       ],
       "note": "EX-Roster removed. Roster-Downloader redesigned: Grid and List layouts, Stored and Local tabs, HAS UPDATE badges, transfer terminal with progress and error codes, and removal of outdated files after an update",
       "date": "2026-11-11"
+    },
+    {
+      "version": "1.12.2",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Riko Hayase renamed Riko Hayami (card, sub-bots including her mother and grandmother, format hints, Maps, Asterhaven lore)",
+      "date": "2026-11-14"
     }
   ],
-  "released": "2026-11-11"
+  "released": "2026-11-14"
 }
