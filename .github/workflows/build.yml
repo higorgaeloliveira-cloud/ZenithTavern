@@ -3,6 +3,8 @@ name: Build launcher
 # Whenever source files are pushed to main, rebuild what is generated from them
 # (character cards, lorebooks, dist/ZenithTavern.cjs) and commit the result.
 # The Start files then offer the update on the next start. Nothing to run by hand.
+# After that, the roster (cards, sprites, pictures, records) is synced to the storage Worker
+# when the repository secrets STORAGE_URL and STORAGE_KEY are set.
 
 on:
   push:
@@ -92,3 +94,10 @@ jobs:
           fi
           git commit -m "Auto-build launcher, cards and lorebooks [skip ci]"
           git push origin HEAD:main
+
+      - name: Sync the roster to storage
+        continue-on-error: true
+        env:
+          STORAGE_URL: ${{ secrets.STORAGE_URL }}
+          STORAGE_KEY: ${{ secrets.STORAGE_KEY }}
+        run: node tools/storage-sync.cjs
