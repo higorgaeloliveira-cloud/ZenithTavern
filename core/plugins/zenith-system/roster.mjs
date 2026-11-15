@@ -9,11 +9,12 @@
  *  and /api/characters/all only lists cards that were installed by the Roster-Downloader.
  *  The guards are put in FRONT of SillyTavern's own routers, so no SillyTavern file is edited.
  *
- *  ROSTER: core/roster/roster.json (+ one folder per character) is the catalogue. Nothing is
- *  loaded automatically. "Download" copies the card and its expression sprites into the user's
- *  own data folder and records it in <user data>/zenith-roster/installed.json.
- *  tavern.config.json -> roster.remote (an https base URL) makes the catalogue come from the web
- *  instead; every remote file must then carry a sha256 in roster.json.
+ *  ROSTER: the catalogue (roster.json + one folder per character with card.png, sprites/ and images/) comes from the STORAGE:
+ *  the Cloudflare Worker at DEFAULT_REMOTE below (every file is checked against its sha256). If the storage cannot be reached, or it
+ *  is still empty, the copy bundled in the launcher (core/roster/) is used instead and the list says so ("fallback").
+ *  tavern.config.json -> roster.remote: an https address uses that storage instead; "off" uses only the bundled copy; empty = the default.
+ *  Nothing is loaded automatically. "Download" copies the card and its expression sprites into the user's own data folder
+ *  and records it in <user data>/zenith-roster/installed.json.
  *
  *  UPDATES: every download records which files it wrote. When a newer version no longer has some of
  *  them (a removed sprite, a renamed card), they are listed as "outdated" and removed by /roster/cleanup.
@@ -21,7 +22,7 @@
  *
  * Routes (under /api/plugins/zenith-system/):
  *   GET  /strict                    { strict, allowCreate, guard }
- *   GET  /roster                    the catalogue + which entries are already in the Character List
+ *   GET  /roster                    the catalogue + which entries are already in the Character List ({ source, fallback, characters })
  *   GET  /roster/thumb/:id          the card picture of an entry
  *   POST /roster/download           { ids: [...] }  -> per-character results
  *   POST /roster/cleanup            { ids: [...] }  -> removes outdated files left by an update -> { removed }
@@ -38,6 +39,7 @@ const CONFIG_PATH = new URL('tavern.config.json', ROOT_URL);
 const ROSTER_DIR = path.resolve(fileURLToPath(new URL('core/roster/', ROOT_URL)));
 const ST_SRC = new URL('../../src/endpoints/', import.meta.url);
 
+const DEFAULT_REMOTE = 'https://zenith-storage.f30680230.workers.dev';
 const ID_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 const REL_RE = /^(?!.*\.\.)[A-Za-z0-9 _.()'&+-]+(\/[A-Za-z0-9 _.()'&+-]+)*$/;
 const MAX_CARD = 25 * 1024 * 1024;
@@ -55,9 +57,11 @@ export function strictSettings() {
     const c = readConfig().characters || {};
     return { strict: c.strict !== false, allowCreate: c.allowCreate === true };
 }
+/** The storage address, or '' when only the bundled copy should be used. */
 function remoteBase() {
-    const r = String((readConfig().roster || {}).remote || '').trim();
-    return /^https:\/\/[^\s]+$/i.test(r) ? r.replace(/\/+$/, '') : '';
+    const r = String((readConfig().roster || {}).remote ?? '').trim();
+    if (/^(off|local|bundled|none)$/i.test(r)) return '';
+    return /^https:\/\/[^\s]+$/i.test(r) ? r.replace(/\/+$/, '') : DEFAULT_REMOTE;
 }
 
 // ------------------------------------------------------------------ ledger (per user)
@@ -130,9 +134,9 @@ async function fetchLimited(url, limit) {
     return buf;
 }
 
-async function readAsset(rel, limit) {
+/** Reads one file of the catalogue: from the storage when `base` is an address, from the bundled folder otherwise. */
+async function readAsset(rel, limit, base = '') {
     if (!REL_RE.test(rel)) throw new Error(`Unsafe path in roster: ${rel}`);
-    const base = remoteBase();
     if (base) return fetchLimited(`${base}/${rel.split('/').map(encodeURIComponent).join('/')}`, limit);
     const full = path.resolve(ROSTER_DIR, rel);
     if (!full.startsWith(ROSTER_DIR + path.sep)) throw new Error('Unsafe path in roster');
@@ -143,18 +147,9 @@ async function readAsset(rel, limit) {
 
 function sha256(buf) { return crypto.createHash('sha256').update(buf).digest('hex'); }
 
-async function loadManifest() {
-    const base = remoteBase();
-    let raw;
-    try {
-        raw = base ? (await fetchLimited(`${base}/roster.json`, 4 * 1024 * 1024)).toString('utf8')
-            : fs.readFileSync(path.join(ROSTER_DIR, 'roster.json'), 'utf8');
-    } catch (e) {
-        if (base) throw e;
-        return { source: 'local', characters: [] }; // no roster.json yet = empty roster
-    }
-    const data = JSON.parse(raw);
-    const list = Array.isArray(data.characters) ? data.characters : [];
+/** Cleans a roster.json (untrusted when it comes from the web) into a list of safe entries. */
+function normalizeManifest(data) {
+    const list = Array.isArray(data?.characters) ? data.characters : [];
     const seen = new Set();
     const characters = [];
     for (const c of list) {
@@ -182,7 +177,28 @@ async function loadManifest() {
                 .map((s) => ({ path: s.path, as: sanitize(String(s.as || path.posix.basename(s.path))), sha256: typeof s.sha256 === 'string' ? s.sha256.toLowerCase() : '' })),
         });
     }
-    return { source: base ? 'remote' : 'local', characters };
+    return characters;
+}
+
+/** The catalogue: the storage first; the bundled copy when the storage cannot be reached or is still empty.
+ *  Returns { source: 'remote' | 'local', base, fallback, fallbackReason, characters }. */
+async function loadManifest() {
+    const base = remoteBase();
+    let reason = '';
+    if (base) {
+        try {
+            const characters = normalizeManifest(JSON.parse((await fetchLimited(`${base}/roster.json`, 4 * 1024 * 1024)).toString('utf8')));
+            if (characters.length) return { source: 'remote', base, fallback: false, fallbackReason: '', characters };
+            reason = 'The storage roster is empty';
+        } catch (e) { reason = String(e?.message || e); }
+        console.warn(`[Zenith] roster storage not used (${reason}); trying the copy inside the launcher`);
+    }
+    let raw;
+    try { raw = fs.readFileSync(path.join(ROSTER_DIR, 'roster.json'), 'utf8'); } catch {
+        if (base) throw new Error(`${reason} and there is no copy inside the launcher`);
+        return { source: 'local', base: '', fallback: false, fallbackReason: '', characters: [] }; // no roster.json yet = empty roster
+    }
+    return { source: 'local', base: '', fallback: !!base, fallbackReason: reason, characters: normalizeManifest(JSON.parse(raw)) };
 }
 
 function checkHash(buf, expected, remote, what) {
@@ -215,11 +231,11 @@ function toWorldInfo(book) {
 // ------------------------------------------------------------------ install
 let busy = Promise.resolve();
 
-async function installOne(request, entry, remote) {
+async function installOne(request, entry, remote, base) {
     const charsDir = request.user.directories.characters;
     fs.mkdirSync(charsDir, { recursive: true });
 
-    const card = await readAsset(entry.card, MAX_CARD);
+    const card = await readAsset(entry.card, MAX_CARD, base);
     checkHash(card, entry.sha256, remote, 'The character card');
     const data = readCardFromPng(card);
     const cardName = String(data?.data?.name ?? data?.name ?? '').trim();
@@ -227,14 +243,14 @@ async function installOne(request, entry, remote) {
 
     const sprites = [];
     for (const s of entry.sprites) {
-        const buf = await readAsset(s.path, MAX_SPRITE);
+        const buf = await readAsset(s.path, MAX_SPRITE, base);
         checkHash(buf, s.sha256, remote, `Expression ${s.as}`);
         sprites.push({ name: s.as, buf });
     }
 
     const images = [];
     for (const s of entry.images) {
-        const buf = await readAsset(s.path, MAX_SPRITE);
+        const buf = await readAsset(s.path, MAX_SPRITE, base);
         checkHash(buf, s.sha256, remote, `Image ${s.as}`);
         images.push({ name: s.as, buf });
     }
@@ -416,7 +432,7 @@ export function setupRoster(router, guardState) {
                     outdatedFiles: Array.isArray(rec?.stale) ? rec.stale.length : 0,
                 };
             });
-            response.json({ source: manifest.source, characters });
+            response.json({ source: manifest.source, fallback: manifest.fallback, fallbackReason: manifest.fallbackReason, characters });
         } catch (e) {
             console.error('[Zenith] roster list failed', e);
             response.status(502).json({ error: true, message: 'Could not read the roster: ' + (e?.message || e) });
@@ -426,10 +442,11 @@ export function setupRoster(router, guardState) {
     router.get('/roster/thumb/:id', async (request, response) => {
         try {
             if (!ID_RE.test(request.params.id)) return response.sendStatus(400);
-            const entry = (await loadManifest()).characters.find((c) => c.id === request.params.id);
+            const manifest = await loadManifest();
+            const entry = manifest.characters.find((c) => c.id === request.params.id);
             if (!entry) return response.sendStatus(404);
             const rel = entry.thumb || entry.card;
-            const buf = await readAsset(rel, MAX_CARD);
+            const buf = await readAsset(rel, MAX_CARD, manifest.base);
             response.set('Cache-Control', 'private, max-age=300');
             response.type(path.extname(rel).slice(1).toLowerCase() === 'jpg' ? 'jpeg' : path.extname(rel).slice(1).toLowerCase());
             response.send(buf);
@@ -446,7 +463,7 @@ export function setupRoster(router, guardState) {
             for (const id of ids) {
                 const entry = manifest.characters.find((c) => c.id === id);
                 if (!entry) { results.push({ id, ok: false, error: 'Not in the roster' }); continue; }
-                try { results.push(await installOne(request, entry, remote)); } catch (e) {
+                try { results.push(await installOne(request, entry, remote, manifest.base)); } catch (e) {
                     console.error(`[Zenith] roster install of "${id}" failed`, e);
                     results.push({ id, ok: false, error: String(e?.message || e) });
                 }
