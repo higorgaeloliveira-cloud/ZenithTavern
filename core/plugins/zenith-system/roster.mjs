@@ -9,26 +9,33 @@
  *  and /api/characters/all only lists cards that were installed by the Roster-Downloader.
  *  The guards are put in FRONT of SillyTavern's own routers, so no SillyTavern file is edited.
  *
- *  ROSTER: the catalogue (roster.json + one folder per character with card.png, sprites/ and images/) comes from the STORAGE:
+ *  ROSTER: the catalogue (roster.json + one folder per character with card.png, sprites/, images/ and sets/) comes from the STORAGE:
  *  the Cloudflare Worker at DEFAULT_REMOTE below (every file is checked against its sha256). If the storage cannot be reached, or it
  *  is still empty, the copy bundled in the launcher (core/roster/) is used instead and the list says so ("fallback").
  *  tavern.config.json -> roster.remote: an https address uses that storage instead; "off" uses only the bundled copy; empty = the default.
  *  Nothing is loaded automatically. "Download" copies the card and its expression sprites into the user's own data folder
  *  and records it in <user data>/zenith-roster/installed.json.
  *
+ *  OUTFITS: a character can have several outfits ("sets"), each one a zip of expression images (casual.zip, lingerie.zip ...).
+ *  All of them are unpacked into <user data>/zenith-roster/sets/<id>/<set>/ and the ACTIVE one is copied into characters/<Name>/,
+ *  where SillyTavern's Expressions look for sprites. POST /roster/outfit switches the active one. The zip is read by a small
+ *  reader below (stored and deflated entries only; only image files; folders inside the zip are ignored; size limits).
+ *
  *  UPDATES: every download records which files it wrote. When a newer version no longer has some of
  *  them (a removed sprite, a renamed card), they are listed as "outdated" and removed by /roster/cleanup.
- *  Only files this roster itself wrote are ever removed.
+ *  Only files this roster itself wrote are ever removed. A changed outfit zip (different sha256) also shows as an update.
  *
  * Routes (under /api/plugins/zenith-system/):
  *   GET  /strict                    { strict, allowCreate, guard }
  *   GET  /roster                    the catalogue + which entries are already in the Character List ({ source, fallback, characters })
  *   GET  /roster/thumb/:id          the card picture of an entry
  *   POST /roster/download           { ids: [...] }  -> per-character results
+ *   POST /roster/outfit             { id, set }     -> switches the active outfit of a downloaded character
  *   POST /roster/cleanup            { ids: [...] }  -> removes outdated files left by an update -> { removed }
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import zlib from 'node:zlib';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
@@ -41,10 +48,15 @@ const ST_SRC = new URL('../../src/endpoints/', import.meta.url);
 
 const DEFAULT_REMOTE = 'https://zenith-storage.f30680230.workers.dev';
 const ID_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+const SET_ID_RE = /^[a-z0-9][a-z0-9_-]{0,39}$/;
 const REL_RE = /^(?!.*\.\.)[A-Za-z0-9 _.()'&+-]+(\/[A-Za-z0-9 _.()'&+-]+)*$/;
 const MAX_CARD = 25 * 1024 * 1024;
+const MAX_ZIP = 25 * 1024 * 1024;
 const MAX_SPRITE = 12 * 1024 * 1024;
 const MAX_SPRITES = 60;
+const MAX_SETS = 12;
+const MAX_SET_FILES = 120;
+const MAX_SET_TOTAL = 160 * 1024 * 1024;
 const IMAGE_RE = /\.(png|webp|gif|jpe?g)$/i;
 
 export const STRICT_MESSAGE = 'This ZenithTavern fork does not accept characters other than the ones it provides. '
@@ -67,6 +79,7 @@ function remoteBase() {
 // ------------------------------------------------------------------ ledger (per user)
 function userRoot(request) { return request.user.directories.root; }
 function ledgerFile(request) { return path.join(userRoot(request), 'zenith-roster', 'installed.json'); }
+function setsRoot(request) { return path.join(userRoot(request), 'zenith-roster', 'sets'); }
 function readLedger(request) {
     try {
         const data = JSON.parse(fs.readFileSync(ledgerFile(request), 'utf8'));
@@ -123,6 +136,56 @@ export function readCardFromPng(buf) {
     return found ? found.json : null;
 }
 
+// ------------------------------------------------------------------ zip reading (outfits)
+/** Reads the image files of an outfit zip. Stored and deflated entries only. Only the file name is used (folders inside the zip, "../" tricks,
+ *  hidden files and macOS leftovers are ignored). Throws on anything damaged, encrypted, too big or with too many files. Returns Map(name -> Buffer). */
+function unzipImages(buf) {
+    let eocd = -1;
+    for (let i = buf.length - 22; i >= Math.max(0, buf.length - 22 - 65535); i--) {
+        if (buf.readUInt32LE(i) === 0x06054b50) { eocd = i; break; }
+    }
+    if (eocd < 0) throw new Error('The outfit file is not a valid zip');
+    const total = buf.readUInt16LE(eocd + 10);
+    const cdSize = buf.readUInt32LE(eocd + 12);
+    let pos = buf.readUInt32LE(eocd + 16);
+    if (pos + cdSize > buf.length || total > 2000) throw new Error('The outfit zip is damaged');
+    const out = new Map();
+    let totalBytes = 0;
+    for (let n = 0; n < total; n++) {
+        if (pos + 46 > buf.length || buf.readUInt32LE(pos) !== 0x02014b50) throw new Error('The outfit zip is damaged');
+        const flags = buf.readUInt16LE(pos + 8);
+        const method = buf.readUInt16LE(pos + 10);
+        const csize = buf.readUInt32LE(pos + 20);
+        const usize = buf.readUInt32LE(pos + 24);
+        const nlen = buf.readUInt16LE(pos + 28);
+        const xlen = buf.readUInt16LE(pos + 30);
+        const clen = buf.readUInt16LE(pos + 32);
+        const local = buf.readUInt32LE(pos + 42);
+        const rawName = buf.toString((flags & 0x800) ? 'utf8' : 'latin1', pos + 46, pos + 46 + nlen);
+        pos += 46 + nlen + xlen + clen;
+        const base = rawName.split(/[\\/]/).pop();
+        if (!base || rawName.endsWith('/') || base.startsWith('.') || rawName.includes('__MACOSX')) continue;
+        if (!IMAGE_RE.test(base)) continue;
+        const name = sanitize(base);
+        if (!name || !IMAGE_RE.test(name)) continue;
+        if (flags & 1) throw new Error('The outfit zip is password protected');
+        if (method !== 0 && method !== 8) throw new Error('The outfit zip uses an unsupported compression');
+        if (usize > MAX_SPRITE) throw new Error(`${name} is too large`);
+        totalBytes += usize;
+        if (totalBytes > MAX_SET_TOTAL) throw new Error('The outfit zip is too large when unpacked');
+        if (!out.has(name) && out.size >= MAX_SET_FILES) throw new Error('The outfit zip has too many images');
+        if (local + 30 > buf.length || buf.readUInt32LE(local) !== 0x04034b50) throw new Error('The outfit zip is damaged');
+        const start = local + 30 + buf.readUInt16LE(local + 26) + buf.readUInt16LE(local + 28);
+        if (start + csize > buf.length) throw new Error('The outfit zip is damaged');
+        const raw = buf.subarray(start, start + csize);
+        const data = method === 0 ? Buffer.from(raw) : zlib.inflateRawSync(raw, { maxOutputLength: MAX_SPRITE + 1 });
+        if (data.length !== usize || data.length > MAX_SPRITE) throw new Error(`${name} is damaged or too large`);
+        out.set(name, data);
+    }
+    if (!out.size) throw new Error('The outfit zip has no images');
+    return out;
+}
+
 // ------------------------------------------------------------------ catalogue sources
 async function fetchLimited(url, limit) {
     const res = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(60000) });
@@ -156,6 +219,7 @@ function normalizeManifest(data) {
         if (!c || typeof c.id !== 'string' || !ID_RE.test(c.id) || seen.has(c.id)) continue;
         if (typeof c.card !== 'string' || !REL_RE.test(c.card) || !/\.png$/i.test(c.card)) continue;
         seen.add(c.id);
+        const setIds = new Set();
         characters.push({
             id: c.id,
             name: String(c.name || c.id).slice(0, 80),
@@ -175,6 +239,12 @@ function normalizeManifest(data) {
                 .filter((s) => s && typeof s.path === 'string' && REL_RE.test(s.path) && IMAGE_RE.test(s.path))
                 .slice(0, 30)
                 .map((s) => ({ path: s.path, as: sanitize(String(s.as || path.posix.basename(s.path))), sha256: typeof s.sha256 === 'string' ? s.sha256.toLowerCase() : '' })),
+            // outfits: one zip of expression images each
+            sets: (Array.isArray(c.sets) ? c.sets : [])
+                .filter((s) => s && typeof s.id === 'string' && SET_ID_RE.test(s.id) && typeof s.path === 'string' && REL_RE.test(s.path) && /\.zip$/i.test(s.path) && !setIds.has(s.id) && setIds.add(s.id))
+                .slice(0, MAX_SETS)
+                .map((s) => ({ id: s.id, name: String(s.name || s.id).slice(0, 40), path: s.path, sha256: typeof s.sha256 === 'string' ? s.sha256.toLowerCase() : '' })),
+            defaultSet: typeof c.defaultSet === 'string' && SET_ID_RE.test(c.defaultSet) ? c.defaultSet : '',
         });
     }
     return characters;
@@ -241,11 +311,21 @@ async function installOne(request, entry, remote, base) {
     const cardName = String(data?.data?.name ?? data?.name ?? '').trim();
     if (!cardName) throw new Error('The file is not a valid character card');
 
+    // expressions: outfits (zips) when the character has them, loose sprites otherwise
     const sprites = [];
-    for (const s of entry.sprites) {
-        const buf = await readAsset(s.path, MAX_SPRITE, base);
-        checkHash(buf, s.sha256, remote, `Expression ${s.as}`);
-        sprites.push({ name: s.as, buf });
+    const outfits = new Map(); // set id -> { name, sha256, files: Map(name -> Buffer) }
+    if (entry.sets.length) {
+        for (const s of entry.sets) {
+            const zip = await readAsset(s.path, MAX_ZIP, base);
+            checkHash(zip, s.sha256, remote, `Outfit ${s.name}`);
+            outfits.set(s.id, { name: s.name, sha256: sha256(zip), files: unzipImages(zip) });
+        }
+    } else {
+        for (const s of entry.sprites) {
+            const buf = await readAsset(s.path, MAX_SPRITE, base);
+            checkHash(buf, s.sha256, remote, `Expression ${s.as}`);
+            sprites.push({ name: s.as, buf });
+        }
     }
 
     const images = [];
@@ -256,8 +336,17 @@ async function installOne(request, entry, remote, base) {
     }
 
     const ledger = readLedger(request);
+    const prev = ledger.items[entry.id] || {};
+
+    // the outfit that is active: the one the player already wears, else the character's default, else the first
+    let activeSet = '';
+    if (outfits.size) {
+        activeSet = outfits.has(prev.activeSet) ? prev.activeSet : (outfits.has(entry.defaultSet) ? entry.defaultSet : (outfits.has('casual') ? 'casual' : [...outfits.keys()][0]));
+        for (const [name, buf] of outfits.get(activeSet).files) sprites.push({ name, buf });
+    }
+
     const target = path.join(charsDir, entry.file);
-    const ours = ledger.items[entry.id]?.avatar === entry.file;
+    const ours = prev.avatar === entry.file;
     if (fs.existsSync(target) && !ours) fs.renameSync(target, `${target}.zenith-bak`); // never destroy a file we did not write
     const tmp = `${target}.${process.pid}.tmp`;
     fs.writeFileSync(tmp, card);
@@ -281,6 +370,23 @@ async function installOne(request, entry, remote, base) {
         }
     }
 
+    // every outfit is kept unpacked (so switching is instant and offline); the active one was just copied above
+    const setRecs = {};
+    if (outfits.size) {
+        const root = path.join(setsRoot(request), entry.id);
+        fs.mkdirSync(root, { recursive: true });
+        for (const [sid, s] of outfits) {
+            const dir = path.join(root, sid);
+            fs.rmSync(dir, { recursive: true, force: true });
+            fs.mkdirSync(dir, { recursive: true });
+            for (const [name, buf] of s.files) fs.writeFileSync(path.join(dir, name), buf);
+            setRecs[sid] = { name: s.name, sha256: s.sha256, files: [...s.files.keys()] };
+        }
+    }
+    for (const sid of Object.keys(prev.sets || {})) {
+        if (!outfits.has(sid) && SET_ID_RE.test(sid)) fs.rmSync(path.join(setsRoot(request), entry.id, sid), { recursive: true, force: true }); // an outfit the storage no longer has
+    }
+
     if (images.length) {
         const imageDir = path.join(request.user.directories.userImages, sanitize(cardName));
         fs.mkdirSync(imageDir, { recursive: true });
@@ -288,7 +394,6 @@ async function installOne(request, entry, remote, base) {
     }
 
     // What an older version wrote and this one no longer has (a removed sprite, a renamed character): remembered here, removed by /roster/cleanup.
-    const prev = ledger.items[entry.id] || {};
     const imageNames = images.map((i) => i.name);
     const prevFolder = prev.name ? sanitize(prev.name) : '';
     const nowFolder = sanitize(cardName);
@@ -298,10 +403,33 @@ async function installOne(request, entry, remote, base) {
     for (const file of prev.images || []) if ((prevFolder !== nowFolder || !imageNames.includes(file)) && keep('images', prevFolder, file)) stale.push({ kind: 'images', folder: prevFolder, file });
     if (prev.avatar && prev.avatar !== entry.file && !stale.some((s) => s.kind === 'card' && s.file === prev.avatar)) stale.push({ kind: 'card', folder: '', file: prev.avatar });
 
-    ledger.items[entry.id] = { avatar: entry.file, name: cardName, version: entry.version, sprites: written, images: imageNames, stale, installedAt: new Date().toISOString() };
+    ledger.items[entry.id] = { avatar: entry.file, name: cardName, version: entry.version, sprites: written, images: imageNames, sets: setRecs, activeSet, stale, installedAt: new Date().toISOString() };
     writeLedger(request, ledger);
     dropStaleThumbs(request, true);
-    return { id: entry.id, ok: true, avatar: entry.file, name: cardName, sprites: written.length };
+    return {
+        id: entry.id, ok: true, avatar: entry.file, name: cardName, sprites: written.length, activeSet,
+        sets: Object.entries(setRecs).map(([id, r]) => ({ id, name: r.name, files: r.files.length })),
+    };
+}
+
+/** Makes one of the downloaded outfits the active one: its images replace the ones this roster put in characters/<Name>/. */
+function applyOutfit(request, id, setId) {
+    const ledger = readLedger(request);
+    const rec = ledger.items[id];
+    if (!rec || !rec.sets || !rec.sets[setId]) throw new Error('That outfit is not downloaded');
+    const dirs = request.user.directories;
+    const src = path.join(setsRoot(request), id, setId);
+    if (!fs.existsSync(src)) throw new Error('The outfit files are missing. Download the character again.');
+    const files = fs.readdirSync(src).filter((f) => IMAGE_RE.test(f));
+    if (!files.length) throw new Error('The outfit has no images');
+    const folder = path.join(dirs.characters, sanitize(rec.name));
+    fs.mkdirSync(folder, { recursive: true });
+    for (const old of rec.sprites || []) if (!files.includes(old)) fs.rmSync(path.join(folder, sanitize(old)), { force: true }); // only files this roster wrote
+    for (const f of files) fs.copyFileSync(path.join(src, f), path.join(folder, f));
+    rec.sprites = files;
+    rec.activeSet = setId;
+    writeLedger(request, ledger);
+    return { ok: true, id, set: setId, name: rec.sets[setId].name, files: files.length };
 }
 
 /** Removes the outdated files recorded by installOne for the given ids. Returns how many files were removed. */
@@ -425,11 +553,16 @@ export function setupRoster(router, guardState) {
             const characters = manifest.characters.map((c) => {
                 const rec = ledger.items[c.id];
                 const installed = !!rec && rec.avatar === c.file && fs.existsSync(path.join(charsDir, c.file));
+                const recSets = (installed && rec.sets) || {};
+                // a changed, added or removed outfit counts as an update (only judged against the storage, never against the bundled copy)
+                const setsChanged = installed && manifest.source === 'remote'
+                    && (c.sets.some((s) => !recSets[s.id] || (s.sha256 && recSets[s.id].sha256 !== s.sha256)) || Object.keys(recSets).some((sid) => !c.sets.some((s) => s.id === sid)));
                 return {
                     id: c.id, name: c.name, tagline: c.tagline, tags: c.tags, sprites: c.sprites.length,
                     version: c.version, installedVersion: installed ? (rec.version ?? 0) : null,
-                    installed, updateAvailable: installed && (rec.version ?? 0) < c.version,
+                    installed, updateAvailable: installed && ((rec.version ?? 0) < c.version || setsChanged),
                     outdatedFiles: Array.isArray(rec?.stale) ? rec.stale.length : 0,
+                    sets: c.sets.map((s) => ({ id: s.id, name: s.name })), installedSets: Object.keys(recSets), activeSet: installed ? (rec.activeSet || '') : '',
                 };
             });
             response.json({ source: manifest.source, fallback: manifest.fallback, fallbackReason: manifest.fallbackReason, characters });
@@ -473,6 +606,19 @@ export function setupRoster(router, guardState) {
         busy = run.catch(() => { /* keep the queue alive */ });
         try { response.json({ results: await run }); } catch (e) {
             response.status(502).json({ error: true, message: 'Download failed: ' + (e?.message || e) });
+        }
+    });
+
+    router.post('/roster/outfit', express.json({ limit: '16kb' }), async (request, response) => {
+        const id = String(request.body?.id || '');
+        const setId = String(request.body?.set || '');
+        if (!ID_RE.test(id) || !SET_ID_RE.test(setId)) return response.status(400).json({ error: true, message: 'Bad character or outfit.' });
+        try {
+            const run = busy.then(() => applyOutfit(request, id, setId));
+            busy = run.catch(() => { /* keep the queue alive */ });
+            response.json(await run);
+        } catch (e) {
+            response.status(400).json({ error: true, message: String(e?.message || e) });
         }
     });
 
