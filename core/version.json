@@ -1,5 +1,5 @@
 {
-  "version": "1.12.2",
+  "version": "1.13.3",
   "history": [
     {
       "version": "0.0.1",
@@ -518,7 +518,16 @@
       ],
       "note": "Riko Hayase renamed Riko Hayami (card, sub-bots including her mother and grandmother, format hints, Maps, Asterhaven lore)",
       "date": "2026-11-14"
+    },
+    {
+      "version": "1.13.3",
+      "kinds": [
+        "ui",
+        "internal"
+      ],
+      "note": "The Roster now reads cards, sprites and pictures from the Cloudflare storage and falls back to the copy inside the launcher when the storage cannot be reached; the terminal says which one is in use",
+      "date": "2026-11-16"
     }
   ],
-  "released": "2026-11-14"
+  "released": "2026-11-16"
 }
