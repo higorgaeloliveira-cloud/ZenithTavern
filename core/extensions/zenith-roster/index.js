@@ -83,7 +83,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 let root = null;
 let ui = {};              // references to the pieces of the open window
-let data = null;          // { source, characters }
+let data = null;          // { source, fallback, fallbackReason, characters }
 let loadError = null;     // { code, text }
 let layout = 'grid';      // grid | list
 let tab = 'stored';       // stored | local
@@ -161,10 +161,16 @@ function drawBars() {
 function showTerm() { termOpen = true; winClass(); }
 
 // ------------------------------------------------------------ actions
+/** Prints what the server says about where the catalogue came from. */
+function sayStorage() {
+    if (data?.fallback) say('STORAGE NOT REACHED, USING THE COPY INSIDE THE LAUNCHER', 'zr-bad', data.fallbackReason || '');
+    else say('STORAGE CONNECTED', 'zr-ok');
+}
+
 async function connect() {
     say('CONNECTING TO STORAGE…');
     await wait(250);
-    if (await loadRoster()) { say('STORAGE CONNECTED', 'zr-ok'); return true; }
+    if (await loadRoster()) { sayStorage(); return true; }
     say(`FAILED CONNECTION, CONTACT SUPPORT (${loadError.code})`, 'zr-bad', loadError.text);
     return false;
 }
@@ -385,6 +391,7 @@ async function open() {
     if (ok && !stored().length && local().length) tab = 'local';
     else if (ok && updates().length && !stored().length) tab = 'local';
     if (!ok) say(`COULD NOT READ THE ROSTER (${loadError.code})`, 'zr-bad', loadError.text);
+    else if (data.fallback) say('STORAGE NOT REACHED, USING THE COPY INSIDE THE LAUNCHER', 'zr-bad', data.fallbackReason || '');
     drawAll();
 }
 
