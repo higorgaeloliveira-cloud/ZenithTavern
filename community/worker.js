@@ -7,7 +7,7 @@
  *
  * Public (anyone, read only; this is what ZenithTavern's Roster-Downloader reads):
  *   GET /roster.json      the catalogue (built by "Rebuild roster", see below)
- *   GET /<path>           a stored file, for example  /riko-hayami/card.png  or  /riko-hayami/sprites/neutral.webp
+ *   GET /<path>           a stored file, for example  /riko-hayami/card.png  or  /riko-hayami/sets/casual.zip
  *
  * Admin (header  x-admin-key: <ADMIN_KEY>):
  *   GET    /admin                    a small page to do all of this from a browser (phone friendly)
@@ -15,13 +15,16 @@
  *   GET    /api/list                 every stored file: path, size, sha256
  *   PUT    /api/put?path=<path>      body = the file (up to 25 MiB). The sha256 is computed here.
  *   DELETE /api/file?path=<path>
- *   PUT    /api/meta                 JSON { id, name, file, tagline, tags, version, card?, thumb? }  one per character
+ *   PUT    /api/meta                 JSON { id, name, file, tagline, tags, version, card?, thumb?, defaultSet? }  one per character
  *   GET    /api/metas                every character record
  *   DELETE /api/meta?id=<id>
  *   POST   /api/rebuild              builds /roster.json from the character records and the stored files:
- *                                      card  = <id>/card.png (or meta.card)
- *                                      sprites = every file directly inside <id>/sprites/
- *                                      images  = every file directly inside <id>/images/
+ *                                      card    = <id>/card.png (or meta.card)
+ *                                      sprites = every image directly inside <id>/sprites/        (loose expressions)
+ *                                      images  = every image directly inside <id>/images/
+ *                                      sets    = every zip directly inside <id>/sets/             (outfits: casual.zip, lingerie.zip, naked.zip ...)
+ *                                    A zip holds one outfit: the expression images named after the emotion (neutral.webp, joy.webp ...).
+ *                                    When a character has sets, ZenithTavern uses the sets and ignores the loose sprites.
  *                                    Run it once after a batch of uploads.
  *   POST   /api/purge-old            removes the leftovers of the old EX-Roster (keys "pub:" and "prv:")
  *
@@ -70,6 +73,7 @@ async function rebuild(env) {
   const characters = [];
   const skipped = [];
   let spriteCount = 0;
+  let setCount = 0;
   for (const k of await listAll(env, META)) {
     const m = await env.STORE.get(k.name, 'json');
     if (!m || !ID_RE.test(m.id)) continue;
@@ -82,16 +86,29 @@ async function rebuild(env) {
       .sort((a, b) => a.as.localeCompare(b.as));
     const sprites = under('sprites');
     const images = under('images');
+    // outfits: every zip directly inside <id>/sets/ ; the file name (without .zip) is the outfit's id
+    const sets = [];
+    for (const [p, info] of files.entries()) {
+      if (!p.startsWith(`${m.id}/sets/`) || p.slice(m.id.length + 6).includes('/') || !/\.zip$/i.test(p) || !info.sha256) continue;
+      const base = p.slice(p.lastIndexOf('/') + 1).replace(/\.zip$/i, '');
+      const sid = base.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^[-_]+|[-_]+$/g, '').slice(0, 40);
+      if (!sid || sets.some((s) => s.id === sid)) continue;
+      sets.push({ id: sid, name: base.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 40), path: p, size: info.size || 0, sha256: info.sha256 });
+    }
+    sets.sort((a, b) => a.id.localeCompare(b.id));
+    const wanted = typeof m.defaultSet === 'string' ? m.defaultSet : 'casual';
+    const defaultSet = sets.some((s) => s.id === wanted) ? wanted : (sets[0] ? sets[0].id : '');
     spriteCount += sprites.length;
+    setCount += sets.length;
     characters.push({
       id: m.id, name: m.name, file: m.file, tagline: m.tagline || '', tags: m.tags || [], version: m.version || 1,
-      card: cardPath, ...(m.thumb && files.has(m.thumb) ? { thumb: m.thumb } : {}), sha256: cardInfo.sha256, sprites, images,
+      card: cardPath, ...(m.thumb && files.has(m.thumb) ? { thumb: m.thumb } : {}), sha256: cardInfo.sha256, sprites, images, sets, defaultSet,
     });
   }
   characters.sort((a, b) => a.name.localeCompare(b.name));
   const manifest = { version: 1, generatedAt: new Date().toISOString(), characters };
   await env.STORE.put(MANIFEST, JSON.stringify(manifest));
-  return { characters: characters.length, sprites: spriteCount, skipped };
+  return { characters: characters.length, sprites: spriteCount, sets: setCount, skipped };
 }
 
 const ADMIN_HTML = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ZenithTavern storage</title>
@@ -120,8 +137,8 @@ input[type=text],input[type=password],input[type=number]{width:100%;margin:3px 0
 <div id="metas"></div>
 
 <h2>2. Upload files</h2>
-<label>Folder in storage (example: riko-kitsumi/sprites). The card goes in riko-kitsumi (as card.png), pictures in riko-kitsumi/images.</label>
-<input id="prefix" type="text" placeholder="riko-kitsumi/sprites">
+<label>Folder in storage. Outfits (one zip each, named casual.zip, lingerie.zip, naked.zip...): riko-kitsumi/sets. The card (card.png) goes in riko-kitsumi, pictures in riko-kitsumi/images, loose expressions in riko-kitsumi/sprites.</label>
+<input id="prefix" type="text" placeholder="riko-kitsumi/sets">
 <div class="row"><input id="files" type="file" multiple> <button class="go" onclick="upload()">Upload</button></div>
 
 <h2>3. Publish</h2>
@@ -155,7 +172,7 @@ async function upload(){var prefix=$('prefix').value.trim().replace(/^\\/+|\\/+$
     try{await api('/api/put?path='+encodeURIComponent(path),{method:'PUT',body:f});done++}catch(e){return say('Stopped at '+path+': '+e.message+'\\nUploaded before that: '+done,1)}}
   say('Uploaded '+done+' file(s). When everything is up, press Rebuild roster.')}
 async function rebuild(){try{say('Building...');var j=await api('/api/rebuild',{method:'POST'});
-  say('Roster built: '+j.characters+' character(s), '+j.sprites+' sprite(s).'+(j.skipped.length?'\\nSkipped: '+j.skipped.join('; '):''),j.skipped.length>0)}catch(e){say('Failed: '+e.message,1)}}
+  say('Roster built: '+j.characters+' character(s), '+j.sprites+' loose sprite(s), '+j.sets+' outfit zip(s).'+(j.skipped.length?'\\nSkipped: '+j.skipped.join('; '):''),j.skipped.length>0)}catch(e){say('Failed: '+e.message,1)}}
 async function loadFiles(){try{var j=await api('/api/list');var o=$('files_out');o.textContent='';
   j.files.forEach(function(f){var d=document.createElement('div');d.className='f';var b=document.createElement('b');b.textContent=f.path;var s=document.createElement('small');s.textContent=Math.round(f.size/1024)+' KB';
     var x=document.createElement('button');x.className='del';x.textContent='Delete';x.onclick=async function(){if(!confirm('Delete '+f.path+'?'))return;try{await api('/api/file?path='+encodeURIComponent(f.path),{method:'DELETE'});d.remove()}catch(e){say('Failed: '+e.message,1)}};
@@ -214,6 +231,7 @@ export default {
           };
           if (typeof b.card === 'string' && PATH_RE.test(b.card)) rec.card = b.card;
           if (typeof b.thumb === 'string' && PATH_RE.test(b.thumb)) rec.thumb = b.thumb;
+          if (typeof b.defaultSet === 'string' && /^[a-z0-9][a-z0-9_-]{0,39}$/.test(b.defaultSet)) rec.defaultSet = b.defaultSet;
           await env.STORE.put(META + id, JSON.stringify(rec));
           return json({ ok: true, id });
         }
@@ -244,7 +262,7 @@ export default {
 
       // ---------------- admin page and status
       if (path === 'admin') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
-      if (path === '') return json({ ok: true, service: 'zenithtavern-storage', v: 2 });
+      if (path === '') return json({ ok: true, service: 'zenithtavern-storage', v: 3 });
       if (request.method !== 'GET' && request.method !== 'HEAD') return fail(405, 'Read only.');
 
       // ---------------- public: the catalogue and the stored files
