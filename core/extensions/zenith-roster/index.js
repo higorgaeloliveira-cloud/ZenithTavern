@@ -7,6 +7,7 @@
  *  - The Roster-Downloader has two layouts (Grid = cards, List = rows with a side menu) and always shows a
  *    transfer terminal on the right. Characters are split in Stored (not downloaded yet) and Local (ready to use);
  *    a Local character whose version is behind the roster shows HAS UPDATE.
+ *  - A character with several outfits (casual, lingerie, naked ...) gets an Outfit menu once it is downloaded.
  */
 const API = '/api/plugins/zenith-system';
 const ctx = () => SillyTavern.getContext();
@@ -101,6 +102,7 @@ function codeOf(e) {
     if (http) return `E-HTTP-${http[1]}`;
     if (/checksum/i.test(msg)) return 'E-CHECKSUM';
     if (/not a valid character card/i.test(msg)) return 'E-CARD';
+    if (/zip|outfit/i.test(msg)) return 'E-OUTFIT';
     if (/too large/i.test(msg)) return 'E-SIZE';
     if (/not in the roster/i.test(msg)) return 'E-MISSING';
     if (/fetch|network|timeout|abort|load failed/i.test(msg)) return 'E-NETWORK';
@@ -214,6 +216,10 @@ async function runDownload(ids) {
             bars[c.id].state = 'ok';
             done.push(c);
             say(`${c.name.toUpperCase()} IS DOWNLOADED AND READY FOR USE`, 'zr-ok');
+            if (r.sets?.length) {
+                const wearing = r.sets.find((s) => s.id === r.activeSet)?.name || r.activeSet;
+                say(`${r.sets.length} OUTFIT${r.sets.length === 1 ? '' : 'S'}: ${r.sets.map((s) => `${s.name.toUpperCase()} [${s.files}]`).join(', ')}. WEARING ${String(wearing).toUpperCase()}`);
+            }
         } catch (e) {
             bars[c.id].state = 'bad';
             say(`${c.name.toUpperCase()} COULDN'T BE DOWNLOADED (${codeOf(e)})`, 'zr-bad', String(e.message || e));
@@ -249,10 +255,44 @@ async function checkUpdates() {
     drawAll();
 }
 
+/** Switches the outfit a downloaded character wears (its expression images). Everything is already on this computer. */
+async function changeOutfit(c, setId) {
+    if (working) return;
+    working = true; showTerm(); drawAll();
+    const label = String(c.sets?.find((s) => s.id === setId)?.name || setId).toUpperCase();
+    say(`CHANGING THE OUTFIT OF ${c.name.toUpperCase()}…`);
+    try {
+        const res = await fetch(`${API}/roster/outfit`, {
+            method: 'POST', headers: { ...ctx().getRequestHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ id: c.id, set: setId }),
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.message || `HTTP ${res.status}`);
+        say(`${c.name.toUpperCase()} NOW WEARS ${label} [${body.files} EXPRESSIONS]`, 'zr-ok');
+        say('RELOAD THE PAGE (CTRL+F5) SO THE CHAT SHOWS THE NEW EXPRESSIONS.');
+    } catch (e) {
+        say(`COULDN'T CHANGE THE OUTFIT (${codeOf(e)})`, 'zr-bad', String(e.message || e));
+    }
+    await loadRoster();
+    working = false;
+    drawAll();
+}
+
 // ------------------------------------------------------------ drawing
 function pick(c, on) { if (on) selection.add(c.id); else selection.delete(c.id); drawActions(); drawBody(); }
 
 function chip(c) { const s = statusOf(c); return h('span', { class: `zr-chip ${s.cls}` }, s.label); }
+
+/** The Outfit menu of a downloaded character that has more than one outfit; null otherwise. */
+function outfitEl(c) {
+    const have = (c.sets || []).filter((s) => (c.installedSets || []).includes(s.id));
+    if (!c.installed || have.length < 2) return null;
+    return h('select', {
+        class: 'text_pole zr-outfit', title: 'Outfit', disabled: working,
+        style: 'margin:4px 0 0;padding:3px 6px;min-width:0;max-width:100%;width:auto',
+        onclick: (e) => e.stopPropagation(),
+        onchange: (e) => changeOutfit(c, e.target.value),
+    }, have.map((s) => h('option', { value: s.id, ...(s.id === c.activeSet ? { selected: true } : {}) }, `Outfit: ${s.name}`)));
+}
 
 function cardEl(c) {
     const can = selectable(c) && !working;
@@ -264,7 +304,8 @@ function cardEl(c) {
         h('div', { class: 'zr-info' },
             h('b', { class: 'zr-name' }, c.name),
             c.tagline ? h('span', { class: 'zr-tag' }, c.tagline) : null,
-            chip(c)));
+            chip(c),
+            outfitEl(c)));
 }
 
 function rowEl(c) {
@@ -276,6 +317,7 @@ function rowEl(c) {
         h('img', { class: 'zr-banner', src: thumb(c.id), alt: '', loading: 'lazy', onerror: (e) => { e.target.style.visibility = 'hidden'; } }),
         h('span', { class: 'zr-rbox' + (checked ? ' zr-on' : '') + (selectable(c) ? '' : ' zr-off'), 'aria-hidden': 'true' }),
         h('b', { class: 'zr-rname' }, c.name, c.tagline ? h('small', {}, c.tagline) : null),
+        outfitEl(c),
         chip(c),
         h('button', { type: 'button', class: 'zr-ract', title: c.installed && !c.updateAvailable ? 'Ready' : c.updateAvailable ? 'Update' : 'Download', disabled: !can,
             onclick: (e) => { e.stopPropagation(); runDownload([c.id]); } }, h('i', { class: `fa-solid ${icon}` })));
