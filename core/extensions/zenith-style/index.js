@@ -327,9 +327,9 @@ function disableThinking(request) {
         // SillyTavern maps OpenRouter's minimal effort + hidden thoughts to "none".
         request.reasoning_effort = 'none';
     } else if (source === 'openai' || source === 'azure_openai') {
-        if (/^gpt-5\\.(4|5|6)/.test(model)) {
+        if (/^gpt-5\.(4|5|6)/.test(model)) {
             request.reasoning_effort = 'none';
-        } else if (/^o[134]\\b/.test(model)) {
+        } else if (/^o[134]\b/.test(model)) {
             // These families cannot be forced to zero through this API without risking a 400.
             delete request.reasoning_effort;
         } else if (/^gpt-5/.test(model)) {
