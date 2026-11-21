@@ -84,7 +84,6 @@ const TIERS = {
     tiny:   { label: 'Tiny',   window: 12000,  out: 650,  para: [2, 3], words: [70, 100],  sent: [5, 5], temp: 0.8 },
 };
 const tierOfWindow = (w) => (w >= 128000 ? 'large' : w >= 48000 ? 'medium' : w >= 16000 ? 'small' : 'tiny');
-const THINKING_EXTRA = 1250;   // extra reply tokens for a thinking model
 const WINDOW_SHARE = 0.88;     // share of the model's window used as context
 
 function sizeB(id) {
@@ -99,7 +98,6 @@ function sizeB(id) {
 function guessModel(rawId) {
     const id = String(rawId || '').toLowerCase().replace(/^.*\//, '');
     const b = sizeB(id);
-    const reasoning = /(^|[-_:])(r1|reasoner|thinking|think|qwq|o1|o3|o4)([-_:]|$)|gemini-(2\.5|3)|gpt-5|claude-(opus|sonnet|fable|mythos)-?[45]/.test(id);
     const by = (rules, fallback) => { for (const [min, w] of rules) if (b != null && b >= min) return w; return b == null ? fallback : rules[rules.length - 1][1]; };
     let window = null;
     if (/claude|fable|mythos/.test(id)) window = 200000;
@@ -120,7 +118,7 @@ function guessModel(rawId) {
     else if (/deepseek/.test(id)) window = 64000;
     else if (/glm-?4\.[5-9]|glm-?[5-9]|kimi|k2|grok|minimax/.test(id)) window = 128000;
     else if (/glm/.test(id)) window = 32000;
-    return { window: window ?? 32000, reasoning, known: window != null };
+    return { window: window ?? 32000, known: window != null };
 }
 
 async function reportedContext(id) {
@@ -157,18 +155,17 @@ function profile(presets = null) {
         if (rep) window = g.known ? Math.min(g.window, rep) : Math.min(rep, 128000);
         const entry = { id, window, reasoning: g.reasoning, reported: rep, known: g.known };
         if (!limiting || entry.window < limiting.window) limiting = entry;
-        if (entry.reasoning) limiting.reasoning = true; // any thinking model on the list needs room for its thinking
     }
-    limiting ??= { id: '', window: 32000, reasoning: false, reported: 0, known: false };
+    limiting ??= { id: '', window: 32000, reported: 0, known: false };
     let tierKey = s.tier !== 'auto' && TIERS[s.tier] ? s.tier : tierOfWindow(limiting.window);
     const window = s.tier !== 'auto' && TIERS[s.tier] ? TIERS[s.tier].window : limiting.window;
     const t = TIERS[tierKey];
     const cap = Number(s.cap) > 0 ? Number(s.cap) : Number(presets?.maxContext) > 0 ? Number(presets.maxContext) : 200000;
     const maxContext = Math.max(4096, Math.min(cap, Math.floor((window * WINDOW_SHARE) / 500) * 500));
-    const maxResponse = t.out + (limiting.reasoning ? THINKING_EXTRA : 0);
+    const maxResponse = t.out;
     return {
         model: limiting.id, models: ids, router, tier: tierKey, tierLabel: t.label, window, reported: limiting.reported, guessed: !limiting.known,
-        reasoning: limiting.reasoning, maxContext, maxResponse, para: t.para, words: t.words, sent: t.sent, temp: t.temp, cap,
+        maxContext, maxResponse, para: t.para, words: t.words, sent: t.sent, temp: t.temp, cap,
     };
 }
 
@@ -316,6 +313,51 @@ function modesPrompt(p, working) {
     return lines.join('\n');
 }
 
+// ---------------------------------------------------------------- generation safeguards
+// Disable provider-side reasoning where the connected backend has an explicit off switch.
+// This is a request-level fix rather than a prompt instruction.
+function disableThinking(request) {
+    if (!request || typeof request !== 'object') return;
+    const source = String(request.chat_completion_source || '').toLowerCase();
+    const model = String(request.model || '').toLowerCase();
+
+    request.include_reasoning = false;
+
+    if (source === 'openrouter') {
+        // SillyTavern maps OpenRouter's minimal effort + hidden thoughts to "none".
+        request.reasoning_effort = 'none';
+    } else if (source === 'openai' || source === 'azure_openai') {
+        if (/^gpt-5\\.(4|5|6)/.test(model)) {
+            request.reasoning_effort = 'none';
+        } else if (/^o[134]\\b/.test(model)) {
+            // These families cannot be forced to zero through this API without risking a 400.
+            delete request.reasoning_effort;
+        } else if (/^gpt-5/.test(model)) {
+            request.reasoning_effort = 'minimal';
+        } else {
+            delete request.reasoning_effort;
+        }
+    }
+}
+
+// Tiny/Small use SillyTavern's built-in Auto-Continue. The visible response cap
+// stays small, but a response that reaches the cap gets another generation instead
+// of ending in the middle of a sentence.
+function applyShortTierAutoContinue() {
+    const p = profile(globalThis.ZenithStyle?._presets || null);
+    const pu = ctx().powerUserSettings?.auto_continue;
+    if (!pu) return;
+
+    if (p.tier === 'tiny' || p.tier === 'small') {
+        pu.enabled = true;
+        pu.allow_chat_completions = true;
+        pu.target_length = Math.min(1024, p.maxResponse + 64);
+    } else {
+        pu.enabled = false;
+        pu.allow_chat_completions = false;
+    }
+}
+
 // ---------------------------------------------------------------- the interceptor
 const PROMPT_KEY = 'zenith_style';
 let lastBuilt = null;
@@ -367,7 +409,7 @@ function screen() {
         h('div', { class: 'zs-kv' },
             h('span', {}, 'Model'), h('span', {}, p.model ? p.model + (p.router ? ` (+${p.models.length - 1} on LunaRouter, smallest counts)` : '') : 'none connected yet'),
             h('span', {}, 'Context'), h('span', {}, `${num(p.maxContext)} tokens`),
-            h('span', {}, 'Reply up to'), h('span', {}, `${num(p.maxResponse)} tokens${p.reasoning ? ' (includes room for thinking)' : ''}`),
+            h('span', {}, 'Reply up to'), h('span', {}, `${num(p.maxResponse)} tokens`),
             h('span', {}, 'Paragraphs'), h('span', {}, `${p.para[0] === p.para[1] ? p.para[0] : `${p.para[0]} or ${p.para[1]}`}, ${p.sent[0] === p.sent[1] ? p.sent[0] : `${p.sent[0]}-${p.sent[1]}`} sentences and ${p.words[0]}-${p.words[1]} words each`)),
         note(p.reported ? `The API says this model's window is ${num(p.reported)} tokens.` : p.guessed ? 'This model is not on the list of known models, so a careful size was assumed. Pick a size below if you know better.' : 'Sizes come from the model name. Pick a size below to override.'),
         seg([['auto', 'Auto'], ['large', 'Large'], ['medium', 'Medium'], ['small', 'Small'], ['tiny', 'Tiny']], s.tier, (id) => { s.tier = id; save(); globalThis.ZenithStyle.apply(); rerender(); }));
@@ -399,7 +441,7 @@ function screen() {
 }
 
 // ---------------------------------------------------------------- applying the profile
-function apply() { document.dispatchEvent(new Event('zenith-style-apply')); }
+function apply() { applyShortTierAutoContinue(); document.dispatchEvent(new Event('zenith-style-apply')); }
 
 globalThis.ZenithStyle = {
     screen,
@@ -416,6 +458,10 @@ jQuery(() => {
     settings();
     const c = ctx();
     const { eventSource, eventTypes, SlashCommandParser, SlashCommand, SlashCommandArgument, ARGUMENT_TYPE } = c;
+    if (eventTypes?.CHAT_COMPLETION_SETTINGS_READY) {
+        eventSource.on(eventTypes.CHAT_COMPLETION_SETTINGS_READY, disableThinking);
+    }
+    applyShortTierAutoContinue();
     const refresh = async () => { if (await refreshReported()) apply(); };
     eventSource.on(eventTypes.APP_READY, refresh);
     eventSource.on(eventTypes.CHAT_CHANGED, refresh);
