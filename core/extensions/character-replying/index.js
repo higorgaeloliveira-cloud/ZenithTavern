@@ -1,5 +1,4 @@
-/* Character Replying - small animated indicator shown while the character is generating. */
-const MODULE = 'character_replying';
+/* Character Replying - polished generation indicator. */
 const KEY = 'character_replying';
 
 function ctx() {
@@ -14,85 +13,21 @@ function settings() {
     return s;
 }
 
-function injectStyles() {
-    if (document.getElementById('character-replying-style')) return;
-    const style = document.createElement('style');
-    style.id = 'character-replying-style';
-    style.textContent = `
-#character-replying-indicator {
-    position: fixed;
-    z-index: 9999;
-    left: 50%;
-    bottom: calc(var(--bottom-sentinel-height, 0px) + 18px);
-    transform: translateX(-50%);
-    display: none;
-    align-items: center;
-    gap: 10px;
-    min-height: 36px;
-    padding: 7px 13px 7px 12px;
-    border: 1px solid color-mix(in srgb, var(--SmartThemeBorderColor, #777) 70%, transparent);
-    border-radius: 18px;
-    background: color-mix(in srgb, var(--SmartThemeBlurTintColor, #222) 88%, transparent);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, .18);
-    color: var(--SmartThemeBodyColor, #eee);
-    font-size: 12px;
-    line-height: 1;
-    pointer-events: none;
-    backdrop-filter: blur(8px);
-}
-#character-replying-indicator.cri-visible {
-    display: inline-flex;
-}
-#character-replying-indicator .cri-label {
-    opacity: .82;
-    white-space: nowrap;
-}
-#character-replying-indicator .cri-dots {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-#character-replying-indicator .cri-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: .35;
-    animation: character-replying-bounce 1.2s infinite ease-in-out;
-}
-#character-replying-indicator .cri-dot:nth-child(2) { animation-delay: .16s; }
-#character-replying-indicator .cri-dot:nth-child(3) { animation-delay: .32s; }
-
-@keyframes character-replying-bounce {
-    0%, 60%, 100% { transform: translateY(0); opacity: .35; }
-    30% { transform: translateY(-3px); opacity: 1; }
-}
-
-@media (max-width: 600px) {
-    #character-replying-indicator {
-        bottom: calc(var(--bottom-sentinel-height, 0px) + 12px);
-        max-width: calc(100vw - 28px);
-    }
-}
-`;
-    document.head.appendChild(style);
-}
-
 function ensureIndicator() {
     let el = document.getElementById('character-replying-indicator');
     if (el) return el;
 
     el = document.createElement('div');
     el.id = 'character-replying-indicator';
+    el.className = 'cri-indicator';
+    el.setAttribute('role', 'status');
     el.setAttribute('aria-live', 'polite');
-    el.setAttribute('aria-label', 'Character is replying');
+    el.setAttribute('aria-atomic', 'true');
     el.innerHTML = `
-        <span class="cri-label">Character is replying</span>
-        <span class="cri-dots" aria-hidden="true">
-            <span class="cri-dot"></span>
-            <span class="cri-dot"></span>
-            <span class="cri-dot"></span>
+        <span class="cri-mark" aria-hidden="true">
+            <span class="cri-dot"></span><span class="cri-dot"></span><span class="cri-dot"></span>
         </span>
+        <span class="cri-label">Character is replying</span>
     `;
     document.body.appendChild(el);
     return el;
@@ -100,93 +35,106 @@ function ensureIndicator() {
 
 function characterName() {
     const c = ctx();
-    try {
-        const name = c.name2 || c.characterName || '';
-        return String(name).trim();
-    } catch {
-        return '';
-    }
+    return String(c.name2 || c.characterName || '').trim();
+}
+
+function updateLabel() {
+    const el = ensureIndicator();
+    const label = el.querySelector('.cri-label');
+    const s = settings();
+    const name = characterName();
+    if (label) label.textContent = s.showName && name ? `${name} is replying` : 'Character is replying';
+    el.setAttribute('aria-label', label?.textContent || 'Character is replying');
 }
 
 function show() {
-    const s = settings();
-    if (!s.enabled) return;
-    const el = ensureIndicator();
-    const label = el.querySelector('.cri-label');
-    const name = characterName();
-    if (label) {
-        label.textContent = s.showName && name ? `${name} is replying` : 'Character is replying';
-    }
-    el.classList.add('cri-visible');
+    if (!settings().enabled) return;
+    updateLabel();
+    ensureIndicator().classList.add('cri-visible');
 }
 
 function hide() {
-    const el = document.getElementById('character-replying-indicator');
-    if (el) el.classList.remove('cri-visible');
+    document.getElementById('character-replying-indicator')?.classList.remove('cri-visible');
+}
+
+function makeToggle(checked, label, description, onChange) {
+    const wrap = document.createElement('label');
+    wrap.className = 'cri-setting';
+    const copy = document.createElement('span');
+    copy.className = 'cri-setting-copy';
+    const title = document.createElement('span');
+    title.className = 'cri-setting-title';
+    title.textContent = label;
+    copy.append(title);
+    if (description) {
+        const desc = document.createElement('span');
+        desc.className = 'cri-setting-description';
+        desc.textContent = description;
+        copy.append(desc);
+    }
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.className = 'cri-switch-input';
+    input.checked = checked;
+    const visual = document.createElement('span');
+    visual.className = 'cri-switch';
+    visual.setAttribute('aria-hidden', 'true');
+    input.addEventListener('change', () => onChange(input.checked));
+    wrap.append(copy, input, visual);
+    return wrap;
 }
 
 function screen() {
     const s = settings();
-    const h = (tag, attrs = {}, ...kids) => {
-        const el = document.createElement(tag);
-        for (const [k, v] of Object.entries(attrs)) {
-            if (k === 'class') el.className = v;
-            else if (v !== false && v != null) el.setAttribute(k, v);
-        }
-        for (const kid of kids.flat(Infinity)) if (kid != null) el.append(kid.nodeType ? kid : document.createTextNode(kid));
-        return el;
-    };
-    const toggle = (checked, onChange) => {
-        const i = h('input', { type: 'checkbox', class: 'zp-toggle' });
-        i.checked = checked;
-        i.addEventListener('change', () => onChange(i.checked));
-        return i;
-    };
+    const root = document.createElement('section');
+    root.className = 'cri-settings';
 
-    return h('div', {},
-        h('div', { class: 'zp-card' },
-            h('div', { class: 'zp-row' },
-                h('div', {},
-                    h('b', {}, 'Character replying'),
-                    h('small', {}, 'Shows a small animated three-dot indicator while the character is generating.')
-                ),
-                toggle(s.enabled, (v) => {
-                    s.enabled = v;
-                    ctx().saveSettingsDebounced();
-                    if (!v) hide();
-                })
-            ),
-            h('div', { class: 'zp-row' },
-                h('span', {}, 'Show character name'),
-                toggle(s.showName, (v) => {
-                    s.showName = v;
-                    ctx().saveSettingsDebounced();
-                })
-            )
-        )
+    const intro = document.createElement('div');
+    intro.className = 'cri-settings-intro';
+    const icon = document.createElement('div');
+    icon.className = 'cri-preview-mark';
+    icon.innerHTML = '<span></span><span></span><span></span>';
+    const text = document.createElement('div');
+    text.className = 'cri-intro-copy';
+    const heading = document.createElement('div');
+    heading.className = 'cri-settings-heading';
+    heading.textContent = 'Character Replying';
+    const sub = document.createElement('p');
+    sub.textContent = 'A subtle typing indicator appears while a character is generating a response.';
+    text.append(heading, sub);
+    intro.append(icon, text);
+
+    const options = document.createElement('div');
+    options.className = 'cri-settings-options';
+    options.append(
+        makeToggle(s.enabled, 'Enable indicator', 'Show the animated reply bubble during generation.', (value) => {
+            s.enabled = value;
+            ctx().saveSettingsDebounced();
+            if (!value) hide();
+        }),
+        makeToggle(s.showName, 'Show character name', 'Personalize the indicator with the active character’s name.', (value) => {
+            s.showName = value;
+            ctx().saveSettingsDebounced();
+            if (document.getElementById('character-replying-indicator')?.classList.contains('cri-visible')) updateLabel();
+        })
     );
+
+    root.append(intro, options);
+    return root;
 }
 
 jQuery(() => {
     const c = ctx();
     const { eventSource, eventTypes } = c;
     settings();
-    injectStyles();
     ensureIndicator();
 
-    const started = eventTypes?.GENERATION_STARTED;
-    const ended = eventTypes?.GENERATION_ENDED;
-    const received = eventTypes?.MESSAGE_RECEIVED;
-    const cancelled = eventTypes?.GENERATION_STOPPED;
-
-    if (started) eventSource.on(started, show);
-    if (ended) eventSource.on(ended, hide);
-    if (received) eventSource.on(received, hide);
-    if (cancelled) eventSource.on(cancelled, hide);
-
+    if (eventTypes?.GENERATION_STARTED) eventSource.on(eventTypes.GENERATION_STARTED, show);
+    if (eventTypes?.GENERATION_ENDED) eventSource.on(eventTypes.GENERATION_ENDED, hide);
+    if (eventTypes?.MESSAGE_RECEIVED) eventSource.on(eventTypes.MESSAGE_RECEIVED, hide);
+    if (eventTypes?.GENERATION_STOPPED) eventSource.on(eventTypes.GENERATION_STOPPED, hide);
     if (eventTypes?.CHAT_CHANGED) eventSource.on(eventTypes.CHAT_CHANGED, hide);
     if (eventTypes?.APP_READY) eventSource.on(eventTypes.APP_READY, () => {
-        injectStyles();
         ensureIndicator();
         hide();
     });
