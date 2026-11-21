@@ -153,7 +153,7 @@ function profile(presets = null) {
         const rep = reportedCache.get(id) || 0;
         let window = g.window;
         if (rep) window = g.known ? Math.min(g.window, rep) : Math.min(rep, 128000);
-        const entry = { id, window, reasoning: g.reasoning, reported: rep, known: g.known };
+        const entry = { id, window, reported: rep, known: g.known };
         if (!limiting || entry.window < limiting.window) limiting = entry;
     }
     limiting ??= { id: '', window: 32000, reported: 0, known: false };
