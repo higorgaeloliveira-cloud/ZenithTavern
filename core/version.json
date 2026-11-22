@@ -1,5 +1,5 @@
 {
-  "version": "1.13.3",
+  "version": "1.14.3",
   "history": [
     {
       "version": "0.0.1",
@@ -527,7 +527,15 @@
       ],
       "note": "The Roster now reads cards, sprites and pictures from the Cloudflare storage and falls back to the copy inside the launcher when the storage cannot be reached; the terminal says which one is in use",
       "date": "2026-11-16"
+    },
+    {
+      "version": "1.14.3",
+      "kinds": [
+        "internal"
+      ],
+      "note": "Character Replying: added the required extension manifest so the generation indicator is actually loaded; version bump rules now distinguish configuration changes (+0.0.1), internal changes (+0.1.0), and major changes (+1.0.0).",
+      "date": "2026-11-22"
     }
   ],
-  "released": "2026-11-16"
+  "released": "2026-11-22"
 }
