@@ -188,6 +188,8 @@ const panelLive = (key) => () => !!globalThis.ZenithPanel?.live?.[key]?.();
 const soon = (text) => h('div', { class: 'zph-soon' }, h('i', { class: 'fa-solid fa-hourglass-half' }), h('b', {}, 'Coming soon'), h('p', {}, text));
 
 const APPS = [
+    { id: 'kimi', name: 'Kimi', title: 'Kimi · ZenithTavern Assistant', icon: 'fa-wand-magic-sparkles', color: 'linear-gradient(160deg,#d18b35,#7e4826)',
+      render: () => globalThis.ZenithKimi?.screen?.() || soon('Kimi is not loaded.'), live: () => !!globalThis.ZenithKimi?.live?.() },
     { id: 'promptos', name: 'PromptOS', title: 'PromptOS', icon: 'fa-terminal', color: 'linear-gradient(160deg,#3a3a40,#121214)',
       render: () => globalThis.ZenithStyle?.screen?.() || soon('Zenith Style is not loaded.'), live: () => !!globalThis.ZenithStyle?.live?.() },
     { id: 'sysprompts', name: 'System Prompts', title: 'System Prompts', icon: 'fa-scroll', color: 'linear-gradient(160deg,#64d2ff,#0a84ff)',
