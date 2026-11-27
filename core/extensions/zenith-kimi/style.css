@@ -1,0 +1,14 @@
+.zk-screen{display:flex;flex-direction:column;min-height:100%;gap:10px;padding:12px;box-sizing:border-box;color:var(--SmartThemeBodyColor,#eee)}
+.zk-hero{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid color-mix(in srgb,var(--SmartThemeBorderColor,#555) 70%,transparent);border-radius:16px;background:color-mix(in srgb,var(--SmartThemeBlurTintColor,#17171b) 88%,transparent)}
+.zk-avatar{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:20px;background:linear-gradient(145deg,#d18b35,#8a4d25);color:#fff;box-shadow:0 6px 20px #0004}
+.zk-hero h3{margin:0;font-size:16px}.zk-hero p{margin:2px 0 0;opacity:.7;font-size:11px}.zk-status{margin-left:auto;font-size:9px;letter-spacing:.12em;opacity:.65}
+.zk-toolbar{display:flex;align-items:center;gap:8px;font-size:10px;opacity:.75}.zk-toolbar span{flex:1}
+.zk-clear,.zk-send{border:1px solid var(--SmartThemeBorderColor,#555);background:var(--SmartThemeBlurTintColor,#202024);color:inherit;border-radius:10px;padding:7px 10px;cursor:pointer}
+.zk-messages{display:flex;flex-direction:column;gap:9px;flex:1;min-height:240px;max-height:calc(100vh - 420px);overflow:auto;padding:2px}
+.zk-message{max-width:92%;padding:9px 11px;border-radius:14px;line-height:1.45;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.zk-kimi{align-self:flex-start;background:color-mix(in srgb,#9a612e 17%,var(--SmartThemeBlurTintColor,#202024));border:1px solid color-mix(in srgb,#c78a45 28%,var(--SmartThemeBorderColor,#555))}
+.zk-user{align-self:flex-end;background:color-mix(in srgb,var(--SmartThemeQuoteColor,#6c63ff) 16%,var(--SmartThemeBlurTintColor,#202024));border:1px solid color-mix(in srgb,var(--SmartThemeQuoteColor,#6c63ff) 28%,var(--SmartThemeBorderColor,#555))}
+.zk-speaker{font-size:9px;font-weight:700;opacity:.65;margin-bottom:4px}.zk-ear{font-size:12px}.zk-message-text{font-size:12px}
+.zk-compose{display:flex;gap:7px;align-items:flex-end}.zk-input{flex:1;resize:vertical;min-height:38px;max-height:140px;border-radius:12px;padding:9px 10px;background:var(--SmartThemeBlurTintColor,#202024);color:inherit;border:1px solid var(--SmartThemeBorderColor,#555);box-sizing:border-box}.zk-input:focus{outline:2px solid color-mix(in srgb,#c78a45 55%,transparent);outline-offset:1px}.zk-send{min-width:58px;height:38px;background:linear-gradient(145deg,#a96730,#7e4826);color:#fff;border-color:transparent}.zk-send:disabled{opacity:.55;cursor:wait}
+.zk-note{font-size:9px;line-height:1.35;opacity:.52;margin:0 2px 2px}
+@media(max-width:500px){.zk-screen{padding:8px}.zk-messages{max-height:calc(100vh - 390px)}.zk-message{max-width:96%}}
