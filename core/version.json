@@ -1,6 +1,15 @@
 {
-  "version": "2.14.3",
+  "version": "3.14.3",
   "history": [
+    {
+      "version": "3.14.3",
+      "kinds": [
+        "major",
+        "internal"
+      ],
+      "note": "Roster: removed the remote/Cloudflare catalogue path so characters are bundled with ZenithTavern again; expanded the roster to 20 adult characters with new Draconid, Crocodile, Demonid, Harpy, Owl, Hellhound, Inumimi, Phoenix, and second Kitsune variations.",
+      "date": "2026-11-28"
+    },
     {
       "version": "2.14.3",
       "kinds": [
