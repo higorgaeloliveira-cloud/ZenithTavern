@@ -5,7 +5,7 @@
  *  - The cloud button in the top bar opens the Roster-Downloader. Characters only appear in the
  *    Character List after they were downloaded there.
  *  - The Roster-Downloader has two layouts (Grid = cards, List = rows with a side menu) and always shows a
- *    transfer terminal on the right. Characters are split in Stored (not downloaded yet) and Local (ready to use);
+ *    transfer terminal on the right. Characters are split in Stored (bundled but not installed yet) and Local (ready to use);
  *    a Local character whose version is behind the roster shows HAS UPDATE.
  *  - A character with several outfits (casual, lingerie, naked ...) gets an Outfit menu once it is downloaded.
  */
@@ -39,7 +39,7 @@ async function showStrict(kind = 'import') {
             h('div', { class: 'zr-lock fa-solid fa-lock' }),
             h('h3', {}, TITLES[kind] || TITLES.import),
             h('p', {}, kind === 'edit' || kind === 'delete' ? 'The characters in ZenithTavern are read-only: they cannot be edited or deleted here. To change a character, use normal SillyTavern.' : STRICT_TEXT),
-            h('p', { class: 'zr-small' }, 'The characters made for ZenithTavern are in the Roster-Downloader (the cloud icon in the top bar).'));
+            h('p', { class: 'zr-small' }, 'The characters made for ZenithTavern are in the Roster-Downloader (the roster icon in the top bar).'));
         await callGenericPopup(box, POPUP_TYPE.TEXT, '', { okButton: 'Understood' });
     } finally { strictOpen = false; }
 }
@@ -84,7 +84,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 let root = null;
 let ui = {};              // references to the pieces of the open window
-let data = null;          // { source, fallback, fallbackReason, characters }
+let data = null;          // { source, characters }
 let loadError = null;     // { code, text }
 let layout = 'grid';      // grid | list
 let tab = 'stored';       // stored | local
@@ -163,24 +163,21 @@ function drawBars() {
 function showTerm() { termOpen = true; winClass(); }
 
 // ------------------------------------------------------------ actions
-/** Prints what the server says about where the catalogue came from. */
 function sayStorage() {
-    if (data?.fallback) say('STORAGE NOT REACHED, USING THE COPY INSIDE THE LAUNCHER', 'zr-bad', data.fallbackReason || '');
-    else say('STORAGE CONNECTED', 'zr-ok');
+    say('BUNDLED ROSTER READY', 'zr-ok', 'Characters are shipped with this ZenithTavern build.');
 }
 
 async function connect() {
-    say('CONNECTING TO STORAGE…');
-    await wait(250);
-    if (await loadRoster()) { sayStorage(); return true; }
-    say(`FAILED CONNECTION, CONTACT SUPPORT (${loadError.code})`, 'zr-bad', loadError.text);
-    return false;
+    say('LOADING BUNDLED ROSTER…');
+    return loadRoster().then((ok) => {
+        if (ok) { sayStorage(); return true; }
+        say(`FAILED TO READ THE BUNDLED ROSTER (${loadError.code})`, 'zr-bad', loadError.text);
+        return false;
+    });
 }
 
-async function closeConnection() {
-    say('CLOSING CONNECTION…');
-    await wait(300);
-    say('CONNECTION CLOSED.');
+async async function closeConnection() {
+    say('ROSTER SEQUENCE COMPLETE.');
     await wait(150);
 }
 
