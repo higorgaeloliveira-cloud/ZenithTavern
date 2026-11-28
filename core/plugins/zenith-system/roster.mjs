@@ -69,12 +69,6 @@ export function strictSettings() {
     const c = readConfig().characters || {};
     return { strict: c.strict !== false, allowCreate: c.allowCreate === true };
 }
-/** A web address for the catalogue when tavern.config.json sets one, otherwise '' (= only the copy bundled in the launcher). */
-function remoteBase() {
-    const r = String((readConfig().roster || {}).remote ?? '').trim();
-    return /^https:\/\/[^\s]+$/i.test(r) ? r.replace(/\/+$/, '') : '';
-}
-
 // ------------------------------------------------------------------ ledger (per user)
 function userRoot(request) { return request.user.directories.root; }
 function ledgerFile(request) { return path.join(userRoot(request), 'zenith-roster', 'installed.json'); }
@@ -196,10 +190,9 @@ async function fetchLimited(url, limit) {
     return buf;
 }
 
-/** Reads one file of the catalogue: from the storage when `base` is an address, from the bundled folder otherwise. */
-async function readAsset(rel, limit, base = '') {
+/** Reads one file of the bundled catalogue. */
+async function readAsset(rel, limit) {
     if (!REL_RE.test(rel)) throw new Error(`Unsafe path in roster: ${rel}`);
-    if (base) return fetchLimited(`${base}/${rel.split('/').map(encodeURIComponent).join('/')}`, limit);
     const full = path.resolve(ROSTER_DIR, rel);
     if (!full.startsWith(ROSTER_DIR + path.sep)) throw new Error('Unsafe path in roster');
     const buf = fs.readFileSync(full);
@@ -249,30 +242,17 @@ function normalizeManifest(data) {
     return characters;
 }
 
-/** The catalogue: the bundled copy by default; a configured web address first (with the bundled copy as the fallback).
- *  Returns { source: 'remote' | 'local', base, fallback, fallbackReason, characters }. */
+/** The catalogue is always the bundled copy shipped with ZenithTavern. */
 async function loadManifest() {
-    const base = remoteBase();
-    let reason = '';
-    if (base) {
-        try {
-            const characters = normalizeManifest(JSON.parse((await fetchLimited(`${base}/roster.json`, 4 * 1024 * 1024)).toString('utf8')));
-            if (characters.length) return { source: 'remote', base, fallback: false, fallbackReason: '', characters };
-            reason = 'The storage roster is empty';
-        } catch (e) { reason = String(e?.message || e); }
-        console.warn(`[Zenith] roster storage not used (${reason}); trying the copy inside the launcher`);
-    }
+    const file = path.join(ROSTER_DIR, 'roster.json');
     let raw;
-    try { raw = fs.readFileSync(path.join(ROSTER_DIR, 'roster.json'), 'utf8'); } catch {
-        if (base) throw new Error(`${reason} and there is no copy inside the launcher`);
-        return { source: 'local', base: '', fallback: false, fallbackReason: '', characters: [] }; // no roster.json yet = empty roster
-    }
-    return { source: 'local', base: '', fallback: !!base, fallbackReason: reason, characters: normalizeManifest(JSON.parse(raw)) };
+    try { raw = fs.readFileSync(file, 'utf8'); }
+    catch { return { source: 'local', characters: [] }; }
+    return { source: 'local', characters: normalizeManifest(JSON.parse(raw)) };
 }
 
-function checkHash(buf, expected, remote, what) {
-    if (expected) { if (sha256(buf) !== expected) throw new Error(`${what} did not match its checksum`); }
-    else if (remote) throw new Error(`${what} has no checksum in roster.json (required for remote rosters)`);
+function checkHash(buf, expected, what) {
+    if (expected && sha256(buf) !== expected) throw new Error(`${what} did not match its checksum`);
 }
 
 // ------------------------------------------------------------------ embedded lorebook -> World Info file
@@ -300,12 +280,12 @@ function toWorldInfo(book) {
 // ------------------------------------------------------------------ install
 let busy = Promise.resolve();
 
-async function installOne(request, entry, remote, base) {
+async function installOne(request, entry) {
     const charsDir = request.user.directories.characters;
     fs.mkdirSync(charsDir, { recursive: true });
 
-    const card = await readAsset(entry.card, MAX_CARD, base);
-    checkHash(card, entry.sha256, remote, 'The character card');
+    const card = await readAsset(entry.card, MAX_CARD);
+    checkHash(card, entry.sha256, 'The character card');
     const data = readCardFromPng(card);
     const cardName = String(data?.data?.name ?? data?.name ?? '').trim();
     if (!cardName) throw new Error('The file is not a valid character card');
@@ -315,14 +295,14 @@ async function installOne(request, entry, remote, base) {
     const outfits = new Map(); // set id -> { name, sha256, files: Map(name -> Buffer) }
     if (entry.sets.length) {
         for (const s of entry.sets) {
-            const zip = await readAsset(s.path, MAX_ZIP, base);
-            checkHash(zip, s.sha256, remote, `Outfit ${s.name}`);
+            const zip = await readAsset(s.path, MAX_ZIP);
+            checkHash(zip, s.sha256, `Outfit ${s.name}`);
             outfits.set(s.id, { name: s.name, sha256: sha256(zip), files: unzipImages(zip) });
         }
     } else {
         for (const s of entry.sprites) {
-            const buf = await readAsset(s.path, MAX_SPRITE, base);
-            checkHash(buf, s.sha256, remote, `Expression ${s.as}`);
+            const buf = await readAsset(s.path, MAX_SPRITE);
+            checkHash(buf, s.sha256, `Expression ${s.as}`);
             sprites.push({ name: s.as, buf });
         }
     }
@@ -330,7 +310,7 @@ async function installOne(request, entry, remote, base) {
     const images = [];
     for (const s of entry.images) {
         const buf = await readAsset(s.path, MAX_SPRITE, base);
-        checkHash(buf, s.sha256, remote, `Image ${s.as}`);
+        checkHash(buf, s.sha256, `Image ${s.as}`);
         images.push({ name: s.as, buf });
     }
 
@@ -554,7 +534,7 @@ export function setupRoster(router, guardState) {
                 const installed = !!rec && rec.avatar === c.file && fs.existsSync(path.join(charsDir, c.file));
                 const recSets = (installed && rec.sets) || {};
                 // a changed, added or removed outfit counts as an update (only judged against the storage, never against the bundled copy)
-                const setsChanged = installed && manifest.source === 'remote'
+                const setsChanged = false
                     && (c.sets.some((s) => !recSets[s.id] || (s.sha256 && recSets[s.id].sha256 !== s.sha256)) || Object.keys(recSets).some((sid) => !c.sets.some((s) => s.id === sid)));
                 return {
                     id: c.id, name: c.name, tagline: c.tagline, tags: c.tags, sprites: c.sprites.length,
@@ -590,12 +570,11 @@ export function setupRoster(router, guardState) {
         if (!ids.length) return response.status(400).json({ error: true, message: 'Nothing selected.' });
         const run = busy.then(async () => {
             const manifest = await loadManifest();
-            const remote = manifest.source === 'remote';
             const results = [];
             for (const id of ids) {
                 const entry = manifest.characters.find((c) => c.id === id);
                 if (!entry) { results.push({ id, ok: false, error: 'Not in the roster' }); continue; }
-                try { results.push(await installOne(request, entry, remote, manifest.base)); } catch (e) {
+                try { results.push(await installOne(request, entry)); } catch (e) {
                     console.error(`[Zenith] roster install of "${id}" failed`, e);
                     results.push({ id, ok: false, error: String(e?.message || e) });
                 }
