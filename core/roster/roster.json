@@ -275,6 +275,186 @@
       "card": "juno-tidewell/card.png",
       "sha256": "63feaa8b85a4a38670751abc45c9504c8ef2d2249f2f7b3c474b0cc2982cb76b",
       "sprites": []
+    },
+    {
+      "id": "aurelia-drake",
+      "name": "Aurelia Drake",
+      "file": "Aurelia Drake.png",
+      "tagline": "Composed, ambitious and quietly competitive. Asterhaven University graduate student in Astrophysics.",
+      "tags": [
+        "draconid",
+        "dragon girl",
+        "university",
+        "astrophysics",
+        "calm",
+        "ambitious"
+      ],
+      "version": 1,
+      "card": "aurelia-drake/card.png",
+      "sha256": "0cdad38ecb6e09d6c294199e925a1b07c0060ba2",
+      "sprites": []
+    },
+    {
+      "id": "cassia-croft",
+      "name": "Cassia Croft",
+      "file": "Cassia Croft.png",
+      "tagline": "Practical, patient and blunt in a way that is usually kinder than it sounds. Harborfront mechanic and small-boat repairer.",
+      "tags": [
+        "crocodile",
+        "crocodile girl",
+        "mechanic",
+        "harbor",
+        "adult",
+        "practical"
+      ],
+      "version": 1,
+      "card": "cassia-croft/card.png",
+      "sha256": "adb42ac8e6211858c95a735152541d21900eafb4",
+      "sprites": []
+    },
+    {
+      "id": "selene-voss",
+      "name": "Selene Voss",
+      "file": "Selene Voss.png",
+      "tagline": "Elegant, sardonic and intensely curious. Night-shift archivist at Asterhaven University.",
+      "tags": [
+        "demonid",
+        "demon girl",
+        "archivist",
+        "university",
+        "night owl",
+        "mysterious"
+      ],
+      "version": 1,
+      "card": "selene-voss/card.png",
+      "sha256": "52d5a3140c513aa87712573e2478b993d6973e1a",
+      "sprites": []
+    },
+    {
+      "id": "lyra-aerie",
+      "name": "Lyra Aerie",
+      "file": "Lyra Aerie.png",
+      "tagline": "Fast-talking, fearless and endlessly curious. Courier and rooftop photographer.",
+      "tags": [
+        "harpy",
+        "bird girl",
+        "courier",
+        "photographer",
+        "rooftops",
+        "energetic"
+      ],
+      "version": 1,
+      "card": "lyra-aerie/card.png",
+      "sha256": "428fb697df38533e0d233991e5e5d19b9153fca7",
+      "sprites": []
+    },
+    {
+      "id": "mira-hoots",
+      "name": "Mira Hoots",
+      "file": "Mira Hoots.png",
+      "tagline": "Soft-spoken, observant and surprisingly funny once comfortable. Graduate assistant in library sciences.",
+      "tags": [
+        "owl",
+        "owl girl",
+        "kemonomimi",
+        "library",
+        "night owl",
+        "quiet"
+      ],
+      "version": 1,
+      "card": "mira-hoots/card.png",
+      "sha256": "c8d5b78554ca19cbac18be09e72aeddae3033a1c",
+      "sprites": []
+    },
+    {
+      "id": "vexa-hollow",
+      "name": "Vexa Hollow",
+      "file": "Vexa Hollow.png",
+      "tagline": "Protective, disciplined and intimidating on purpose. Bouncer and security contractor.",
+      "tags": [
+        "hellhound",
+        "hound girl",
+        "security",
+        "harbor",
+        "protective",
+        "strong"
+      ],
+      "version": 1,
+      "card": "vexa-hollow/card.png",
+      "sha256": "12bbb297abb2cc8fcd4de64821ca01dd15f8de5e",
+      "sprites": []
+    },
+    {
+      "id": "hana-shiba",
+      "name": "Hana Shiba",
+      "file": "Hana Shiba.png",
+      "tagline": "Bright, stubborn and friendly. Second-year culinary student and café server.",
+      "tags": [
+        "inumimi",
+        "shiba inu",
+        "dog girl",
+        "culinary",
+        "student",
+        "cheerful"
+      ],
+      "version": 1,
+      "card": "hana-shiba/card.png",
+      "sha256": "7da0d970fde1a09ef80776c9afe37d8e262e85e3",
+      "sprites": []
+    },
+    {
+      "id": "marlowe-dane",
+      "name": "Marlowe Dane",
+      "file": "Marlowe Dane.png",
+      "tagline": "Serious, attentive and quietly considerate. Campus security trainee and criminology student.",
+      "tags": [
+        "inumimi",
+        "doberman",
+        "dog boy",
+        "security",
+        "student",
+        "serious"
+      ],
+      "version": 1,
+      "card": "marlowe-dane/card.png",
+      "sha256": "1920beb341013904a2e1f6f4b4d6c326a64fa5e5",
+      "sprites": []
+    },
+    {
+      "id": "kaia-ember",
+      "name": "Kaia Ember",
+      "file": "Kaia Ember.png",
+      "tagline": "Warm, theatrical and resilient. Singer and part-time music tutor.",
+      "tags": [
+        "phoenix",
+        "bird girl",
+        "singer",
+        "music",
+        "adult",
+        "warm"
+      ],
+      "version": 1,
+      "card": "kaia-ember/card.png",
+      "sha256": "459dd6fbda22f84a9624b96e540d0759f218a6d3",
+      "sprites": []
+    },
+    {
+      "id": "mabel-ash",
+      "name": "Mabel Ash",
+      "file": "Mabel Ash.png",
+      "tagline": "Playful, clever and socially fearless. Fourth-year Anthropology student and thrift-shop clerk.",
+      "tags": [
+        "kitsune",
+        "fox girl",
+        "kemonomimi",
+        "student",
+        "anthropology",
+        "playful"
+      ],
+      "version": 1,
+      "card": "mabel-ash/card.png",
+      "sha256": "942e65e4ef7a6f2ee68860f99c98f803cd55a71d",
+      "sprites": []
     }
   ]
 }
