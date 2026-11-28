@@ -9,10 +9,11 @@
  *  and /api/characters/all only lists cards that were installed by the Roster-Downloader.
  *  The guards are put in FRONT of SillyTavern's own routers, so no SillyTavern file is edited.
  *
- *  ROSTER: the catalogue (roster.json + one folder per character with card.png, sprites/, images/ and sets/) comes from the STORAGE:
- *  the Cloudflare Worker at DEFAULT_REMOTE below (every file is checked against its sha256). If the storage cannot be reached, or it
- *  is still empty, the copy bundled in the launcher (core/roster/) is used instead and the list says so ("fallback").
- *  tavern.config.json -> roster.remote: an https address uses that storage instead; "off" uses only the bundled copy; empty = the default.
+ *  ROSTER: the catalogue (core/roster/roster.json + one folder per character with card.png, sprites/, images/ and sets/) is the copy
+ *  that ships INSIDE the launcher. Updating the launcher updates the roster.
+ *  Optional: tavern.config.json -> "roster": { "remote": "https://..." } reads the catalogue from a web address instead (a storage Worker,
+ *  see community/worker.js; every file is then checked against its sha256). If that address cannot be reached, or it is empty,
+ *  the bundled copy is used and the list says so ("fallback"). Leave "remote" empty (the default) to use only the bundled copy.
  *  Nothing is loaded automatically. "Download" copies the card and its expression sprites into the user's own data folder
  *  and records it in <user data>/zenith-roster/installed.json.
  *
@@ -46,7 +47,6 @@ const CONFIG_PATH = new URL('tavern.config.json', ROOT_URL);
 const ROSTER_DIR = path.resolve(fileURLToPath(new URL('core/roster/', ROOT_URL)));
 const ST_SRC = new URL('../../src/endpoints/', import.meta.url);
 
-const DEFAULT_REMOTE = 'https://zenith-storage.f30680230.workers.dev';
 const ID_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 const SET_ID_RE = /^[a-z0-9][a-z0-9_-]{0,39}$/;
 const REL_RE = /^(?!.*\.\.)[A-Za-z0-9 _.()'&+-]+(\/[A-Za-z0-9 _.()'&+-]+)*$/;
@@ -69,11 +69,10 @@ export function strictSettings() {
     const c = readConfig().characters || {};
     return { strict: c.strict !== false, allowCreate: c.allowCreate === true };
 }
-/** The storage address, or '' when only the bundled copy should be used. */
+/** A web address for the catalogue when tavern.config.json sets one, otherwise '' (= only the copy bundled in the launcher). */
 function remoteBase() {
     const r = String((readConfig().roster || {}).remote ?? '').trim();
-    if (/^(off|local|bundled|none)$/i.test(r)) return '';
-    return /^https:\/\/[^\s]+$/i.test(r) ? r.replace(/\/+$/, '') : DEFAULT_REMOTE;
+    return /^https:\/\/[^\s]+$/i.test(r) ? r.replace(/\/+$/, '') : '';
 }
 
 // ------------------------------------------------------------------ ledger (per user)
@@ -250,7 +249,7 @@ function normalizeManifest(data) {
     return characters;
 }
 
-/** The catalogue: the storage first; the bundled copy when the storage cannot be reached or is still empty.
+/** The catalogue: the bundled copy by default; a configured web address first (with the bundled copy as the fallback).
  *  Returns { source: 'remote' | 'local', base, fallback, fallbackReason, characters }. */
 async function loadManifest() {
     const base = remoteBase();
