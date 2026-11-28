@@ -180,16 +180,6 @@ function unzipImages(buf) {
 }
 
 // ------------------------------------------------------------------ catalogue sources
-async function fetchLimited(url, limit) {
-    const res = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(60000) });
-    if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-    const len = Number(res.headers.get('content-length') || 0);
-    if (len > limit) throw new Error('File is too large');
-    const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.length > limit) throw new Error('File is too large');
-    return buf;
-}
-
 /** Reads one file of the bundled catalogue. */
 async function readAsset(rel, limit) {
     if (!REL_RE.test(rel)) throw new Error(`Unsafe path in roster: ${rel}`);
