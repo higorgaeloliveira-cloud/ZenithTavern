@@ -32,7 +32,4 @@
     "strict": true,
     "allowCreate": false
   },
-  "roster": {
-    "remote": ""
-  }
 }
